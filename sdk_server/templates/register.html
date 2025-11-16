@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+    {% block head %}
+    <title>注册界面</title>
+    <style>
+
+    .content-container {
+        /* 让 body 内的元素在水平和垂直方向上都居中 */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* 设置 body 的高度为视口高度，确保内容垂直居中效果生效 */
+        min-height: 100vh;
+        margin: 0;
+    }
+       .register-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 380px;
+            
+        }
+
+       .register-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+       .register-logo img {
+            width: 100px;
+            height: 100px;
+        }
+
+       .register-form .layui-form-item {
+            margin-bottom: 20px;
+        }
+
+       .register-form .layui-input {
+            height: 45px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding-left: 40px;
+        }
+
+       .register-form .layui-btn {
+            height: 45px;
+            line-height: 45px;
+            border-radius: 5px;
+            background-color: #00a1d6;
+            font-size: 16px;
+        }
+
+       .register-form .layui-icon {
+            position: absolute;
+            left: 12px;
+            top: 14px;
+            color: #999;
+            font-size: 18px;
+        }
+
+       .register-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+       .register-links a {
+            color: #666;
+            margin: 0 10px;
+        }
+      
+    </style>
+    {% endblock %}
+  
+   
+
+
+
+    {% block content %}
+
+<div class="content-container">
+    <div class="register-container">
+        <div class="register-logo">
+            <img src="/static/img/login_logo.png" alt="图标">
+        </div>
+        <form class="layui-form register-form" action="">
+            <div class="layui-form-item" style="position: relative;">
+                <i class="layui-icon layui-icon-username"></i>
+                <input type="text" name="account" placeholder="账号" autocomplete="off"
+                    class="layui-input">
+            </div>
+            
+            <div class="layui-form-item" style="position: relative;">
+                <i class="layui-icon layui-icon-username"></i>
+                <input type="text" name="username" placeholder="用户名" autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-form-item" style="position: relative;">
+                <i class="layui-icon layui-icon-email"></i>
+                <input type="email" name="email" placeholder="邮箱" autocomplete="off" class="layui-input"
+                    style>
+                <button type="button" class="layui-btn" lay-submit lay-filter="send-verification-code" id="send-verification-code">发送验证码</button>
+            </div>
+            <div class="layui-form-item" style="position: relative;">
+                <i class="layui-icon layui-icon-phone"></i>
+                <input type="text" name="phonenumber" placeholder="手机号" autocomplete="off" value="13000000000" class="layui-input">
+            </div>
+            <div class="layui-form-item" style="position: relative;">
+                <i class="layui-icon layui-icon-vercode"></i>
+                <input type="text" name="verification_code" placeholder="验证码" autocomplete="off"
+                    class="layui-input">
+            </div>
+            <div class="layui-form-item" style="position: relative;">
+                <i class="layui-icon layui-icon-password"></i>
+                <input type="password" name="password" placeholder="密码" autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-form-item" style="position: relative;">
+                <i class="layui-icon layui-icon-password"></i>
+                <input type="password" name="confirm_password" placeholder="确认密码" autocomplete="off"
+                    class="layui-input">
+            </div>
+            <div class="layui-form-item" style="position: relative;">
+                <button class="layui-btn layui-btn-fluid" id="register_btn" lay-submit lay-filter="register">注册</button>
+            </div>
+        </form>
+        <div class="register-links">
+            <a href="/view/login">已有账号，去登录</a>
+        </div>
+    </div>
+</div>
+    <!-- 引入 Layui 的 JavaScript 文件 -->
+  
+    <script>
+        
+        layui.use(['form'], function () {
+            var xTicketM = null;
+    
+            var form = layui.form;
+            form.on('submit(send-verification-code)',data=>{
+                if (data.field.email == ""){
+                    CommonUtils.MsgBox("邮箱不能为空！")
+                    return false
+                }
+                console.log(data)
+                Base.inst().SendVerifyCode(data.field.email,(xTicket)=>{
+                    console.log(xTicket)
+                    xTicketM = xTicket
+                    $("#register_btn").removeAttr("disabled")
+                });
+                return false;
+            });
+            // 监听注册表单提交事件
+            form.on('submit(register)',data =>{
+                if(xTicketM == null){
+                    CommonUtils.MsgBox("请先发送验证码！")
+                    return false
+                }
+                if(data.field.account == "" || 
+                data.field.password == "" || 
+                data.field.email == "" || 
+                data.field.verification_code == "" ||
+                data.field.confirm_password == "" ||
+                data.field.phonenumber == "" ||
+                data.field.username == ""){
+                    CommonUtils.MsgBox("检查输入是否为空！");
+                    return false;
+                }
+
+                Base.inst().Register(
+                    data.field.account,
+                    data.field.password,
+                    data.field.username,
+                    "",
+                    data.field.phonenumber,
+                    data.field.verification_code,
+                    xTicketM
+                );
+                return false;
+            });
+        });
+    </script>
+    {% endblock %}
+
+

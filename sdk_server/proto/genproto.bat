@@ -1,0 +1,1 @@
+protoc ./*.proto --python_out=./

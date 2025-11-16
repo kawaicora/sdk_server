@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+
+<title>聊天</title>
+
+<style>
+  :root {
+    --dark-bg: #1a1a1a;
+    --dark-card: #242424;
+    --dark-border: #333;
+    --dark-text: #e0e0e0;
+    --accent-color: #b90600;
+    --hover-color: #ff4f4f;
+  }
+
+  body {
+    background-color: var(--dark-bg)!important;
+    color: var(--dark-text)!important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif!important;
+  }
+  </style>
+{% endblock %}
+
+
+
+
+{% block content %}
+
+    <div id="localVideo">
+
+    </div>
+
+    <div id="remoteVideos">
+
+    </div>
+
+    
+<script src="/static/js/video_chat.js"></script>
+{% endblock %}

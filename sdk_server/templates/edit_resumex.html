@@ -1,0 +1,226 @@
+
+{% extends 'base.html' %}
+{% block head %}
+    <meta charset="UTF-8">
+    <title>编辑简历</title>
+
+{% endblock %}
+
+{% block content %}
+    <div class="layui-container">
+        <h1 class="layui-elem-field layui-field-title">编辑简历</h1>
+        <form class="layui-form" method="post">
+            <!-- 个人信息 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">姓名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="person_name" value="{{ data.person_info.name }}"
+                        placeholder="请输入姓名" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">标签</label>
+                <div class="layui-input-block">
+                    <input type="text" name="person_label" value="{{ data.person_info.label }}"
+                        placeholder="请输入标签" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">头像链接</label>
+                <div class="layui-input-block">
+                    <input type="text" name="person_photo_url" value="{{ data.person_info.photo_url }}"
+                        placeholder="请输入头像链接" class="layui-input">
+                </div>
+            </div>
+
+            <!-- 标签列表 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">标签列表</label>
+                <div class="layui-input-block">
+                    {% for tag in data.tag_list %}
+                    <div class="layui-input-inline">
+                        <input type="text" name="tag_name" value="{{ tag.name }}" placeholder="请输入标签"
+                            class="layui-input">
+                    </div>
+                    <button type="button" class="layui-btn layui-btn-danger layui-btn-xs" onclick="removeTag(this)">
+                        <i class="layui-icon layui-icon-delete"></i> 删除
+                    </button>
+                    {% endfor %}
+                    <button type="button" class="layui-btn layui-btn-normal layui-btn-xs" onclick="addTag()">
+                        <i class="layui-icon layui-icon-add-circle"></i> 添加
+                    </button>
+                </div>
+            </div>
+
+            <!-- 技能介绍 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">技能标题</label>
+                <div class="layui-input-block">
+                    <input type="text" name="skills_title" value="{{ data.skills_introduction.title }}"
+                        placeholder="请输入技能标题" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">技能内容</label>
+                <div class="layui-input-block">
+                    <textarea name="skills_content" placeholder="请输入技能内容"
+                        class="layui-textarea">{{ data.skills_introduction.content }}</textarea>
+                </div>
+            </div>
+
+            <!-- 工作经历 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">工作经历</label>
+                <div class="layui-input-block">
+                    {% for experience in data.work_experience %}
+                    <!-- 如果你需要使用索引，可以使用 loop.index 或者 loop.index0 -->
+                    <!-- loop.index 从 1 开始，loop.index0 从 0 开始 -->
+                    <div class="layui-row">
+                        <div class="layui-col-md3">
+                            <input type="text" name="work_company_name" value="{{ experience.company_name }}"
+                                   placeholder="请输入公司名称" class="layui-input">
+                        </div>
+                        <div class="layui-col-md3">
+                            <input type="text" name="work_position" value="{{ experience.position }}"
+                                   placeholder="请输入职位" class="layui-input">
+                        </div>
+                        <div class="layui-col-md3">
+                            <input type="text" name="work_time" value="{{ experience.work_time }}"
+                                   placeholder="请输入工作时间" class="layui-input">
+                        </div>
+                        <div class="layui-col-md3">
+                            <button type="button" class="layui-btn layui-btn-danger layui-btn-xs"
+                                    onclick="removeWork(this)">
+                                <i class="layui-icon layui-icon-delete"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                    <div class="layui-form-text">
+                        <textarea name="work_content" placeholder="请输入工作内容"
+                                  class="layui-textarea">{{ experience.work_content }}</textarea>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 教育经历 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">教育经历</label>
+                <div class="layui-input-block">
+                    {% for edu in data.education %}
+                    <div class="layui-row">
+                        <div class="layui-col-md3">
+                            <input type="text" name="edu_school_name" value="{{ edu.school_name }}"
+                                placeholder="请输入学校名称" class="layui-input">
+                        </div>
+                        <div class="layui-col-md3">
+                            <input type="text" name="edu_degree" value="{{ edu.degree }}" placeholder="请输入学位"
+                                class="layui-input">
+                        </div>
+                        <div class="layui-col-md3">
+                            <input type="text" name="edu_major" value="{{ edu.major }}" placeholder="请输入专业"
+                                class="layui-input">
+                        </div>
+                        <div class="layui-col-md3">
+                            <input type="text" name="edu_time" value="{{ edu.time }}" placeholder="请输入时间"
+                                class="layui-input">
+                        </div>
+                        <div class="layui-col-md3">
+                            <button type="button" class="layui-btn layui-btn-danger layui-btn-xs"
+                                onclick="removeEdu(this)">
+                                <i class="layui-icon layui-icon-delete"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <button type="button" class="layui-btn layui-btn-normal layui-btn-xs" onclick="addEdu()">
+                        <i class="layui-icon layui-icon-add-circle"></i> 添加
+                    </button>
+                </div>
+            </div>
+
+            <!-- 项目作品 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">项目作品</label>
+                <div class="layui-input-block">
+                    {% for project in data.project_works %}
+                    <div class="layui-row">
+                        <div class="layui-col-md3">
+                            <input type="text" name="project_name" value="{{ project.name }}"
+                                placeholder="请输入项目名称" class="layui-input">
+                        </div>
+                        <div class="layui-col-md3">
+                            <input type="text" name="project_work_time" value="{{ project.work_time }}"
+                                placeholder="请输入项目时间" class="layui-input">
+                        </div>
+                        <div class="layui-col-md3">
+                            <button type="button" class="layui-btn layui-btn-danger layui-btn-xs"
+                                onclick="removeProject(this)">
+                                <i class="layui-icon layui-icon-delete"></i> 删除
+                            </button>
+                        </div>
+                    </div>
+                    <div class="layui-form-text">
+                        <textarea name="project_content" placeholder="请输入项目内容"
+                            class="layui-textarea">{{ project.content }}</textarea>
+                    </div>
+                    {% endfor %}
+                    <button type="button" class="layui-btn layui-btn-normal layui-btn-xs" onclick="addProject()">
+                        <i class="layui-icon layui-icon-add-circle"></i> 添加
+                    </button>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        layui.use(['form'], function () {
+            var form = layui.form;
+        });
+
+        function addTag() {
+            var tagInput = '<div class="layui-input-inline"><input type="text" name="tag_name" placeholder="请输入标签" class="layui-input"></div><button type="button" class="layui-btn layui-btn-danger layui-btn-xs" onclick="removeTag(this)"><i class="layui-icon layui-icon-delete"></i> 删除</button>';
+            $('.layui-input-block:has(button[onclick="addTag()"])').append(tagInput);
+        }
+
+        function removeTag(btn) {
+            $(btn).prev().remove();
+            $(btn).remove();
+        }
+
+        function addWork() {
+            var workHtml = '<div class="layui-row"><div class="layui-col-md3"><input type="text" name="work_company_name" placeholder="请输入公司名称" class="layui-input"></div><div class="layui-col-md3"><input type="text" name="work_position" placeholder="请输入职位" class="layui-input"></div><div class="layui-col-md3"><input type="text" name="work_time" placeholder="请输入工作时间" class="layui-input"></div><div class="layui-col-md3"><button type="button" class="layui-btn layui-btn-danger layui-btn-xs" onclick="removeWork(this)"><i class="layui-icon layui-icon-delete"></i> 删除</button></div></div><div class="layui-form-text"><textarea name="work_content" placeholder="请输入工作内容" class="layui-textarea"></textarea></div>';
+            $('.layui-input-block:has(button[onclick="addWork()"])').append(workHtml);
+        }
+
+        function removeWork(btn) {
+            $(btn).closest('.layui-row').remove();
+            $(btn).closest('.layui-row').next().remove();
+        }
+
+        function addEdu() {
+            var eduHtml = '<div class="layui-row"><div class="layui-col-md3"><input type="text" name="edu_school_name" placeholder="请输入学校名称" class="layui-input"></div><div class="layui-col-md3"><input type="text" name="edu_degree" placeholder="请输入学位" class="layui-input"></div><div class="layui-col-md3"><input type="text" name="edu_major" placeholder="请输入专业" class="layui-input"></div><div class="layui-col-md3"><input type="text" name="edu_time" placeholder="请输入时间" class="layui-input"></div><div class="layui-col-md3"><button type="button" class="layui-btn layui-btn-danger layui-btn-xs" onclick="removeEdu(this)"><i class="layui-icon layui-icon-delete"></i> 删除</button></div></div>';
+            $('.layui-input-block:has(button[onclick="addEdu()"])').append(eduHtml);
+        }
+
+        function removeEdu(btn) {
+            $(btn).closest('.layui-row').remove();
+        }
+
+        function addProject() {
+            var projectHtml = '<div class="layui-row"><div class="layui-col-md3"><input type="text" name="project_name" placeholder="请输入项目名称" class="layui-input"></div><div class="layui-col-md3"><input type="text" name="project_work_time" placeholder="请输入项目时间" class="layui-input"></div><div class="layui-col-md3"><button type="button" class="layui-btn layui-btn-danger layui-btn-xs" onclick="removeProject(this)"><i class="layui-icon layui-icon-delete"></i> 删除</button></div></div><div class="layui-form-text"><textarea name="project_content" placeholder="请输入项目内容" class="layui-textarea"></textarea></div>';
+            $('.layui-input-block:has(button[onclick="addProject()"])').append(projectHtml);
+        }
+
+        function removeProject(btn) {
+            $(btn).closest('.layui-row').remove();
+            $(btn).closest('.layui-row').next().remove();
+        }
+    </script>
+{% endblock %}

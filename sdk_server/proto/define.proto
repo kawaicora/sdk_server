@@ -1,0 +1,209 @@
+
+syntax = "proto3";
+package corasdk_define;
+
+// 枚举类型 MotionState，用于表示各种运动状态
+enum MotionState {
+  // 无运动状态
+  MOTION_NONE = 0;
+  // 重置运动状态
+  MOTION_RESET = 1;
+  // 待机状态
+  MOTION_STANDBY = 2;
+  // 待机移动状态
+  MOTION_STANDBY_MOVE = 3;
+  // 行走状态
+  MOTION_WALK = 4;
+  // 跑步状态
+  MOTION_RUN = 5;
+  // 冲刺状态
+  MOTION_DASH = 6;
+  // 攀爬状态
+  MOTION_CLIMB = 7;
+  // 攀爬跳跃状态
+  MOTION_CLIMB_JUMP = 8;
+  // 从待机状态转换到攀爬状态
+  MOTION_STANDBY_TO_CLIMB = 9;
+  // 战斗状态
+  MOTION_FIGHT = 10;
+  // 跳跃状态
+  MOTION_JUMP = 11;
+  // 下落状态
+  MOTION_DROP = 12;
+  // 飞行状态
+  MOTION_FLY = 13;
+  // 游泳移动状态
+  MOTION_SWIM_MOVE = 14;
+  // 游泳空闲状态
+  MOTION_SWIM_IDLE = 15;
+  // 游泳冲刺状态
+  MOTION_SWIM_DASH = 16;
+  // 游泳跳跃状态
+  MOTION_SWIM_JUMP = 17;
+  // 滑倒状态
+  MOTION_SLIP = 18;
+  // 上楼梯状态
+  MOTION_GO_UPSTAIRS = 19;
+  // 落到地面状态
+  MOTION_FALL_ON_GROUND = 20;
+  // 从墙壁上跳跃到待机状态
+  MOTION_JUMP_UP_WALL_FOR_STANDBY = 21;
+  // 从墙壁上跳下状态
+  MOTION_JUMP_OFF_WALL = 22;
+  // 动力飞行状态
+  MOTION_POWERED_FLY = 23;
+  // 梯子上的空闲状态
+  MOTION_LADDER_IDLE = 24;
+  // 梯子上的移动状态
+  MOTION_LADDER_MOVE = 25;
+  // 梯子上的滑倒状态
+  MOTION_LADDER_SLIP = 26;
+  // 从待机状态转换到梯子状态
+  MOTION_STANDBY_TO_LADDER = 27;
+  // 从梯子状态转换到待机状态
+  MOTION_LADDER_TO_STANDBY = 28;
+  // 危险待机状态
+  MOTION_DANGER_STANDBY = 29;
+  // 危险待机移动状态
+  MOTION_DANGER_STANDBY_MOVE = 30;
+  // 危险行走状态
+  MOTION_DANGER_WALK = 31;
+  // 危险跑步状态
+  MOTION_DANGER_RUN = 32;
+  // 危险冲刺状态
+  MOTION_DANGER_DASH = 33;
+  // 蹲伏空闲状态
+  MOTION_CROUCH_IDLE = 34;
+  // 蹲伏移动状态
+  MOTION_CROUCH_MOVE = 35;
+  // 蹲伏翻滚状态
+  MOTION_CROUCH_ROLL = 36;
+  // 通知状态
+  MOTION_NOTIFY = 37;
+  // 着陆速度状态
+  MOTION_LAND_SPEED = 38;
+  // 移动失败确认状态
+  MOTION_MOVE_FAIL_ACK = 39;
+  // 瀑布状态
+  MOTION_WATERFALL = 40;
+  // 冲刺前摇晃状态
+  MOTION_DASH_BEFORE_SHAKE = 41;
+  // 坐姿空闲状态
+  MOTION_SIT_IDLE = 42;
+  // 强制设置位置状态
+  MOTION_FORCE_SET_POS = 43;
+  // 任务强制拖动状态
+  MOTION_QUEST_FORCE_DRAG = 44;
+  // 跟随路线状态
+  MOTION_FOLLOW_ROUTE = 45;
+  // 登上小艇状态
+  MOTION_SKIFF_BOARDING = 46;
+  // 小艇正常行驶状态
+  MOTION_SKIFF_NORMAL = 47;
+  // 小艇冲刺状态
+  MOTION_SKIFF_DASH = 48;
+  // 小艇动力冲刺状态
+  MOTION_SKIFF_POWERED_DASH = 49;
+  // 摧毁载具状态
+  MOTION_DESTROY_VEHICLE = 50;
+  // 飞行空闲状态
+  MOTION_FLY_IDLE = 51;
+  // 慢速飞行状态
+  MOTION_FLY_SLOW = 52;
+  // 快速飞行状态
+  MOTION_FLY_FAST = 53;
+  // 瞄准移动状态
+  MOTION_AIM_MOVE = 54;
+  // 空中补偿状态
+  MOTION_AIR_COMPENSATION = 55;
+  // 运动状态数量，通常用于循环或边界检查
+  MOTION_NUM = 56;
+}
+
+// 定义一个枚举类型 ProtEntityType，用于表示不同类型的实体
+enum ProtEntityType {
+  // 无实体类型
+  PROT_ENTITY_NONE = 0;
+  // 角色实体类型
+  PROT_ENTITY_AVATAR = 1;
+  // 怪物实体类型
+  PROT_ENTITY_MONSTER = 2;
+  // NPC（非玩家角色）实体类型
+  PROT_ENTITY_NPC = 3;
+  // 小道具实体类型
+  PROT_ENTITY_GADGET = 4;
+  // 区域实体类型
+  PROT_ENTITY_REGION = 5;
+  // 武器实体类型
+  PROT_ENTITY_WEAPON = 6;
+  // 天气实体类型
+  PROT_ENTITY_WEATHER = 7;
+  // 场景实体类型
+  PROT_ENTITY_SCENE = 8;
+  // 团队实体类型
+  PROT_ENTITY_TEAM = 9;
+  // 大型实体类型
+  PROT_ENTITY_MASSIVE_ENTITY = 10;
+  // 多人游戏等级实体类型
+  PROT_ENTITY_MP_LEVEL = 11;
+  // 游戏团队实体类型
+  PROT_ENTITY_PLAY_TEAM_ENTITY = 12;
+  // 视点实体类型
+  PROT_ENTITY_EYE_POINT = 13;
+  // 实体类型的最大值，通常用于循环或边界检查
+  PROT_ENTITY_MAX = 14;
+}
+
+// 定义一个消息类型 Vector3，用于表示三维空间中的一个点或向量
+message Vector3 {
+  // 三维空间中的 x 坐标
+  float x = 1;
+  // 三维空间中的 y 坐标
+  float y = 2;
+  // 三维空间中的 z 坐标
+  float z = 3;
+}
+
+// 定义一个消息类型 Vector2，用于表示二维空间中的一个点或向量
+message Vector2 {
+  // 二维空间中的 x 坐标
+  float x = 1;
+  // 二维空间中的 y 坐标
+  float y = 2;
+}
+
+// 定义一个消息类型 EntityMoveInfo，用于表示实体的移动信息
+message EntityMoveInfo {
+  // 实体的唯一标识符
+  uint32 entity_id = 1;
+  // 实体的运动信息，关联到 MotionInfo 消息类型
+  MotionInfo motion_info = 2;
+  // 场景时间，可能用于同步或记录移动发生的时间
+  uint32 scene_time = 3;
+  // 可靠序列号，可能用于确保消息的可靠传输
+  uint32 reliable_seq = 4;
+  // 表示消息是否可靠的标志
+  bool is_reliable = 5;
+}
+
+// 定义一个消息类型 MotionInfo，用于表示实体的运动信息
+message MotionInfo {
+  // 实体的位置，使用 Vector3 消息类型表示
+  Vector3 pos = 1;
+  // 实体的旋转信息，使用 Vector3 消息类型表示
+  Vector3 rot = 2;
+  // 实体的速度，使用 Vector3 消息类型表示
+  Vector3 speed = 3;
+  // 实体的运动状态，关联到 MotionState 枚举类型
+  MotionState state = 4;
+  // 运动参数列表，可能包含一些额外的运动相关参数
+  repeated Vector3 params = 5;
+  // 参考位置，使用 Vector3 消息类型表示
+  Vector3 ref_pos = 6;
+  // 参考实体的唯一标识符
+  uint32 ref_id = 7;
+  // 场景时间，可能用于同步或记录运动信息的时间
+  uint32 scene_time = 8;
+  // 间隔速度，可能用于计算或记录一段时间内的速度变化
+  uint64 interval_velocity = 9;
+}

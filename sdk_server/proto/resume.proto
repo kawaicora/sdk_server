@@ -1,0 +1,68 @@
+
+syntax = "proto3";
+package corasdk_resume;
+
+
+
+// 定义个人信息
+message PersonalInfo {
+    string birth = 1;
+    string school = 2;
+    string education = 3;
+    string major = 4;
+    string native_place = 5;
+    string current_place = 6;
+    string email = 7;
+    string phone = 8;
+    string address = 9;
+    string content = 10;
+    string label = 11;
+    string name = 12;
+    string photo_url = 13;
+}
+
+// 定义教育经历
+message Education {
+    string degree = 1;
+    string major = 2;
+    string school_name = 3;
+    string time = 4;
+}
+
+// 定义项目作品
+message ProjectWork {
+    string name = 1;
+    string work_time = 2;
+    string content = 3;
+}
+
+// 定义技能概述
+message SkillsIntroduction {
+    string title = 1;
+    string content = 2;
+}
+
+// 定义标签列表项
+message TagList {
+    string icon = 1;
+    string name = 2;
+}
+
+// 定义工作经历
+message WorkExperience {
+    string company_name = 1;
+    string position = 2;
+    string work_time = 3;
+    string work_content = 4;
+}
+
+// 定义完整的简历信息
+message Resume {
+    PersonalInfo personal_info = 1;
+    repeated Education educations = 2;
+    repeated ProjectWork project_works = 3;
+    SkillsIntroduction skills_introduction = 4;
+    repeated TagList tag_lists = 5;
+    repeated WorkExperience work_experiences = 6;
+}
+

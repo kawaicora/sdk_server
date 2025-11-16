@@ -1,0 +1,892 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>{{ product.name }} - 我的商城</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    background: #f5f5f5; /* 改为浅灰背景，更贴近淘宝列表页 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+/* 基础容器样式 */
+.product-detail-container {
+    padding: 80px 20px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+/* 商品主信息区（图片+详情） */
+.product-main {
+    background-color: #fff; /* 改为白色背景，贴近淘宝风格 */
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* 增加轻微阴影 */
+}
+/* 图片轮播区 - 核心优化：增加放大容器 */
+.img-slider {
+    display: flex;
+    gap: 15px;
+    position: relative;
+}
+/* 主图放大容器 */
+.main-img-container {
+    flex: 1;
+    height: 450px;
+    overflow: hidden;
+    position: relative;
+    cursor: crosshair; /* 鼠标变为十字，提示可放大 */
+}
+/* 主图样式 */
+.main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+/* 放大镜遮罩 */
+.zoom-mask {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    background-color: rgba(255,255,255,0.4);
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    display: none;
+    pointer-events: none; /* 不遮挡鼠标事件 */
+    z-index: 10;
+}
+/* 放大预览区 */
+.zoom-preview {
+    position: absolute;
+    right: -420px;
+    top: 0;
+    width: 400px;
+    height: 400px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    display: none;
+    z-index: 10;
+}
+.zoom-preview img {
+    position: absolute;
+    width: 200%; /* 放大倍数：2倍，与主图放大比例一致 */
+    height: 200%;
+    object-fit: contain;
+}
+/* 缩略图列表 */
+.thumb-list {
+    width: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.thumb-item {
+    width: 80px;
+    height: 80px;
+    border: 2px solid #eee; /* 默认灰色边框 */
+    cursor: pointer;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+.thumb-item:hover {
+    border-color: #ff4400; /*  hover时变橙色 */
+}
+.thumb-item.active {
+    border-color: #ff4400; /* 选中状态橙色边框 */
+    box-shadow: 0 0 0 1px #ff4400;
+}
+.thumb-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+/* 商品信息区 */
+.product-info {
+    padding: 10px 20px; /* 增加右侧内边距 */
+}
+.product-title {
+    font-size: 20px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    color: #333; /* 标题深色 */
+}
+.product-subtitle {
+    color: #ff4400;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+/* 价格区 - 优化样式 */
+.price-area {
+    background-color: #fff8f0; /* 浅橙色背景 */
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-left: 4px solid #ff4400; /* 左侧橙色竖线 */
+}
+.price-label {
+    color: #999;
+    font-size: 14px;
+    margin-bottom: 5px;
+    display: block;
+}
+.current-price {
+    color: #ff4400;
+    font-size: 28px;
+    font-weight: bold;
+}
+.original-price {
+    color: #999;
+    font-size: 14px;
+    text-decoration: line-through;
+    margin-left: 15px;
+}
+/* 规格选择区 - 优化交互 */
+.spec-area {
+    margin-bottom: 20px;
+}
+.spec-item {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+}
+.spec-label {
+    width: 80px;
+    color: #666; /* 标签深色 */
+    font-size: 14px;
+    padding-top: 5px;
+    flex-shrink: 0; /* 固定宽度不收缩 */
+}
+.spec-options {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.spec-option {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #fff;
+    color: #333;
+}
+.spec-option:hover {
+    border-color: #ff4400;
+}
+.spec-option.active {
+    border-color: #ff4400;
+    background-color: rgba(255,68,0,0.05); /* 浅橙色背景 */
+    position: relative;
+}
+/* 选中规格添加小对勾 */
+.spec-option.active::after {
+    content: "✓";
+    color: #ff4400;
+    font-size: 12px;
+    position: absolute;
+    right: 5px;
+    bottom: 2px;
+}
+/* 数量选择区 - 优化样式 */
+.quantity-area {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+}
+.quantity-label {
+    width: 80px;
+    color: #666;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.quantity-control {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.quantity-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background-color: #f5f5f5;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+.quantity-btn:hover {
+    background-color: #eee;
+}
+.quantity-btn:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}
+.quantity-input {
+    width: 60px;
+    height: 36px;
+    text-align: center;
+    border: none;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    background-color: #fff;
+    color: #333;
+    outline: none;
+}
+/* 按钮区 - 优化样式 */
+.btn-area {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.cart-btn, .buy-btn {
+    padding: 14px 0;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    flex: 1; /* 按钮平分宽度 */
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+.cart-btn {
+    background-color: #ffb800;
+    color: #fff;
+}
+.cart-btn:hover {
+    opacity: 0.9;
+}
+.buy-btn {
+    background-color: #ff4400;
+    color: #fff;
+}
+.buy-btn:hover {
+    opacity: 0.9;
+}
+/* 服务标签区 - 新增，贴近淘宝 */
+.service-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 12px;
+}
+.service-tag {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.service-tag i {
+    color: #ff4400;
+    font-size: 14px;
+}
+/* Tabs 详情区 - 优化样式 */
+.product-tabs {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.tabs-header {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    background-color: #fafafa;
+}
+.tab-item {
+    padding: 15px 25px;
+    cursor: pointer;
+    font-size: 16px;
+    border-bottom: 3px solid transparent;
+    color: #666;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.tab-item:hover {
+    color: #ff4400;
+}
+.tab-item.active {
+    border-bottom-color: #ff4400;
+    color: #ff4400;
+    background-color: #fff;
+}
+.tab-content {
+    padding: 25px;
+    display: none;
+    color: #333;
+}
+.tab-content.active {
+    display: block;
+}
+/* 详情图片区 */
+.detail-img {
+    width: 100%;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+/* 规格参数表 */
+.spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+}
+.spec-table tr {
+    border-bottom: 1px solid #f5f5f5;
+}
+.spec-table td {
+    padding: 12px 15px;
+    font-size: 14px;
+}
+.spec-table td:first-child {
+    width: 150px;
+    color: #666;
+    background-color: #fafafa;
+}
+/* 评价列表优化 */
+.comment-item {
+    border-bottom: 1px solid #f5f5f5;
+    padding: 20px 0;
+}
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.comment-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.user-name {
+    color: #333;
+    font-size: 14px;
+}
+.comment-rating {
+    color: #ffb800;
+}
+.comment-content {
+    margin-bottom: 10px;
+    color: #333;
+    line-height: 1.5;
+}
+.comment-images {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+.comment-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.comment-image:hover {
+    transform: scale(1.05);
+}
+.comment-time {
+    color: #999;
+    font-size: 12px;
+}
+/* 响应式适配 - 优化移动端体验 */
+@media (max-width: 768px) {
+    .product-detail-container {
+        padding: 70px 10px 30px;
+    }
+    /* 移动端图片区上下堆叠 */
+    .img-slider {
+        flex-direction: column;
+    }
+    /* 隐藏移动端放大功能（避免交互冲突） */
+    .zoom-mask, .zoom-preview {
+        display: none !important;
+    }
+    .main-img-container {
+        height: 300px;
+        cursor: default; /* 恢复默认鼠标 */
+    }
+    .thumb-list {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scrollbar-width: none; /* 隐藏滚动条 */
+    }
+    .thumb-list::-webkit-scrollbar {
+        display: none;
+    }
+    .thumb-item {
+        flex-shrink: 0;
+    }
+    /* 移动端按钮全屏 */
+    .btn-area {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .cart-btn, .buy-btn {
+        padding: 12px 0;
+        font-size: 15px;
+    }
+    /* 移动端Tabs简化 */
+    .tab-item {
+        padding: 12px 10px;
+        font-size: 14px;
+    }
+    .tab-content {
+        padding: 15px;
+    }
+    /* 移动端规格标签调整 */
+    .spec-option {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+}
+/* 平板适配（769-992px） */
+@media (min-width: 769px) and (max-width: 992px) {
+    .zoom-preview {
+        right: -320px;
+        width: 300px;
+        height: 300px;
+    }
+    .zoom-mask {
+        width: 120px;
+        height: 120px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="product-detail-container">
+    <!-- 商品主信息区 -->
+    <div class="product-main layui-row">
+        <!-- 左侧图片轮播（PC端占5列，移动端占12列） -->
+        <div class="layui-col-md5 layui-col-xs12">
+            <div class="img-slider">
+                <!-- 缩略图列表 -->
+                <div class="thumb-list">
+                    {% for img in product.images|default(['', '', '', '']) %}
+                    <!-- 缩略图：点击切换主图 -->
+                    <div class="thumb-item {% if loop.index == 1 %}active{% endif %}" 
+                         data-img="{{ img or 'https://picsum.photos/450/450?random=' ~ loop.index ~ product.id }}">
+                        <img src="{{ img or 'https://picsum.photos/80/80?random=' ~ loop.index ~ product.id }}" 
+                             alt="{{ product.name }} 缩略图{{ loop.index }}">
+                    </div>
+                    {% endfor %}
+                </div>
+                <!-- 主图容器：包含放大功能 -->
+                <div class="main-img-container" id="main-img-container">
+                    <!-- 主图 -->
+                    <img id="main-img" 
+                         src="{{ product.image_url or 'https://picsum.photos/450/450?random=' ~ product.id }}" 
+                         alt="{{ product.name }}" class="main-img">
+                    <!-- 放大镜遮罩（默认隐藏） -->
+                    <div class="zoom-mask" id="zoom-mask"></div>
+                    <!-- 放大预览区（默认隐藏） -->
+                    <div class="zoom-preview" id="zoom-preview">
+                        <img id="zoom-img" 
+                             src="{{ product.image_url or 'https://picsum.photos/450/450?random=' ~ product.id }}" 
+                             alt="{{ product.name }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧商品信息（PC端占7列，移动端占12列） -->
+        <div class="layui-col-md7 layui-col-xs12 product-info">
+            <h1 class="product-title">{{ product.name }}</h1>
+            <div class="product-subtitle">{{ product.subtitle or '限时优惠，先到先得！' }}</div>
+            
+            <!-- 价格区 -->
+            <div class="price-area">
+                <span class="price-label">活动价</span>
+                <div>
+                    <span class="current-price">¥{{ "%.2f"|format(product.price) }}</span>
+                    {% if product.original_price > product.price %}
+                    <span class="original-price">¥{{ "%.2f"|format(product.original_price) }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 服务标签区（新增） -->
+            <div class="service-tags">
+                <div class="service-tag">
+                    <i class="layui-icon layui-icon-check-circle"></i>
+                    <span>正品保障</span>
+                </div>
+                <div class="service-tag">
+                    <i class="layui-icon layui-icon-check-circle"></i>
+                    <span>7天无理由退换</span>
+                </div>
+                <div class="service-tag">
+                    <i class="layui-icon layui-icon-check-circle"></i>
+                    <span>包邮</span>
+                </div>
+            </div>
+            
+            <!-- 规格选择区 -->
+            <div class="spec-area">
+                <div class="spec-item">
+                    <div class="spec-label">颜色</div>
+                    <div class="spec-options">
+                        {% for color in product.colors|default(['黑色', '白色', '红色']) %}
+                        <div class="spec-option {% if loop.index == 1 %}active{% endif %}">{{ color }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">尺寸</div>
+                    <div class="spec-options">
+                        {% for size in product.sizes|default(['S', 'M', 'L', 'XL']) %}
+                        <div class="spec-option {% if loop.index == 1 %}active{% endif %}">{{ size }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数量选择区 -->
+            <div class="quantity-area">
+                <div class="quantity-label">购买数量</div>
+                <div class="quantity-control">
+                    <button class="quantity-btn minus" id="minus-btn">-</button>
+                    <input type="number" class="quantity-input" id="quantity-input" value="1" min="1" max="{{ product.stock or 10 }}">
+                    <button class="quantity-btn plus" id="plus-btn">+</button>
+                </div>
+            </div>
+            
+            <!-- 库存提示 -->
+            <div class="stock-info" style="margin-bottom: 25px; color: #00b42a;">
+                <i class="layui-icon layui-icon-check"></i>
+                库存 {{ product.stock or 999 }} 件，下单后尽快发货
+            </div>
+            
+            <!-- 按钮区 -->
+            <div class="btn-area">
+                <button class="cart-btn" id="cart-btn">
+                    <i class="layui-icon layui-icon-cart"></i> 加入购物车
+                </button>
+                <button class="buy-btn" id="buy-btn">
+                    <i class="layui-icon layui-icon-credit-card"></i> 立即购买
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 商品详情Tabs区 -->
+    <div class="product-tabs">
+        <!-- Tabs头部 -->
+        <div class="tabs-header">
+            <div class="tab-item active" data-tab="detail">商品详情</div>
+            <div class="tab-item" data-tab="spec">规格参数</div>
+            <div class="tab-item" data-tab="comment">用户评价</div>
+        </div>
+        
+        <!-- Tabs内容 -->
+        <div class="tab-content active" id="tab-detail">
+            {{ product.description|default('<p>商品详情描述：本商品采用优质材质，做工精细，品质保证，欢迎选购！</p>')|safe }}
+            <!-- 详情图片 -->
+            {% for img in product.detail_images|default(['', '', '']) %}
+            <img src="{{ img or 'https://picsum.photos/800/400?random=' ~ loop.index ~ product.id }}" 
+                 alt="{{ product.name }} 详情图{{ loop.index }}" class="detail-img">
+            {% endfor %}
+        </div>
+        
+        <div class="tab-content" id="tab-spec">
+            <table class="spec-table">
+                <tr>
+                    <td>商品名称</td>
+                    <td>{{ product.name }}</td>
+                </tr>
+                <tr>
+                    <td>商品编号</td>
+                    <td>{{ product.sku or 'JD' ~ product.id ~ '001' }}</td>
+                </tr>
+                <tr>
+                    <td>品牌</td>
+                    <td>{{ product.brand or '默认品牌' }}</td>
+                </tr>
+                <tr>
+                    <td>材质</td>
+                    <td>{{ product.material or '优质材质' }}</td>
+                </tr>
+                <tr>
+                    <td>尺寸</td>
+                    <td>{{ product.size_info or '详见规格选择' }}</td>
+                </tr>
+                <tr>
+                    <td>重量</td>
+                    <td>{{ product.weight or '约500g' }}</td>
+                </tr>
+                <tr>
+                    <td>颜色选择</td>
+                    <td>{{ product.colors or '黑色、白色、红色' }}</td>
+                </tr>
+                <tr>
+                    <td>售后保障</td>
+                    <td>7天无理由退换、正品保障、全国联保</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="tab-content" id="tab-comment">
+            {% if product.comments|default([]) %}
+                {% for comment in product.comments %}
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-user">
+                            <img src="{{ comment.avatar or 'https://picsum.photos/40/40?random=user' ~ loop.index }}" 
+                                 alt="用户头像" class="user-avatar">
+                            <span class="user-name">{{ comment.username or '匿名用户' }}</span>
+                        </div>
+                        <div class="comment-rating">
+                            {% for i in range(5) %}
+                            <i class="layui-icon layui-icon-star"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="comment-content">{{ comment.content }}</div>
+                    {% if comment.images %}
+                    <div class="comment-images">
+                        {% for img in comment.images %}
+                        <img src="{{ img or 'https://picsum.photos/100/100?random=comment' ~ loop.index }}" 
+                             alt="评价图片" class="comment-image">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="comment-time">{{ comment.time or '2024-05-01' }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 50px 0; color: #999;">
+                    <i class="layui-icon layui-icon-comment" style="font-size: 48px; margin-bottom: 15px;"></i>
+                    <p>暂无用户评价，快来成为第一个评价的人吧！</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 图片切换与Tabs逻辑 - 新增放大功能 -->
+<script>
+layui.use(['jquery', 'layer'], function() {
+    var $ = layui.$;
+    var layer = layui.layer;
+
+    // 1. 缩略图切换主图功能
+    $('.thumb-item').on('click', function() {
+        // 切换缩略图选中状态
+        $('.thumb-item').removeClass('active');
+        $(this).addClass('active');
+        // 获取当前缩略图对应的主图URL
+        var mainImgUrl = $(this).data('img');
+        // 更新主图和放大图
+        $('#main-img').attr('src', mainImgUrl);
+        $('#zoom-img').attr('src', mainImgUrl);
+    });
+
+    // 2. 主图放大功能（仅PC端生效）
+    var $mainImgContainer = $('#main-img-container');
+    var $zoomMask = $('#zoom-mask');
+    var $zoomPreview = $('#zoom-preview');
+    var $zoomImg = $('#zoom-img');
+    var $mainImg = $('#main-img');
+    var isMobile = $(window).width() <= 768; // 判断是否为移动端
+
+    // 初始化：检查是否为移动端，移动端隐藏放大功能
+    if (isMobile) {
+        $zoomMask.hide();
+        $zoomPreview.hide();
+    }
+
+    // 窗口大小变化时重新判断
+    $(window).on('resize', function() {
+        isMobile = $(window).width() <= 768;
+        if (isMobile) {
+            $zoomMask.hide();
+            $zoomPreview.hide();
+            $mainImgContainer.css('cursor', 'default');
+        } else {
+            $mainImgContainer.css('cursor', 'crosshair');
+        }
+    });
+
+    // 鼠标移入主图：显示放大遮罩和预览区
+    $mainImgContainer.on('mouseenter', function() {
+        if (isMobile) return; // 移动端不执行
+        $zoomMask.show();
+        $zoomPreview.show();
+    });
+
+    // 鼠标移出主图：隐藏放大遮罩和预览区
+    $mainImgContainer.on('mouseleave', function() {
+        if (isMobile) return;
+        $zoomMask.hide();
+        $zoomPreview.hide();
+    });
+
+    // 鼠标在主图上移动：计算放大位置
+    $mainImgContainer.on('mousemove', function(e) {
+        if (isMobile) return;
+        
+        // 获取主图容器的位置和尺寸
+        var containerOffset = $mainImgContainer.offset();
+        var containerWidth = $mainImgContainer.width();
+        var containerHeight = $mainImgContainer.height();
+        var maskWidth = $zoomMask.width();
+        var maskHeight = $zoomMask.height();
+        
+        // 计算鼠标在容器内的坐标
+        var mouseX = e.pageX - containerOffset.left;
+        var mouseY = e.pageY - containerOffset.top;
+        
+        // 限制遮罩在容器内移动
+        var maskLeft = mouseX - maskWidth / 2;
+        var maskTop = mouseY - maskHeight / 2;
+        
+        // 边界判断
+        maskLeft = Math.max(0, Math.min(maskLeft, containerWidth - maskWidth));
+        maskTop = Math.max(0, Math.min(maskTop, containerHeight - maskHeight));
+        
+        // 更新遮罩位置
+        $zoomMask.css({
+            left: maskLeft + 'px',
+            top: maskTop + 'px'
+        });
+        
+        // 计算放大图的偏移比例（放大倍数：2倍）
+        var scale = 2;
+        var imgLeft = -maskLeft * scale;
+        var imgTop = -maskTop * scale;
+        
+        // 更新放大图位置
+        $zoomImg.css({
+            left: imgLeft + 'px',
+            top: imgTop + 'px'
+        });
+    });
+
+    // 3. 规格选择
+    $('.spec-option').on('click', function() {
+        var parent = $(this).parent('.spec-options');
+        parent.find('.spec-option').removeClass('active');
+        $(this).addClass('active');
+    });
+
+    // 4. 数量增减（优化：添加边界禁用）
+    var $quantityInput = $('#quantity-input');
+    var $minusBtn = $('#minus-btn');
+    var $plusBtn = $('#plus-btn');
+    var minQuantity = parseInt($quantityInput.attr('min')) || 1;
+    var maxQuantity = parseInt($quantityInput.attr('max')) || 10;
+
+    // 更新按钮禁用状态
+    function updateQuantityBtnStatus() {
+        var currentQuantity = parseInt($quantityInput.val());
+        $minusBtn.prop('disabled', currentQuantity <= minQuantity);
+        $plusBtn.prop('disabled', currentQuantity >= maxQuantity);
+    }
+
+    // 初始化按钮状态
+    updateQuantityBtnStatus();
+
+    // 减数量
+    $minusBtn.on('click', function() {
+        var currentQuantity = parseInt($quantityInput.val());
+        if (currentQuantity > minQuantity) {
+            $quantityInput.val(currentQuantity - 1);
+            updateQuantityBtnStatus();
+        }
+    });
+
+    // 加数量
+    $plusBtn.on('click', function() {
+        var currentQuantity = parseInt($quantityInput.val());
+        if (currentQuantity < maxQuantity) {
+            $quantityInput.val(currentQuantity + 1);
+            updateQuantityBtnStatus();
+        }
+    });
+
+    // 输入框直接修改数量
+    $quantityInput.on('input', function() {
+        var currentQuantity = parseInt($(this).val()) || minQuantity;
+        // 限制输入范围
+        currentQuantity = Math.max(minQuantity, Math.min(currentQuantity, maxQuantity));
+        $(this).val(currentQuantity);
+        updateQuantityBtnStatus();
+    });
+
+    // 5. Tabs切换
+    $('.tab-item').on('click', function() {
+        var tab = $(this).data('tab');
+        // 切换Tabs头部选中状态
+        $('.tab-item').removeClass('active');
+        $(this).addClass('active');
+        // 切换Tabs内容
+        $('.tab-content').removeClass('active');
+        $('#tab-' + tab).addClass('active');
+    });
+
+    // 6. 加入购物车按钮逻辑（优化提示）
+    $('#cart-btn').on('click', function() {
+        var quantity = $quantityInput.val();
+        var selectedColor = $('.spec-options:eq(0) .active').text();
+        var selectedSize = $('.spec-options:eq(1) .active').text();
+        layer.msg(`已将 ${selectedColor} / ${selectedSize} 规格的商品（${quantity}件）加入购物车`, {
+            icon: 1,
+            time: 1500
+        });
+    });
+
+    // 7. 立即购买按钮逻辑（优化提示）
+    $('#buy-btn').on('click', function() {
+        var quantity = $quantityInput.val();
+        var selectedColor = $('.spec-options:eq(0) .active').text();
+        var selectedSize = $('.spec-options:eq(1) .active').text();
+        layer.confirm(`确定购买 ${selectedColor} / ${selectedSize} 规格的商品（${quantity}件）？`, {
+            title: '确认购买',
+            btn: ['确定', '取消']
+        }, function() {
+            layer.msg('正在跳转到结算页面...', {
+                icon: 2,
+                time: 1500
+            }, function() {
+                // 实际项目中跳转至结算页
+                // window.location.href = '/checkout?product_id={{ product.id }}&quantity=' + quantity;
+            });
+        });
+    });
+
+    // 8. 评价图片预览（新增）
+    $('.comment-image').on('click', function() {
+        var imgUrl = $(this).attr('src');
+        // 调用layer的图片预览
+        layer.photos({
+            photos: {
+                data: [{
+                    src: imgUrl
+                }]
+            },
+            shade: 0.8
+        });
+    });
+});
+</script>
+{% endblock %}

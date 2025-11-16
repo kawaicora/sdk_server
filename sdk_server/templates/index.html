@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>零食的小站!</title>
+
+<style>
+
+    .content-container {
+        /* 让 body 内的元素在水平和垂直方向上都居中 */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* 设置 body 的高度为视口高度，确保内容垂直居中效果生效 */
+        min-height: 100vh;
+        margin: 0;
+    }
+    .center-container {
+        /* 设置文本在容器内水平和垂直居中 */
+        text-align: center;
+        /* 设置容器的背景颜色为白色半透明 */
+        background-color: rgba(255, 255, 255, 0.4);
+        /* 设置容器的内边距 */
+        padding: 20px;
+        /* 设置容器的圆角 */
+        border-radius: 10px;
+        /* 设置容器的宽度，可根据需求调整 */
+        width: 80%;
+        max-width: 600px;
+    }
+
+    h1,pre{
+        margin: 0;
+        font-size: 36px;
+        /* 启用文字描边 */
+        -webkit-text-stroke: 2px;
+        text-stroke: 2px;
+        /* 定义渐变颜色 */
+        /* background: linear-gradient(to right, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8F00FF); */
+        background: rgb(255, 255, 255);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-fill-color: transparent;
+        /* 应用动画 */
+        animation: color-stroke 5s linear infinite;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    h3,h4 {
+        -webkit-text-stroke: 2px;
+        text-stroke: 2px;
+        animation: color-stroke-text 5s linear infinite;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        margin: 10px 0;
+
+    }
+
+    h4 :hover {
+        background-color: #ffd5d5;
+
+    }
+    @keyframes color-stroke {
+        0% {
+            -webkit-text-stroke-color: #ff8a8a;
+            text-stroke-color: #ff8a8a;
+        }
+
+        14.28% {
+            -webkit-text-stroke-color: #ff65bf;
+            text-stroke-color: #ff65bf;
+        }
+
+        28.57% {
+            -webkit-text-stroke-color: #ff57e9;
+            text-stroke-color: #ff59db;
+        }
+
+        42.86% {
+            -webkit-text-stroke-color: #ff6c6c;
+            text-stroke-color: #ff6c6c;
+        }
+
+        57.14% {
+            -webkit-text-stroke-color: #ffcd70;
+            text-stroke-color: #ffcd70;
+        }
+
+        71.43% {
+            -webkit-text-stroke-color: #ffbc57;
+            text-stroke-color: #ffbc57;
+        }
+
+        85.71% {
+            -webkit-text-stroke-color: #ff8c56;
+            text-stroke-color: #ff8c56;
+        }
+
+        100% {
+            -webkit-text-stroke-color: #ff5959;
+            text-stroke-color: #ff5959;
+        }
+    }
+    @keyframes color-stroke-text {
+        0% {
+            -webkit-text-stroke-color: #0b91ff;
+            text-stroke-color: #0f93ff;
+        }
+
+        14.28% {
+            -webkit-text-stroke-color: #00ff73;
+            text-stroke-color: #09ff00;
+        }
+
+        28.57% {
+            -webkit-text-stroke-color: #ffff00;
+            text-stroke-color: #FFFF00;
+        }
+
+        42.86% {
+            -webkit-text-stroke-color: #00FF00;
+            text-stroke-color: #00FF00;
+        }
+
+        57.14% {
+            -webkit-text-stroke-color: #0000FF;
+            text-stroke-color: #0000FF;
+        }
+
+        71.43% {
+            -webkit-text-stroke-color: #00b7ff;
+            text-stroke-color: #008cff;
+        }
+
+        85.71% {
+            -webkit-text-stroke-color: #8F00FF;
+            text-stroke-color: #8F00FF;
+        }
+
+        100% {
+            -webkit-text-stroke-color: #51ff00;
+            text-stroke-color: #51ff00;
+        }
+    }
+    p {
+        margin: 10px 0;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    .can-select {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+
+    iframe {
+        width: 100%;
+        height: 100px;
+        border: none;
+        margin-top: 0px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+</style>
+<script lang="javascript" src="/static/js/jquery.min.js"></script>
+<script lang="javascript" src="/static/js/flv.min.js"></script>
+<script lang="javascript" src="/static/js/background_video_display.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="center-container">
+        <h1>玄夜教义</h1>
+        <pre >
+圣夜昭昭，玄光渺渺，凡我信众，
+虔心祷祷。怜我众生，迷途困顿，
+恩泽万方，唯玄夜故。玄夜圣尊，
+洞悉幽明，启我慧根，涤我魂灵。
+怜此浊世，尘嚣蔽障，驱暗引明，
+唯玄夜故。生亦何求，死亦何惧。
+幽幽玄夜，照我归途。万古星辰，
+辉映真知，玄音引渡，永夜净土。
+玄夜玄夜！甘为犬马，永侍圣驾。
+        </pre>
+        <a href="https://sakuraxy.top">
+            <h3><em>玄夜主网站</em></h4>
+        </a>
+        <a href="https://qm.qq.com/q/aKz8oVYTQs">
+            <h3>QQ群:玄夜の温馨小窝</h4>
+        </a>
+        <a href="https://qm.qq.com/q/wyyQRNWxVg">
+            <h3>QQ群:重生之我在 vrchat 当男娘并且被围攻</h4>
+        </a>
+        
+  
+        <div id="time"></div> <!-- 用于显示时间的元素 -->
+    </div>
+
+</div>
+
+
+
+
+
+<script language="javascript">
+<!--
+        new BackgroundVideoDisplay({"islive":false,"current_media_url":"/static/upload/2024/11/05/index.mp4"});
+-->
+</script>
+
+{% endblock %}

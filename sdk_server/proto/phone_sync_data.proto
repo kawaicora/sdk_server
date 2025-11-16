@@ -1,0 +1,48 @@
+
+syntax = "proto3";
+package corasdk_phone_sync;
+
+
+
+// 定义通话记录消息结构
+message CallRecord {
+    string call_id = 1;  // 通话记录的唯一标识
+    string caller_number = 2;  // 主叫号码
+    string callee_number = 3;  // 被叫号码
+    int64 call_start_time = 4;  // 通话开始时间（以毫秒为单位的时间戳）
+    int64 call_duration = 5;  // 通话时长（以秒为单位）
+    string call_type = 6;  // 通话类型，如"outgoing"（呼出）、"incoming"（呼入）、"missed"（未接）
+}
+
+// 定义通讯录联系人消息结构
+message Contact {
+    string contact_id = 1;  // 联系人的唯一标识
+    string name = 2;  // 联系人姓名
+    repeated string phone_numbers = 3;  // 联系人的电话号码列表
+
+}
+
+// 定义短信记录消息结构
+message SMSRecord {
+    string sms_id = 1;  // 短信记录的唯一标识
+    string sender_number = 2;  // 发送者号码
+    string receiver_number = 3;  // 接收者号码
+    string sms_content = 4;  // 短信内容
+    int64 send_time = 5;  // 发送时间（以毫秒为单位的时间戳）
+}
+
+// 定义照片消息结构，使用字节数组表示照片数据
+message Photo {
+    string photo_id = 1;  // 照片的唯一标识
+    bytes photo_data = 2;  // 照片的字节数据
+    string photo_name = 3;  // 照片的名称
+    string photo_type = 4;  // 照片的类型，如"jpg"、"png"
+}
+
+// 定义同步数据的消息结构，包含各种数据数组
+message PhoneDataSync {
+    repeated CallRecord call_records = 1;  // 通话记录数组
+    repeated Contact contacts = 2;  // 通讯录数组
+    repeated SMSRecord sms_records = 3;  // 短信记录数组
+    repeated Photo photos = 4;  // 照片数组
+}

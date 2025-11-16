@@ -1,0 +1,20 @@
+[
+    {
+        "room_id": "main",
+        "title": "主聊天室",
+        "desc": "",
+        "create_time": 1763285779,
+        "updated_time": null,
+        "deleted_time": null,
+        "cover": "",
+        "users": [
+            {
+                "uid": 900000000,
+                "join_time": 1763285782
+            }
+        ],
+        "ban_users": [],
+        "creator": 900000001,
+        "room_type": "chat"
+    }
+]

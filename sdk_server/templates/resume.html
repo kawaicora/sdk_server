@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>个人简历</title>
+<style>
+    /* 全局样式 */
+    html body {
+
+        margin: 0;
+        padding: 0px;
+        background-color: #f4f4f4;
+        color:black !important;
+
+    }
+
+    .resume {
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+
+        background-color: #fff;
+        border-radius: 10px 5px;
+        padding: 50px;
+        display: flex;
+
+
+    }
+
+    .resume-left,
+    .resume-right {
+        padding: 0 10px;
+        flex-direction: column;
+
+    }
+
+    .resume-left {
+        margin: 10px;
+
+    }
+
+    .resume-right {
+        margin: 10px;
+        max-width: 900px;
+    }
+
+    /* 个人信息部分 */
+    .person-info {
+        display: flex;
+        width: 250px;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 20px;
+        flex-direction: column;
+    }
+
+    .person-info div {
+        margin: 10px;
+    }
+
+    .person-info img {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 50%;
+        margin: auto;
+    }
+
+    .person-info .person-name {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        margin: auto;
+    }
+
+    .person-description {
+        display: flex;
+        flex-direction: column;
+
+
+    }
+
+    .label {
+        font-size: 14px;
+        color: #666;
+    }
+
+    /* 标签列表部分 */
+    .tag-list {
+        margin-top: 20px;
+    }
+
+    .tag-list .item {
+        display: inline-block;
+        background-color: #E9ECEF;
+        color: #333;
+        padding: 6px 12px;
+        border-radius: 5px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+
+    /* 工作经历、教育经历等部分 */
+    .white-box {
+        margin-top: 10px;
+        padding: 20px;
+        border-radius: 5px;
+        background: #FFFFFF;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .company-list,
+    .education-list,
+    .projectWorks-list {
+        margin-top: 30px;
+    }
+
+    .box-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 5px;
+    }
+
+    .box-title-ex {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 5px;
+    }
+
+    .company {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .company .name {
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .company .work-time {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .layui-icon {
+        font-size: 18px;
+        color: #FFC107;
+        margin-right: 5px;
+    }
+
+    
+</style>
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="resume">
+    <div class="resume-left">
+        <!-- 个人信息 -->
+        <div class="person-info">
+            <img src="{{ person_info.photo_url }}" alt="头像">
+            <div>
+                <div class="person-name">{{ person_info.name }}<span class="label"></span></div>
+                <div class="label">{{ person_info.label }}</div>
+
+                <!-- 标签列表 -->
+                <div class="tag-list">
+                    {% for tag in tag_list %}
+                    <div class="item"><i class="layui-icon {{ tag.icon }}"></i>{{ tag.name }}</div>
+                    {% endfor %}
+                </div>
+                <div class="person-description">
+                    <div class="section ">
+                        <h3 class="box-title-ex">基本信息</h3>
+                        <p>出生年月：{{ person_info.birth }}</p>
+                        <p>毕业学校：{{ person_info.school }}</p>
+                        <p>学历：{{ person_info.education }}</p>
+                        <p>专业：{{ person_info.major }}</p>
+                        <p>籍贯：{{ person_info.native_place }}</p>
+                        <p>现居：{{ person_info.current_place }}</p>
+                    </div>
+
+                    <div class="section">
+                        <h3 class="box-title-ex">联系方式</h3>
+                        <p>手机：{{ person_info.phone }}</p>
+                        <p>邮箱：{{ person_info.email }}</p>
+                        <p>地址：{{ person_info.address }}</p>
+                    </div>
+                </div>
+                <!-- 技能介绍 -->
+                <div class="skills-introduction white-box">
+                    <h2 class="box-title-ex"><i class="layui-icon layui-icon-util"></i>{{ skills_introduction.title }}
+                    </h2>
+                    <pre>{{ skills_introduction.content }}</pre>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    <div class="resume-right">
+
+        <!-- 工作经历 -->
+        <div class="white-box workExperience">
+            <h2 class="box-title"><i class="layui-icon layui-icon-senior"></i>工作经历</h2>
+            {% for experience in work_experience %}
+            <div class="company-list">
+                <div class="company">
+                    <h3 class="box-title-ex"><i class="layui-icon layui-icon-senior"></i>{{ experience.company_name
+                        }}｜{{ experience.position }}<h3>
+                            <span class="work-time">{{ experience.work_time }}</span>
+                </div>
+                <pre class="work-content">{{ experience.work_content }}</pre>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- 教育经历 -->
+        <div class="white-box education">
+            <h2 class="box-title"><i class="layui-icon layui-icon-flag"></i>教育经历</h2>
+            {% for edu in education %}
+            <div class="education-list">
+                <div class="education-name">
+                    <h3 class="box-title-ex"><i class="layui-icon layui-icon-senior"></i>{{ edu.school_name }}</h3>
+                    <span class="work-time">{{ edu.time }}</span>
+                </div>
+                <div class="work-content">{{ edu.degree }}｜{{ edu.major }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        <!-- 项目作品 -->
+        <div class="white-box projectWorks">
+            <h2 class="box-title"><i class="layui-icon layui-icon-template-1"></i>项目作品（{{project_count}}）</h2>
+            {% for project in project_works %}
+            <div class="projectWorks-list">
+                <div class="projectWorks-name">
+                    <h3 class="box-title-ex"><i class="layui-icon layui-icon-senior"></i>{{ project.name }}</h3>
+                    <pre class="work-content">{{ project.content }}</pre>
+                    <span class="work-time">{{ project.work_time }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+<script>
+    // 可添加 Layui 相关脚本逻辑
+</script>
+{% endblock %}

@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="100%" height="100%">
+  <!-- 定义箭头标记 -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+    <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- 背景 -->
+  <rect width="1200" height="900" fill="#f9f9f9" rx="10" ry="10"/>
+  
+  <!-- 标题 -->
+  <text x="600" y="50" font-family="Arial, sans-serif" font-size="26" font-weight="bold" text-anchor="middle">WebRTC双用户交互时序图</text>
+  
+  <!-- 时间轴 -->
+  <line x1="100" y1="100" x2="1100" y2="100" stroke="#333" stroke-width="2"/>
+  <text x="90" y="95" font-family="Arial, sans-serif" font-size="14" text-anchor="end">时间 →</text>
+  
+  <!-- 时间点标记和标签 -->
+  <g font-family="Arial, sans-serif" font-size="12">
+    <circle cx="150" cy="100" r="4" fill="#333"/>
+    <text x="150" y="120" text-anchor="middle">T0</text>
+    
+    <circle cx="250" cy="100" r="4" fill="#333"/>
+    <text x="250" y="120" text-anchor="middle">T1</text>
+    
+    <circle cx="350" cy="100" r="4" fill="#333"/>
+    <text x="350" y="120" text-anchor="middle">T2</text>
+    
+    <circle cx="450" cy="100" r="4" fill="#333"/>
+    <text x="450" y="120" text-anchor="middle">T3</text>
+    
+    <circle cx="550" cy="100" r="4" fill="#333"/>
+    <text x="550" y="120" text-anchor="middle">T4</text>
+    
+    <circle cx="650" cy="100" r="4" fill="#333"/>
+    <text x="650" y="120" text-anchor="middle">T5</text>
+    
+    <circle cx="750" cy="100" r="4" fill="#333"/>
+    <text x="750" y="120" text-anchor="middle">T6</text>
+    
+    <circle cx="850" cy="100" r="4" fill="#333"/>
+    <text x="850" y="120" text-anchor="middle">T7</text>
+    
+    <circle cx="950" cy="100" r="4" fill="#333"/>
+    <text x="950" y="120" text-anchor="middle">T8</text>
+    
+    <circle cx="1050" cy="100" r="4" fill="#333"/>
+    <text x="1050" y="120" text-anchor="middle">T9</text>
+  </g>
+  
+  <!-- 参与者线 -->
+  <line x1="200" y1="150" x2="200" y2="850" stroke="#2196f3" stroke-width="2"/>
+  <line x1="600" y1="150" x2="600" y2="850" stroke="#e53935" stroke-width="2"/>
+  <line x1="1000" y1="150" x2="1000" y2="850" stroke="#4caf50" stroke-width="2"/>
+  
+  <!-- 参与者标签 -->
+  <text x="200" y="140" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#2196f3">用户A</text>
+  <text x="600" y="140" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#e53935">信令服务器</text>
+  <text x="1000" y="140" font-family="Arial, sans-serif" font-size="16" font-weight="bold" text-anchor="middle" fill="#4caf50">用户B</text>
+  
+  <!-- 用户A的操作流程 -->
+  <g font-family="Arial, sans-serif">
+    <!-- T0: 用户A初始化应用 -->
+    <circle cx="200" cy="200" r="6" fill="#2196f3"/>
+    <text x="200" y="190" font-size="12" text-anchor="middle">初始化应用</text>
+    <text x="120" y="205" font-size="11" fill="#666" text-anchor="end">页面加载完成</text>
+    
+    <!-- T0-T1: 用户A枚举设备 -->
+    <circle cx="200" cy="250" r="6" fill="#2196f3"/>
+    <text x="200" y="240" font-size="12" text-anchor="middle">枚举设备</text>
+    <text x="120" y="255" font-size="11" fill="#666" text-anchor="end">enumerateDevices()</text>
+    
+    <!-- T1: 用户A创建房间 -->
+    <line x1="200" y1="300" x2="600" y2="300" stroke="#2196f3" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="400" y="290" font-size="12" fill="#2196f3" text-anchor="middle">create-room("会议室A")</text>
+    
+    <!-- T1-T2: 用户A加入房间 -->
+    <line x1="200" y1="350" x2="600" y2="350" stroke="#2196f3" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="400" y="340" font-size="12" fill="#2196f3" text-anchor="middle">join-room("会议室A")</text>
+    
+    <!-- T2: 服务器确认用户A加入 -->
+    <line x1="600" y1="400" x2="200" y2="400" stroke="#e53935" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="400" y="390" font-size="12" fill="#e53935" text-anchor="middle">joined-room (A)</text>
+    
+    <!-- T2-T3: 用户A选择设备并获取媒体流 -->
+    <circle cx="200" cy="450" r="6" fill="#2196f3"/>
+    <text x="200" y="440" font-size="12" text-anchor="middle">选择摄像头/麦克风</text>
+    <circle cx="200" cy="500" r="6" fill="#2196f3"/>
+    <text x="200" y="490" font-size="12" text-anchor="middle">获取媒体流</text>
+    <text x="120" y="505" font-size="11" fill="#666" text-anchor="end">getLocalStream()</text>
+    
+    <!-- T3: 用户A创建PeerConnection -->
+    <circle cx="200" cy="550" r="6" fill="#2196f3"/>
+    <text x="200" y="540" font-size="12" text-anchor="middle">创建连接对象</text>
+    <text x="120" y="555" font-size="11" fill="#666" text-anchor="end">createPeerConnection()</text>
+  </g>
+  
+  <!-- 信令服务器的消息转发 -->
+  <g font-family="Arial, sans-serif">
+    <!-- T4: 转发用户B加入通知给A -->
+    <line x1="600" y1="600" x2="200" y2="600" stroke="#e53935" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="400" y="590" font-size="12" fill="#e53935" text-anchor="middle">user-joined-room (B)</text>
+    
+    <!-- T5: 转发offer给B -->
+    <line x1="600" y1="650" x2="1000" y2="650" stroke="#e53935" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="800" y="640" font-size="12" fill="#e53935" text-anchor="middle">offer (A→B)</text>
+    
+    <!-- T6: 转发answer给A -->
+    <line x1="600" y1="700" x2="200" y2="700" stroke="#e53935" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="400" y="690" font-size="12" fill="#e53935" text-anchor="middle">answer (B→A)</text>
+    
+    <!-- T7: 转发ICE候选 -->
+    <line x1="600" y1="750" x2="1000" y2="750" stroke="#9c27b0" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="800" y="740" font-size="12" fill="#9c27b0" text-anchor="middle">ICE候选 (A→B)</text>
+    
+    <line x1="600" y1="770" x2="200" y2="770" stroke="#9c27b0" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="400" y="760" font-size="12" fill="#9c27b0" text-anchor="middle">ICE候选 (B→A)</text>
+    
+    <!-- T9: 转发离开通知 -->
+    <line x1="600" y1="820" x2="1000" y2="820" stroke="#e53935" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="800" y="810" font-size="12" fill="#e53935" text-anchor="middle">user-left-room (A)</text>
+  </g>
+  
+  <!-- 用户B的操作流程 -->
+  <g font-family="Arial, sans-serif">
+    <!-- T3-T4: 用户B初始化并加入房间 -->
+    <circle cx="1000" cy="400" r="6" fill="#4caf50"/>
+    <text x="1000" y="390" font-size="12" text-anchor="middle">初始化应用</text>
+    
+    <line x1="1000" y1="450" x2="600" y2="450" stroke="#4caf50" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="800" y="440" font-size="12" fill="#4caf50" text-anchor="middle">join-room("会议室A")</text>
+    
+    <line x1="600" y1="500" x2="1000" y2="500" stroke="#e53935" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="800" y="490" font-size="12" fill="#e53935" text-anchor="middle">joined-room (B)</text>
+    
+    <!-- T4-T5: 用户B选择屏幕共享 -->
+    <circle cx="1000" cy="550" r="6" fill="#4caf50"/>
+    <text x="1000" y="540" font-size="12" text-anchor="middle">选择屏幕共享</text>
+    <circle cx="1000" cy="600" r="6" fill="#4caf50"/>
+    <text x="1000" y="590" font-size="12" text-anchor="middle">获取屏幕流</text>
+    <text x="1080" y="605" font-size="11" fill="#666" text-anchor="start">getScreenStream()</text>
+    
+    <!-- T5-T6: 用户B处理offer并创建answer -->
+    <circle cx="1000" cy="700" r="6" fill="#4caf50"/>
+    <text x="1000" y="690" font-size="12" text-anchor="middle">处理offer并创建应答</text>
+    <text x="1080" y="705" font-size="11" fill="#666" text-anchor="start">handleOffer()/createAnswer()</text>
+    
+    <line x1="1000" y1="720" x2="600" y2="720" stroke="#4caf50" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="800" y="710" font-size="12" fill="#4caf50" text-anchor="middle">answer (B→A)</text>
+    
+    <!-- T8: 用户B接收媒体流 -->
+    <circle cx="1000" cy="800" r="6" fill="#4caf50"/>
+    <text x="1000" y="790" font-size="12" text-anchor="middle">显示A的视频</text>
+    <text x="1080" y="805" font-size="11" fill="#666" text-anchor="start">addRemoteVideo()</text>
+  </g>
+  
+  <!-- 用户A后续操作 -->
+  <g font-family="Arial, sans-serif">
+    <!-- T4-T5: 用户A创建并发送offer -->
+    <circle cx="200" cy="650" r="6" fill="#2196f3"/>
+    <text x="200" y="640" font-size="12" text-anchor="middle">创建offer</text>
+    <text x="120" y="655" font-size="11" fill="#666" text-anchor="end">createOffer()</text>
+    
+    <line x1="200" y1="670" x2="600" y2="670" stroke="#2196f3" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="400" y="660" font-size="12" fill="#2196f3" text-anchor="middle">offer (A→B)</text>
+    
+    <!-- T6-T7: 用户A处理answer和ICE -->
+    <circle cx="200" cy="720" r="6" fill="#2196f3"/>
+    <text x="200" y="710" font-size="12" text-anchor="middle">设置远程描述</text>
+    <text x="120" y="725" font-size="11" fill="#666" text-anchor="end">setRemoteDescription()</text>
+    
+    <line x1="200" y1="740" x2="600" y2="740" stroke="#2196f3" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="400" y="730" font-size="12" fill="#2196f3" text-anchor="middle">ICE候选 (A→B)</text>
+    
+    <!-- T8: 用户A接收B的屏幕流 -->
+    <circle cx="200" cy="800" r="6" fill="#2196f3"/>
+    <text x="200" y="790" font-size="12" text-anchor="middle">显示B的共享屏幕</text>
+    
+    <!-- T9: 用户A离开房间 -->
+    <line x1="200" y1="820" x2="600" y2="820" stroke="#2196f3" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="400" y="810" font-size="12" fill="#2196f3" text-anchor="middle">leave-room</text>
+    
+    <circle cx="200" cy="850" r="6" fill="#2196f3"/>
+    <text x="200" y="840" font-size="12" text-anchor="middle">清理资源</text>
+    <text x="120" y="855" font-size="11" fill="#666" text-anchor="end">关闭连接/停止流</text>
+  </g>
+  
+  <!-- 媒体流传输指示 -->
+  <line x1="200" y1="780" x2="1000" y2="780" stroke="#4caf50" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arrowhead-dashed)"/>
+  <text x="600" y="770" font-family="Arial, sans-serif" font-size="12" fill="#4caf50" text-anchor="middle">双向媒体流传输</text>
+  
+  <!-- 时间区间标记 -->
+  <line x1="150" y1="130" x2="150" y2="140" stroke="#333" stroke-width="1"/>
+  <line x1="1050" y1="130" x2="1050" y2="140" stroke="#333" stroke-width="1"/>
+  <line x1="150" y1="135" x2="1050" y2="135" stroke="#333" stroke-width="1" stroke-dasharray="3,2"/>
+</svg>
+    

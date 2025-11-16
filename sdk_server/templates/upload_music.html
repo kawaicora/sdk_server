@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Upload</title>
+</head>
+<body>
+    <h1>Upload a Music File</h1>
+    <!-- 上传表单 -->
+    <form action="/api/upload_music" method="POST" enctype="multipart/form-data">
+        <label for="file">Choose a music file:</label>
+        <input type="file" id="file" name="file" accept=".mp3,.wav,.ogg,.flac">
+        <br><br>
+        <button type="submit">Upload</button>
+    </form>
+
+    {% if filename %}
+        <h3>Uploaded file: {{ filename }}</h3>
+        <p><strong>Title:</strong> {{ title }}</p>
+        <p><strong>Artist:</strong> {{ artist }}</p>
+        
+        {% if album_art %}
+            <h4>Album Cover:</h4>
+            <img src="data:image/png;base64,{{ album_art }}" alt="Album Art" style="max-width: 300px;">
+        {% else %}
+            <p>No album cover found.</p>
+        {% endif %}
+    {% endif %}
+</body>
+</html>
