@@ -3,18 +3,40 @@
         "room_id": "main",
         "title": "主聊天室",
         "desc": "",
-        "create_time": 1763285779,
+        "create_time": 1763387204,
+        "updated_time": null,
+        "deleted_time": null,
+        "cover": "",
+        "users": [
+            {
+                "uid": 1,
+                "join_time": 1763387391
+            }
+        ],
+        "ban_users": [],
+        "creator": 1,
+        "room_type": "chat"
+    },
+    {
+        "room_id": "room_s_1763387482526",
+        "title": "视频连线",
+        "desc": "",
+        "create_time": 1763387480,
         "updated_time": null,
         "deleted_time": null,
         "cover": "",
         "users": [
             {
                 "uid": 900000000,
-                "join_time": 1763285782
+                "join_time": 1763387481
+            },
+            {
+                "uid": 900000001,
+                "join_time": 1763387525
             }
         ],
         "ban_users": [],
-        "creator": 900000001,
-        "room_type": "chat"
+        "creator": 900000000,
+        "room_type": "webrtc"
     }
 ]

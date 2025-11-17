@@ -113,7 +113,7 @@ def handle_chat_message(data):
     message_type = data.get('type')
 
     if not c_user:
-        if (message_type != 'text'):
+        if (message_type != 'text' and message_type != 'html'):
             if message_text[0] == '/':
                 file_path = message_text[1:]
             if os.path.exists(file_path):
@@ -130,9 +130,18 @@ def handle_chat_message(data):
     
     current_app.logger.info(f"收到消息 - 用户名: {sender_username}, UID: {sender_uid}, SID: {sid}, 房间: {room}, 消息: {message_text}")
     
-    result = message_text.replace(" ", "")
-    if result.startswith("<") and result.endswith(">"):
-        current_app.logger.debug("消息为HTML代码")
+    result:str = message_text
+    if result.startswith(" "):
+        emit("error",{"event":"chat-message","msg":"消息第一个字符不能是空格"})
+        current_app.logger.debug("消息第一个字符不能是空格")
+        return
+    if result.endswith(" "):
+        emit("error",{"event":"chat-message","msg":"消息最后一个字符不能是空格"})
+        current_app.logger.debug("消息最后一个字符不能是空格")
+        return
+    if "script" in result and ">" in result and "<" in result and "/" in result:
+        emit("error",{"event":"chat-message","msg":"消息不能为<script> 相关的HTML代码"})
+        current_app.logger.debug("消息不能为HTML Javascript代码 跳过")
         return
 
     # 保存消息到数据库
