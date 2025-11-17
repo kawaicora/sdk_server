@@ -107,7 +107,12 @@ class NotificationManager {
         }
         return NotificationManager.instance;
     }
-    
+    async isMobile(){
+        return await navigator.userAgentData.mobile
+    }
+    getPlatform(){
+        return navigator.userAgentData.platform
+    }
     checkPermission() {
         if (!('Notification' in window)) {
             this.permission = 'unsupported';

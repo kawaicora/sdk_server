@@ -10,7 +10,7 @@
         "users": [
             {
                 "uid": 1,
-                "join_time": 1763387391
+                "join_time": 1763389263
             }
         ],
         "ban_users": [],
@@ -28,11 +28,7 @@
         "users": [
             {
                 "uid": 900000000,
-                "join_time": 1763387481
-            },
-            {
-                "uid": 900000001,
-                "join_time": 1763387525
+                "join_time": 1763389888
             }
         ],
         "ban_users": [],
