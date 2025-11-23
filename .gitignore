@@ -4,7 +4,7 @@
 __pycache__/
 /.history/
 /sdk_server/data/rooms.json
-/sdk_server/data/user_sessions.js
+/sdk_server/data/user_sessions.json
 /sdk_server/static/upload/*
 !/sdk_server/static/upload/2024/11/05/index.mp4
 /sdk_server/data/resume_default.yaml
