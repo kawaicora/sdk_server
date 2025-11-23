@@ -4,7 +4,7 @@ import asyncio
 import os
 import string
 import time
-from typing import Any, TypeVar, Coroutine
+from typing import Any, Optional, Type, TypeVar, Coroutine
 import base64
 import secrets
 from datetime import datetime
@@ -27,7 +27,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
-
+from app.utils.LoggerManager import logger
 from jinja2 import Environment, FileSystemLoader
 import rarfile
 import zipfile
@@ -770,11 +770,10 @@ class CommonUtils:
 
         for i in range(0, len(encrypted_data), chunk_size):
             chunk = encrypted_data[i:i + chunk_size]
-
-            if padding_scheme == "OAEP":
+            if padding_scheme.upper() == "OAEP":
                 decrypted_chunk = private_key.decrypt(
-                    chunk,
-                    padding.OAEP(
+                    ciphertext=chunk,
+                    padding=padding.OAEP(
                         mgf=padding.MGF1(algorithm=hashes.SHA256()),
                         algorithm=hashes.SHA256(),
                         label=None
@@ -789,6 +788,89 @@ class CommonUtils:
             decrypted_chunks.append(decrypted_chunk)
 
         return b''.join(decrypted_chunks)
+    
+
+    @staticmethod
+    # RSA 加密，支持选择填充方式，所有关键参数可配置（含默认值）
+    def rsa_encrypt(
+        data: bytes,
+        public_key,
+        padding_scheme: str = "PKCS1v15",
+        # OAEP 专属可配置参数（默认值沿用原有逻辑）
+        oaep_hash_alg: Type[hashes.HashAlgorithm] = hashes.SHA256,
+        oaep_mgf: Type[padding.MGF] = padding.MGF1,
+        oaep_mgf_hash_alg: Type[hashes.HashAlgorithm] = hashes.SHA256,
+        oaep_label: Optional[bytes] = None
+    ):
+        """
+        RSA 单段加密（无分段逻辑）
+        :param data: 待加密字节数据（需满足对应填充的长度限制）
+        :param public_key: 公钥对象（cryptography 库的 RSAPublicKey 类型）
+        :param padding_scheme: 填充方案，可选 "PKCS1v15" 或 "OAEP"（默认 PKCS1v15）
+        :param oaep_hash_alg: OAEP 填充的哈希算法（默认 SHA256），需传入 hashes 类的算法（如 hashes.SHA1）
+        :param oaep_mgf: OAEP 掩码生成函数（默认 MGF1），需传入 padding 类的 MGF（如 padding.MGF1）
+        :param oaep_mgf_hash_alg: MGF 函数的哈希算法（默认 SHA256），需传入 hashes 类的算法
+        :param oaep_label: OAEP 可选标签（默认 None，加密端和解密端需一致）
+        :return: 加密后的字节数据
+        """
+        if padding_scheme.upper() == "OAEP":
+            # OAEP 填充（参数可配置）
+            return public_key.encrypt(
+                data,
+                padding.OAEP(
+                    mgf=oaep_mgf(algorithm=oaep_mgf_hash_alg()),
+                    algorithm=oaep_hash_alg(),
+                    label=oaep_label
+                )
+            )
+        else:
+            # PKCS1v15 填充（默认）
+            return public_key.encrypt(
+                data,
+                padding.PKCS1v15()
+            )
+
+    @staticmethod
+    # RSA 解密，支持选择填充方式，所有关键参数可配置（含默认值）
+    def rsa_decrypt(
+        encrypted_data: bytes,
+        private_key,
+        padding_scheme: str = "PKCS1v15",
+        # OAEP 专属可配置参数（默认值沿用原有逻辑，需与加密端一致）
+        oaep_hash_alg: Type[hashes.HashAlgorithm] = hashes.SHA256,
+        oaep_mgf: Type[padding.MGF] = padding.MGF1,
+        oaep_mgf_hash_alg: Type[hashes.HashAlgorithm] = hashes.SHA256,
+        oaep_label: Optional[bytes] = None
+    ):
+        """
+        RSA 单段解密（无分段逻辑）
+        :param encrypted_data: 加密后的字节数据（单段，长度=密钥字节数）
+        :param private_key: 私钥对象（cryptography 库的 RSAPrivateKey 类型）
+        :param padding_scheme: 填充方案，可选 "PKCS1v15" 或 "OAEP"（默认 PKCS1v15）
+        :param oaep_hash_alg: OAEP 填充的哈希算法（默认 SHA256），需与加密端一致
+        :param oaep_mgf: OAEP 掩码生成函数（默认 MGF1），需与加密端一致
+        :param oaep_mgf_hash_alg: MGF 函数的哈希算法（默认 SHA256），需与加密端一致
+        :param oaep_label: OAEP 可选标签（默认 None），需与加密端一致
+        :return: 解密后的原始字节数据
+        """
+        if padding_scheme.upper() == "OAEP":
+            # OAEP 填充解密（参数可配置）
+            return private_key.decrypt(
+                ciphertext=encrypted_data,
+                padding=padding.OAEP(
+                    mgf=oaep_mgf(algorithm=oaep_mgf_hash_alg()),
+                    algorithm=oaep_hash_alg(),
+                    label=oaep_label
+                )
+            )
+        else:
+            # PKCS1v15 填充解密（默认）
+            return private_key.decrypt(
+                encrypted_data,
+                padding.PKCS1v15()
+            )
+
+
 
     @staticmethod
     # 对数据进行哈希计算

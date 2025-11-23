@@ -215,7 +215,35 @@
 <script language="javascript">
 <!--
         new BackgroundVideoDisplay({"islive":false,"current_media_url":"/static/upload/2024/11/05/index.mp4"});
+
 -->
 </script>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const button = document.getElementById('iframe-chat-button');
+        const chat_window = document.getElementById('iframe-chat-window');
+        const iframe_chat = document.getElementById('chat_iframe');
+        
+        // 发送消息给iframe（统一封装）
+        function sendMessageToIframe(data) {
+            if (!iframe_chat.contentWindow || !iframe_target_origin) {
+                console.error('Iframe聊天插件：iframe未就绪或目标域名无效');
+                return;
+            }
+            iframe_chat.contentWindow.postMessage(data, iframe_target_origin);
+        }
+        
+
+
+        iframe_chat.onload = function() {
+            // 其他失败：发送错误信息
+            sendMessageToIframe({
+                type: 'REQUEST_LOGIN_TOKEN',
+                message: 'OK'
+            });
+        };
+        
+    });
+</script>
 {% endblock %}

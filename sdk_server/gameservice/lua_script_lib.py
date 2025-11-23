@@ -1,5 +1,5 @@
 import inspect
-import logging
+from app.utils.LoggerManager import logger
 import os
 import threading
 import time
@@ -8,12 +8,9 @@ from lupa import LuaRuntime
 
 class ScriptLib:
 
-    def __init__(self,lua_runtime:LuaRuntime,lua_path,logger = None):
-        if logger == None:
-            logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-            self.logger = logging
-        else:    
-            self.logger = logger
+    def __init__(self,lua_runtime:LuaRuntime,lua_path):
+
+        self.logger = logger
         from gameservice.gameserver import GameServer
         self.telegram_bot = GameServer.inst().telegram_bot
         self.lua:LuaRuntime = lua_runtime

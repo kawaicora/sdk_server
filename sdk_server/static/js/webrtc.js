@@ -636,7 +636,7 @@ function on_show_select_device_click(){
     }
 }
 // 初始化
-async function init() {
+async function WebrtcInit() {
     await enumerateDevices();
 
     // 统一用jQuery绑定事件（不修改DOM id/class）
@@ -892,7 +892,7 @@ function handleVisibilityChange() {
 
 // 页面加载完成后初始化
 $(document).ready(() => {  // 统一用jQuery ready
-    init();
+    WebrtcInit();
     requestWakeLock();
     $(document).on('click', () => {
         webrtc_logger.info("document click");

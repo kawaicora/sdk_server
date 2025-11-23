@@ -4,7 +4,7 @@ from app import app, socketio,logger
 
 import warnings
 from app.utils.LoggerManager import logger
-import logging
+
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="google_crc32c")
 
 

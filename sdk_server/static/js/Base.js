@@ -10,35 +10,78 @@ class Base{
         return Base.instance;
     }
 
-    GetUserInfo(){
+    // GetUserInfo(){
        
-        $.ajax({
-            url: "/api/v3/get_user_info",
-            type: "GET",
-            contentType: "application/json",
-            success: function(response) {
+    //     $.ajax({
+    //         url: "/api/v3/get_user_info",
+    //         type: "GET",
+    //         contentType: "application/json",
+    //         success: function(response) {
                 
-                if(response.retcode != 0){
-                    $(".nav-user-info").addClass("hidden");
-                    $(".nav-user-login-btn").removeClass("hidden")
-                    Base.inst().BaseLogger.debug(`登陆失败 ${JSON.stringify( response, null, 2)}`  );
-                    return;
-                }
-                Base.inst().BaseLogger.debug(`登陆成功 ${JSON.stringify( response, null, 2)}`  );
-                $(".nav-user-login-btn").addClass("hidden");
-                $(".nav-user-info").removeClass("hidden");
-                $(".nav-username").html(`<a >${response.data.display_name}</a>`);
-                $(".nav-user-info a img")[0].src = response.data.avatar;
+    //             if(response.retcode != 0){
+    //                 $(".nav-user-info").addClass("hidden");
+    //                 $(".nav-user-login-btn").removeClass("hidden")
+    //                 Base.inst().BaseLogger.debug(`登陆失败 ${JSON.stringify( response, null, 2)}`  );
+    //                 return;
+    //             }
+    //             Base.inst().BaseLogger.debug(`登陆成功 ${JSON.stringify( response, null, 2)}`  );
+    //             $(".nav-user-login-btn").addClass("hidden");
+    //             $(".nav-user-info").removeClass("hidden");
+    //             $(".nav-username").html(`<a >${response.data.display_name}</a>`);
+    //             $(".nav-user-info a img")[0].src = response.data.avatar;
                 
-            },
-            error: function(xhr, status, error) {
-                Base.inst().BaseLogger.error(`请求失败 ${JSON.stringify( error, null, 2)}`  );
-            }
-        });
+    //         },
+    //         error: function(xhr, status, error) {
+    //             Base.inst().BaseLogger.error(`请求失败 ${JSON.stringify( error, null, 2)}`  );
+    //         }
+    //     });
     
         
-    }
+    // }
+    
+        // 核心修改：改为POST，用请求体传递参数
+        GetUserInfo(app_id, encrypted_login_token) {
+            // 构建请求体数据
+            const requestData = {};
+            if (app_id !== null && encrypted_login_token !== null) {
+                requestData.app_id = app_id;
+                requestData.encrypted_login_token = encrypted_login_token;
+            }
 
+            $.ajax({
+                url: "/api/v3/get_user_info",
+                type: "POST", // 改为POST
+                contentType: "application/json",
+                data: JSON.stringify(requestData), // 序列化请求体
+                success: function(response) {
+                
+                    if(response.retcode != 0){
+                        $(".nav-user-info").addClass("hidden");
+                        $(".nav-user-login-btn").removeClass("hidden");
+                        Base.inst().BaseLogger.debug(`登陆失败 ${JSON.stringify( response, null, 2)}`);
+                        return;
+                    }
+                    Base.inst().BaseLogger.debug(`登陆成功 ${JSON.stringify( response, null, 2)}`);
+                    $(".nav-user-login-btn").addClass("hidden");
+                    $(".nav-user-info").removeClass("hidden");
+                    $(".nav-username").html(`<a >${response.data.display_name}</a>`);
+                    $(".nav-user-info a img")[0].src = response.data.avatar;
+                    try{
+                        ChatInit();
+                    }catch(e){
+
+                    }
+                    try{
+                        WebrtcInit();
+                    }catch(e){
+                        
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Base.inst().BaseLogger.error(`请求失败 ${JSON.stringify( error, null, 2)}`);
+                }
+            });
+        }
 
     Logout(){
         CommonUtils.RemoveCookie("uid");

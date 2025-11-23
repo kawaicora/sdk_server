@@ -131,29 +131,27 @@
             var element = layui.element;
         });
 
-        // 监听父页面发来的消息（保留原功能）
+        // 监听父页面发来的消息（仅接收参数，不本地存Cookie）
         window.addEventListener('message', function(event) {
             if (event.origin !== 'https://www.sakuraxy.top') {
-                return;
+                Base.inst().GetUserInfo(null, null);
             }
-            if (event.data.type === 'SET_TICKET') {
-                console.log('iframe_ticket已设置：', event.data.ticket);
-                $.ajax({
-                    url: `/api/third_get_cookies?ticket=${event.data.ticket}`,
-                    type: "GET",
-                    contentType: "application/json",
-                    success: function(response) {
-                        if (response.retcode != 0) {
-                            Base.inst().BaseLogger.debug(`更新cookies失败!`);
-                            return;
-                        }
-                        Base.inst().BaseLogger.debug(`更新cookies成功!`);
-                        Base.inst().GetUserInfo();
-                    },
-                    error: function(xhr, status, error) {
-                        Base.inst().BaseLogger.error(`请求失败 ${JSON.stringify(error, null, 2)}`);
-                    }
-                });
+
+            switch (event.data.type){
+                case "TOKEN_ERROR": {
+                    Base.inst().BaseLogger.debug(event.data.message);
+                    
+                };
+                break;
+                case "SEND_LOGIN_TOKEN":{
+                    const app_id = event.data.app_id || null;
+                    const encrypted_login_token = event.data.encrypted_login_token || null;
+                    Base.inst().BaseLogger.debug(`encrypted_login_token:${app_id},${encrypted_login_token}`);
+                    // 传递参数，让接口请求携带Cookie
+                    Base.inst().GetUserInfo(app_id, encrypted_login_token);
+                };
+                break;
+                
             }
         });
 

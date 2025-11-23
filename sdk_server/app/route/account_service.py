@@ -18,17 +18,17 @@ import urllib3
 import hmac
 import hashlib
 from datetime import datetime
-from flask import Response, request, current_app
+from flask import Response, request, current_app,Request
 from app.sql_class.Tables import Users, Usermeta, Options
 from app.utils.ErrorCode import *  # 假设已定义错误码
 import re
-
+import base64
 
 
 # 禁用警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ticket_cache_data = {}
-
+userinfo = {}
 # 用于存储已使用的UID
 used_uids = set()
 
@@ -173,35 +173,35 @@ def parse_php_session_tokens(php_serialized_str):
 
 
 
-def third_login(cookies):
-    req_headers = {
-        "referer":DefaultConfig.THIRD_USER_API [:DefaultConfig.THIRD_USER_API.find("/",DefaultConfig.THIRD_USER_API.find("://")+3)] + "/",
-        "user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+def get_userinfo_by_sdk_token(sdk_token:str):
+    return userinfo.get(sdk_token )
+
+# 第三方验证登录
+
+def third_login(data):
+    req_data = {
+        "app_id":data.get('app_id'),
+        "token":DefaultConfig.SAKURAXY_OAUTH_TOKEN,
+        "login_token":data.get("decrypted_login_token")
     }
-    if (len(cookies) == 0):
-        current_app.logger.warning(f"请求第三方API获取用户信息失败! 请求失败cookie数量为0")
-    else:
-        current_app.logger.info(f"cookie:")
-        current_app.logger.info(json.dumps(cookies,indent=4,ensure_ascii=True))
-    
-    
     try:
-        rsp = requests.get(DefaultConfig.THIRD_USER_API,cookies=cookies,headers=req_headers)
+        
+        rsp = requests.post(DefaultConfig.SAKURAXY_OAUTH_API,data=req_data)
         if rsp.status_code != 200:
             current_app.logger.warning(f"请求第三方API获取用户信息失败! 请求失败{str(rsp.status_code)}")
-            return get_response_json(code = -1)
+            return get_response_json(code = -1,msg=f"请求第三方API获取用户信息失败! 请求失败{str(rsp.status_code)}")
         response_json = rsp.json()
         if response_json.get("retcode") != 0:
             current_app.logger.warning(f"请求第三方API返回错误! {json.dumps(response_json,indent=4,ensure_ascii=False)}")
-            return get_response_json(code = -1)
+            return get_response_json(code = -1,msg=f"请求第三方API返回错误! {json.dumps(response_json,indent=4,ensure_ascii=False)}")
     except Exception as e:
-        current_app.logger.warning(f"请求第三方API返回错误! 非json格式内容")
-        return get_response_json(code = -1)
+        current_app.logger.warning(f"请求第三方API返回错误! 非json格式内容:{str(e)}")
+        return get_response_json(code = -1,msg=f"请求第三方API返回错误! 非json格式内容:{str(e)}")
     
     
     return response_json
 
-
+# 本站登录
 def site_login(cookies,verify_siteurl=True):
     #利用cookies验证用户登陆情况
     try:
@@ -409,14 +409,26 @@ def site_login(cookies,verify_siteurl=True):
 
 
 
-def verify_login(cookies,verify_siteurl=True):
-    result_site = site_login(cookies=cookies,verify_siteurl=verify_siteurl)
-    # result_third = third_login(cookies=cookies)
-    # if result_site.get('retcode') == 0:
-    #     return result_site    
-    # if result_third.get("retcode") == 0:
-    #     return result_third
-    return result_site
+def verify_login(request:Request,verify_siteurl=True):
+    cookies = request.cookies
+    try:
+        request_json = request.get_json()
+        encrypted_login_token = request_json.get("encrypted_login_token" or None)
+        app_id = request_json.get("app_id" or None)
+    except Exception as e:
+        result_site = site_login(cookies=cookies,verify_siteurl=verify_siteurl) 
+        return result_site
+    if encrypted_login_token != None and encrypted_login_token != '':
+        from cryptography.hazmat.primitives import serialization, hashes
+        decrypted_login_token =  CommonUtils.rsa_decrypt(base64.b64decode(encrypted_login_token),CommonUtils.load_private_key(DefaultConfig.SAKURAXY_LOGIN_PRIVATE_KEY),padding_scheme='OAEP',oaep_hash_alg=hashes.SHA1,  # 匹配加密端的哈希算法（优先试 SHA-1）
+        oaep_mgf_hash_alg=hashes.SHA1  ).decode()
+
+        data = {'app_id':app_id,'decrypted_login_token':decrypted_login_token}
+        result_third = third_login(data)
+        return result_third
+    else:
+        result_site = site_login(cookies=cookies,verify_siteurl=verify_siteurl) 
+        return result_site
 
 
 ################################   ROUTE   ###########################################
@@ -644,51 +656,13 @@ def api_get_public_key():
     }
     return Response(public_pem.decode(), status=200, content_type="text/plan",headers=headers)  
 
-@bp.route("/api/third_set_cookies",methods=['POST'])
-def api_third_set_cookies():
-    ticket = request.args.get("ticket")
-    json_data_req = request.json
-    third_cookies[ticket] = json_data_req
-    current_app.logger.info(json.dumps(json_data_req,indent=4,ensure_ascii=False))
-    return Response(json.dumps({
-        "retcode": 0,
-        "msg":"OK",
-        "data":{"cookies":json_data_req}
-    }), status=200, content_type="application/json")
-
-@bp.route("/api/third_get_cookies")
-def api_third_get_cookies():
-    ticket = request.args.get("ticket")
-    
-    try:
-        if ticket:
-            cookies = third_cookies[ticket]
-            if cookies:
-                return set_cookies(Response(json.dumps({
-                    "retcode": 0,
-                    "msg":"OK",
-                
-                }), status=200, content_type="application/json"),cookies=third_cookies[ticket])
-            else:
-                return Response(json.dumps({
-                    "retcode": 0,
-                    "msg":"OK",
-                
-                }), status=200, content_type="application/json")
-                
-    except Exception as e:
-
-        return Response(json.dumps({
-            "retcode": -1,
-            "msg":str(e),
-        
-        }), status=200, content_type="application/json")
 
 
-@bp.route("/api/v3/get_user_info")
+
+@bp.route("/api/v3/get_user_info",methods=['GET','POST'])
 def api_v3_get_userinfo():
 
-    result = verify_login(cookies=request.cookies,verify_siteurl=False)
+    result = verify_login(request,verify_siteurl=False)
     
     headers = {
         'X-Organization': 'Nintendo',
@@ -698,5 +672,7 @@ def api_v3_get_userinfo():
     response =  Response(json.dumps(result), status=200, content_type="application/json",headers=headers)  
     
     if result.get("retcode") == 0:
-        set_cookies(response=response,cookies={"uid":result.get("data").get("user_id")})
+        sdk_token = CommonUtils.gen_ticket("userinfo")
+        userinfo[sdk_token] = result.get("data")
+        set_cookies(response=response,cookies={"sdk_token":sdk_token})
     return response

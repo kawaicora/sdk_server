@@ -1,9 +1,9 @@
 
 import threading
 from app.route import bp
-from flask import jsonify, request, current_app
+from flask import Request, jsonify, request, current_app
 from app.extensions import socketio
-from app.route.account_service import extract_pass_frag, get_wordpress_logged_in_cookie_key, verify_login
+from app.route.account_service import get_userinfo_by_sdk_token
 from app.sql_class.Tables import Users,Usermeta
 from flask_socketio import emit, join_room, leave_room 
 from app.utils.CommonUtils import *
@@ -92,14 +92,14 @@ def write_conf_loop():
 
 
 # ---------------------- 工具函数（用户相关） ----------------------
-def get_user_info():
+def get_user_info(request:Request):
     """从 Cookie 中获取已登录用户信息（uid 和 username）"""
     
-    result = verify_login(request.cookies,False)
+    result = get_userinfo_by_sdk_token(request.cookies.get('sdk_token'))
 
     
-    if result.get("retcode") == 0:
-        return result.get("data").get("user_id"), result.get("data").get("display_name"),result.get("data").get("avatar")
+    if result != None:
+        return result.get("user_id"), result.get("display_name"),result.get("avatar")
     else:
         return gen_guest_user()
 def gen_guest_user(uid = None):
@@ -301,7 +301,7 @@ def handle_register_user():
         write_config_thread.start()
     ######################################
     # 获取用户信息（已登录用户用真实 uid，游客生成临时 uid）
-    uid, username,avatar = get_user_info()
+    uid, username,avatar = get_user_info(request)
     t_user = get_room_by_uid(uid)
     current_app.logger.info(f"根据用户获取房间 - SID: {sid}, UID: {uid}, 用户名: {username}")
     if t_user:
@@ -642,7 +642,7 @@ def handle_disconnect():
         success = remove_user_from_room(uid = uid,room_id=room.get("room_id"))
         
         if success == False:
-            current_app.logger.warnning(f"从 房间{str(room.get(room_id))} 移除用户: {uid} SID: {user.get("sid")} USERNAME: {username} 失败  ")
+            current_app.logger.warnning(f"从 房间{str(room.get('room_id'))} 移除用户: {uid} SID: {user.get("sid")} USERNAME: {username} 失败  ")
         # 通知房间内其他用户该用户离开
         emit('user-left-room', {
             "sid":sid,

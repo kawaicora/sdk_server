@@ -1,8 +1,4 @@
-let socket = io(`${window.location.origin}`, 
-    {
-        transports: ['websocket', 'polling']
-    }
-);
+let socket = undefined;
 let chat_logger = new LoggerManager("Chat",LoggerManager.LEVELS.DEBUG)
 let currentRoomId = null
 let notificationManager= NotificationManager.getInstance()
@@ -255,10 +251,14 @@ function register_record_mic() {
 
 
 
-async function init(){
+async function ChatInit(){
     const room = 'main';
     const title = "主聊天室";
-    
+    socket = io(`${window.location.origin}`, 
+        {
+            transports: ['websocket', 'polling']
+        }
+    );
     
     register_record_mic()
     document.getElementById('send_pic_button').onclick = sendMediaMessage;
@@ -307,5 +307,6 @@ async function init(){
     socket.emit('user-register');
 }
 
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', init);
+
+// // 页面加载完成后初始化
+// document.addEventListener('DOMContentLoaded', init);
