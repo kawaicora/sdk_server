@@ -179,7 +179,7 @@ async function createDefaultVideoStream(constraints = null,isScreenStream = fals
             canvas.height = 1080;
             const ctx = canvas.getContext('2d');
             const img = new Image();
-            img.src = '/static/img/only_audio.jpeg';
+            img.src = '/static/img/only_audio.png';
             await new Promise((resolve, reject) => {
                 img.onload = resolve;
                 img.onerror = reject;

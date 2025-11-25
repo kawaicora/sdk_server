@@ -147,7 +147,20 @@ def handle_get_devices_info():
     emit("devices-info", devices_info, room=sid)
     current_app.logger.debug(f"发送设备信息给用户 - SID: {sid}, 设备数量: {len(devices_info)}")
 
-
+@socketio.on("device-heap")
+def handle_device_heap(data):
+    sid = request.sid
+    c_user = get_user_by_sid(sid)
+    if not c_user:
+        current_app.logger.warning(f"设备HEAP上报失败：用户不存在 - SID: {sid}")
+        return
+    
+    c_room = get_room_by_uid(c_user.get('uid'))
+    if not c_room:
+        current_app.logger.warning(f"设备HEAP上报失败：用户无房间 - SID: {sid}")
+        return
+    current_app.logger.warning(f"设备HEAP：{data.get("heap")}")
+        
 # 设备连接成功时调用一次 以及GPIO状态切换时调用 
 @socketio.on("device-status")
 def handle_device_status(data):
