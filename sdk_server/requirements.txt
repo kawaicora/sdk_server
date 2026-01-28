@@ -7,7 +7,7 @@ loguru
 pymysql
 flask[async]
 pyyaml
-
+dotenv
 flask_cors
 flask_socketio
 sqlalchemy

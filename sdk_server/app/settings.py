@@ -1,12 +1,6 @@
 # -*- coding:utf-8 -*-
 from datetime import timedelta
 import os
-import dotenv  # 导入 python-dotenv
-
-# 加载 .env 文件（优先加载项目根目录的 .env）
-# load_dotenv() 会自动查找项目根目录的 .env 文件并加载到系统环境变量
-dotenv.load_dotenv()
-
 class DefaultConfig(object):
     # Flask Default Support 
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"  # 转换为布尔值（.env 中是字符串）

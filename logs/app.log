@@ -1,0 +1,828 @@
+2026-01-28 10:26:34.565 | INFO     | __init__:26 | config load successfully
+2026-01-28 10:26:34.736 | INFO     | __init__:38 | database init successfully
+2026-01-28 10:26:35.067 | INFO     | __init__:40 | socketio init successfully
+2026-01-28 10:26:35.174 | ERROR    | __init__:51 | Failed to create database tables: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '1Panel-mariadb-fMVg' ([Errno -2] Name or service not known)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-28 10:26:35.231 | ERROR    | __init__:52 | Traceback (most recent call last):
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 661, in connect
+    sock = socket.create_connection(
+        (self.host, self.port), self.connect_timeout, **kwargs
+    )
+  File "/usr/local/python3.14/lib/python3.14/socket.py", line 846, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python3.14/lib/python3.14/socket.py", line 983, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno -2] Name or service not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 365, in __init__
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 723, in connect
+    raise exc
+pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '1Panel-mariadb-fMVg' ([Errno -2] Name or service not known)")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/amadeus/build/sdk_server/sdk_server/app/__init__.py", line 47, in <module>
+    db.create_all()
+    ~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask_sqlalchemy/extension.py", line 900, in create_all
+    self._call_for_binds(bind_key, "create_all")
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask_sqlalchemy/extension.py", line 881, in _call_for_binds
+    getattr(metadata, op_name)(bind=engine)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/sql/schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        ddl.SchemaGenerator, self, checkfirst=checkfirst, tables=tables
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ~~~~~~~~~~^^
+  File "/usr/local/python3.14/lib/python3.14/contextlib.py", line 141, in __enter__
+    return next(self.gen)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3249, in begin
+    with self.connect() as conn:
+         ~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        err, dialect, engine
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 365, in __init__
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 723, in connect
+    raise exc
+sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '1Panel-mariadb-fMVg' ([Errno -2] Name or service not known)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+2026-01-28 10:26:43.705 | INFO     | manage:23 | BROWSER → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/bin/helpers/browser.sh
+2026-01-28 10:26:44.741 | INFO     | manage:23 | BUNDLED_DEBUGPY_PATH → /home/super/.vscode-server/extensions/ms-python.debugpy-2025.18.0-linux-arm64/bundled/libs/debugpy
+2026-01-28 10:26:46.178 | INFO     | manage:23 | CLIENT_SECRET_KEY_FILE → data/client_secret_key.bin
+2026-01-28 10:26:46.905 | INFO     | manage:23 | CLOUDFLARE_TURN_TOKEN → 0d82cbb6e00b924415075b21fffeef133698e00428355bacdccf9fd89896e454
+2026-01-28 10:26:48.306 | INFO     | manage:23 | COLORTERM → truecolor
+2026-01-28 10:26:49.713 | INFO     | manage:23 | DBUS_SESSION_BUS_ADDRESS → unix:path=/run/user/0/bus
+2026-01-28 10:26:50.650 | INFO     | manage:23 | DEBUG → True
+2026-01-28 10:26:51.326 | INFO     | manage:23 | DEBUGPY_RUNNING → true
+2026-01-28 10:26:52.748 | INFO     | manage:23 | ENGINEIO_LOGGER → False
+2026-01-28 10:26:59.812 | INFO     | manage:23 | GIT_ASKPASS → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/extensions/git/dist/askpass.sh
+2026-01-28 10:27:27.340 | INFO     | manage:23 | HOME → /home/super
+2026-01-28 10:27:28.217 | INFO     | manage:23 | LANG → en_US.UTF-8
+2026-01-28 10:27:29.293 | INFO     | manage:23 | LC_ADDRESS → nl_NL.UTF-8
+2026-01-28 10:27:30.230 | INFO     | manage:23 | LC_IDENTIFICATION → nl_NL.UTF-8
+2026-01-28 10:27:31.104 | INFO     | manage:23 | LC_MEASUREMENT → nl_NL.UTF-8
+2026-01-28 10:27:32.461 | INFO     | manage:23 | LC_MONETARY → nl_NL.UTF-8
+2026-01-28 10:27:33.116 | INFO     | manage:23 | LC_NAME → nl_NL.UTF-8
+2026-01-28 10:27:33.855 | INFO     | manage:23 | LC_NUMERIC → nl_NL.UTF-8
+2026-01-28 10:27:34.755 | INFO     | manage:23 | LC_PAPER → nl_NL.UTF-8
+2026-01-28 10:27:35.481 | INFO     | manage:23 | LC_TELEPHONE → nl_NL.UTF-8
+2026-01-28 10:27:36.231 | INFO     | manage:23 | LC_TIME → nl_NL.UTF-8
+2026-01-28 10:27:37.648 | INFO     | manage:23 | LISTEN_PORT → 3000
+2026-01-28 10:27:38.910 | INFO     | manage:23 | LOGGED_IN_KEY → Qx0tC: @=43 I&.uV*}SDN>oPy-&*g;lk 6>r*aOX9M=4F~4K=?5v}Yw5FJ{mCKC
+2026-01-28 10:27:40.262 | INFO     | manage:23 | LOGGED_IN_SALT → QUB`#RAL6_LpYjm5zbR(X<y}~5fw[i7;KfJQHpL69QDsNnz$oq}d82[+ar-Cq407
+2026-01-28 10:27:41.437 | INFO     | manage:23 | LOGNAME → super
+2026-01-28 10:27:42.867 | INFO     | manage:23 | MAX_CONTENT_LENGTH → 4294967296
+2026-01-28 10:27:44.382 | INFO     | manage:23 | MAX_COOKIE_SIZE → 4093
+2026-01-28 10:27:45.049 | INFO     | manage:23 | MOTD_SHOWN → pam
+2026-01-28 10:27:47.211 | INFO     | manage:23 | OLDPWD → /home/amadeus/build/sdk_server
+2026-01-28 10:27:52.785 | INFO     | manage:23 | PASSWORD_PRIVATE_KEY_FILE → data/password_private_key.pem
+2026-01-28 10:27:53.665 | INFO     | manage:23 | PATH → /home/super/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand:/home/super/.vscode-server/data/User/globalStorage/github.copilot-chat/copilotCli:/home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/super/.vscode-server/extensions/ms-python.debugpy-2025.18.0-linux-arm64/bundled/scripts/noConfigScripts
+2026-01-28 10:27:58.302 | INFO     | manage:23 | PWD → /home/amadeus/build/sdk_server
+2026-01-28 10:27:59.504 | INFO     | manage:23 | PYDEVD_DISABLE_FILE_VALIDATION → 1
+2026-01-28 10:28:03.508 | INFO     | manage:23 | PYDEVD_USE_FRAME_EVAL → NO
+2026-01-28 10:28:04.649 | INFO     | manage:23 | PYTHONIOENCODING → UTF-8
+2026-01-28 10:28:05.322 | INFO     | manage:23 | PYTHONSTARTUP → /home/super/.vscode-server/data/User/workspaceStorage/7b041cf9e3a43e3f73dedaa48a48e99f/ms-python.python/pythonrc.py
+2026-01-28 10:28:06.071 | INFO     | manage:23 | PYTHONUNBUFFERED → 1
+2026-01-28 10:28:06.863 | INFO     | manage:23 | PYTHON_BASIC_REPL → 1
+2026-01-28 10:28:08.231 | INFO     | manage:23 | RESEND_API_KEY → re_TzTwmfdX_NdW52Ak9uZezLc3TmfhQqWqh
+2026-01-28 10:28:09.563 | INFO     | manage:23 | RESEND_MAIL → admin@kawaimoe.org
+2026-01-28 10:28:10.932 | INFO     | manage:23 | SAKURAXY_LOGIN_PRIVATE_KEY → -----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCtPwbo8IRUX6nX
+ThI5s/B3z8L8CwmsDRHMNpKiDqkV5pixg/FdtzABDQCxVil4ndTVO4UCZpVVPR4p
+tQC8Vv8r+miGQEsQKrC1CsxUunLcNo+RcNNSP7eyXwxhbsUj5khnF5+LKXzZp2Tu
+//NRokxhlsmbfA8ttj6zw7kGXIP/AEyLK+HNLC/mWCrauZwSd8hLCID84ZRu2Oje
+rCmgw0GpgIDrsY/1EveMjeGt6tO5B4YC0hQ91SjGibXOxx8YDXNdBR1T1NNY/MZW
+tFsvGRVlAg5Nx2xA3ymLmEczNzA6YuVPORd6HBxusxygXpzUCtZZ1Th7935dcSgP
+M/f/zQ1fAgMBAAECggEALEM2GL2akZP/aKrhrSxz+6hxQMPxLKwKKAqpXA4y1Q2d
+ZX04ZaEv+pS/4I8K+W4ZuoECcqKS9LwwwKcmEPiJKUtI+UPj6bV+gELKAbvBLNIj
+zBzvYMw2urPeDeanJ4zmYrB+aqem5lUGTKnIGMtGiIhl6fvARQWS74rJ8v4gGz4k
+lERhaRkT4f/Ym1vAJ7lbRv4zA4cLDR42shIoGBwUrl2l5whU2buHeJ8E5P6pgn3N
+CoGnTsbbSoG9CcDRQAzbOeVEIKiuRLFzGcfHXytGcb7oPCadWcaa7dnjl1+H72lt
+JMZynSTUalYxmxASX7bTJ6Mpcs75E61HOnY05FTkAQKBgQDc4cWrh2vk8IbMQUtu
+WlHDsPTdnNCtAeP1LYaziNW+mF0wACw/sx6nI7a/F8ZnmY+YZx9FCdBKdYwJf/OX
+RIhvviw9b8dh4+wMZIGzBlrh1NtSsDWiYJYOVwhEcrx2jbF+qPcaTv3zXPOCzws1
+su08CQETC04cqY23yI9WDtYCHwKBgQDIymixmhvUJdRjMr5colqRAuA8e+v8xETD
+fxuFWQ52jb0es0i1n4SAiYVYllUgJjTJJ4WGqlK/9kfNKBYFy3nVZ8yNHfSCAnZ+
+VJ2KVLwombtvPurPISxKeNyOadWdMSL1qQQbsQ74R4aqT4bQMvR2Qc9cBcENBZ5J
+oRI8BCQMwQKBgQCF3PZVPB8xgmvPQgsa9/XxqT7dR/pXv3uNzWeDSvxvJBvlyVUH
+zeBX3xcTvK7rfm8+J9EVoBrx5UdXQoo4NLqTLifVm/az5tPZtte7zbAqiTvaYxw+
+KlcGncxO31JEbx8Q6gnHkfPqF30k26Gpi6Sm67YQ+pr+V+uhZBUqTJd6dQKBgCTN
+VJsYz/j2ZhM4fcOkzky95jOv0vUlVCUw6u5qAEiiegNigPUpI7QbgKFYDIoz9oDY
+CZVBKqGcllR4AHFXdiEzQT6sOuCJawaEo8ty9HnMk5o0Qf1s6x1LQcGojEqfcvTr
+4aDhtwiys3AL233VmREDxunq9BNa8EQ2jY0KhUEBAoGAGj26nue4DEJPBYeswkoQ
+KIY2dUWC30KCdaMZbFM5atOFzkpmEnP6Q4eNE25JXWAFelM0RJBZymPFvo/f6Zmq
+xW9Do/SRFt5heIBDa1Sncly4ls4XzDq9+ifhr4wqRyNRQz/9FofKkRYvQH2kdI1s
+7dbjsWwMBKqTYYviY4/lx3c=
+2026-01-28 10:28:16.682 | INFO     | manage:23 | SAKURAXY_OAUTH_API → https://sakuraxy.dpdns.org/?oauth_authorize=1
+2026-01-28 10:28:17.870 | INFO     | manage:23 | SAKURAXY_OAUTH_APP_ID → 7463e5d904d72b2bbde0dfb39189d942
+2026-01-28 10:28:19.016 | INFO     | manage:23 | SAKURAXY_OAUTH_TOKEN → 028f37833d0cb4b89c2133fbf4b8b497e970624908cb9e076aa8cfad09af1bcf
+2026-01-28 10:28:20.114 | INFO     | manage:23 | SDK_BASE_URL → https://kawaimoe.org
+2026-01-28 10:28:21.231 | INFO     | manage:23 | SERVER_NAME → SDK_SERVER
+2026-01-28 10:28:22.425 | INFO     | manage:23 | SHELL → /bin/sh
+2026-01-28 10:28:23.604 | INFO     | manage:23 | SHLVL → 1
+2026-01-28 10:28:24.706 | INFO     | manage:23 | SOCKETIO_LOGGER → False
+2026-01-28 10:28:25.817 | INFO     | manage:23 | SQLALCHEMY_DATABASE_URI → mysql+pymysql://www_kawaimoe_org:mPWzt6R5XexHs3QPf@1Panel-mariadb-fMVg/www_kawaimoe_org
+2026-01-28 10:28:28.424 | INFO     | manage:23 | SQLALCHEMY_ECHO → False
+2026-01-28 10:28:32.567 | INFO     | manage:23 | SQLALCHEMY_TRACK_MODIFICATIONS → False
+2026-01-28 10:28:32.576 | INFO     | manage:23 | SSH_CLIENT → 10.0.0.210 60617 22
+2026-01-28 10:28:32.577 | INFO     | manage:23 | SSH_CONNECTION → 10.0.0.210 60617 10.0.0.200 22
+2026-01-28 10:28:32.578 | INFO     | manage:23 | SSL_CERT_DIR → /usr/lib/ssl/certs
+2026-01-28 10:28:32.578 | INFO     | manage:23 | SSL_CERT_FILE → /usr/lib/ssl/certs/ca-certificates.crt
+2026-01-28 10:28:32.579 | INFO     | manage:23 | SUFFIX → moe_
+2026-01-28 10:28:32.580 | INFO     | manage:23 | TELEGRAM_BOT_CHAT_ID → 6868665598
+2026-01-28 10:28:32.581 | INFO     | manage:23 | TELEGRAM_BOT_TOKEN → 8110475845:AAH2AMUoR34cy4PvQXtLxWYw74Zy52cRABA
+2026-01-28 10:28:32.581 | INFO     | manage:23 | TEMPLATES_AUTO_RELOAD → True
+2026-01-28 10:28:32.582 | INFO     | manage:23 | TERM → xterm-256color
+2026-01-28 10:28:32.582 | INFO     | manage:23 | TERM_PROGRAM → vscode
+2026-01-28 10:28:32.583 | INFO     | manage:23 | TERM_PROGRAM_VERSION → 1.108.2
+2026-01-28 10:28:32.583 | INFO     | manage:23 | USER → super
+2026-01-28 10:28:32.584 | INFO     | manage:23 | VSCODE_DEBUGPY_ADAPTER_ENDPOINTS → /home/super/.vscode-server/extensions/ms-python.debugpy-2025.18.0-linux-arm64/.noConfigDebugAdapterEndpoints/endpoint-72a2bb4ccc874de8.txt
+2026-01-28 10:28:32.584 | INFO     | manage:23 | VSCODE_GIT_ASKPASS_EXTRA_ARGS → 
+2026-01-28 10:28:32.585 | INFO     | manage:23 | VSCODE_GIT_ASKPASS_MAIN → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/extensions/git/dist/askpass-main.js
+2026-01-28 10:28:32.585 | INFO     | manage:23 | VSCODE_GIT_ASKPASS_NODE → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/node
+2026-01-28 10:28:32.585 | INFO     | manage:23 | VSCODE_GIT_IPC_HANDLE → /run/user/0/vscode-git-5c0a6a07e1.sock
+2026-01-28 10:28:32.586 | INFO     | manage:23 | VSCODE_IPC_HOOK_CLI → /run/user/0/vscode-ipc-5e2c29f2-c58c-4188-ae79-76f2c33a693f.sock
+2026-01-28 10:28:32.586 | INFO     | manage:23 | VSCODE_NONCE → eb88f109-e99d-43a2-b474-1bccda70b476
+2026-01-28 10:28:32.586 | INFO     | manage:23 | XDG_DATA_DIRS → /usr/local/share:/usr/share:/var/lib/snapd/desktop
+2026-01-28 10:28:32.586 | INFO     | manage:23 | XDG_RUNTIME_DIR → /run/user/0
+2026-01-28 10:28:32.587 | INFO     | manage:23 | XDG_SESSION_CLASS → user
+2026-01-28 10:28:32.587 | INFO     | manage:23 | XDG_SESSION_ID → 540
+2026-01-28 10:28:32.587 | INFO     | manage:23 | XDG_SESSION_TYPE → tty
+2026-01-28 10:28:32.588 | INFO     | manage:23 | _ → /usr/bin/env
+2026-01-28 10:28:32.644 | ERROR    | manage:33 | Failed to start server : 'str' object cannot be interpreted as an integer
+2026-01-28 10:29:13.892 | INFO     | __init__:26 | config load successfully
+2026-01-28 10:29:13.989 | INFO     | __init__:38 | database init successfully
+2026-01-28 10:29:14.087 | INFO     | __init__:40 | socketio init successfully
+2026-01-28 10:29:14.133 | ERROR    | __init__:51 | Failed to create database tables: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '1Panel-mariadb-fMVg' ([Errno -2] Name or service not known)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-28 10:29:14.170 | ERROR    | __init__:52 | Traceback (most recent call last):
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 661, in connect
+    sock = socket.create_connection(
+        (self.host, self.port), self.connect_timeout, **kwargs
+    )
+  File "/usr/local/python3.14/lib/python3.14/socket.py", line 846, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python3.14/lib/python3.14/socket.py", line 983, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno -2] Name or service not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 365, in __init__
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 723, in connect
+    raise exc
+pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '1Panel-mariadb-fMVg' ([Errno -2] Name or service not known)")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/amadeus/build/sdk_server/sdk_server/app/__init__.py", line 47, in <module>
+    db.create_all()
+    ~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask_sqlalchemy/extension.py", line 900, in create_all
+    self._call_for_binds(bind_key, "create_all")
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask_sqlalchemy/extension.py", line 881, in _call_for_binds
+    getattr(metadata, op_name)(bind=engine)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/sql/schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        ddl.SchemaGenerator, self, checkfirst=checkfirst, tables=tables
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ~~~~~~~~~~^^
+  File "/usr/local/python3.14/lib/python3.14/contextlib.py", line 141, in __enter__
+    return next(self.gen)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3249, in begin
+    with self.connect() as conn:
+         ~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        err, dialect, engine
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 365, in __init__
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 723, in connect
+    raise exc
+sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '1Panel-mariadb-fMVg' ([Errno -2] Name or service not known)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+2026-01-28 10:29:14.187 | INFO     | manage:23 | BROWSER → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/bin/helpers/browser.sh
+2026-01-28 10:29:14.187 | INFO     | manage:23 | BUNDLED_DEBUGPY_PATH → /home/super/.vscode-server/extensions/ms-python.debugpy-2025.18.0-linux-arm64/bundled/libs/debugpy
+2026-01-28 10:29:14.188 | INFO     | manage:23 | CLIENT_SECRET_KEY_FILE → data/client_secret_key.bin
+2026-01-28 10:29:14.188 | INFO     | manage:23 | CLOUDFLARE_TURN_TOKEN → 0d82cbb6e00b924415075b21fffeef133698e00428355bacdccf9fd89896e454
+2026-01-28 10:29:14.188 | INFO     | manage:23 | COLORTERM → truecolor
+2026-01-28 10:29:14.188 | INFO     | manage:23 | DBUS_SESSION_BUS_ADDRESS → unix:path=/run/user/0/bus
+2026-01-28 10:29:14.189 | INFO     | manage:23 | DEBUG → True
+2026-01-28 10:29:14.189 | INFO     | manage:23 | DEBUGPY_RUNNING → true
+2026-01-28 10:29:14.189 | INFO     | manage:23 | ENGINEIO_LOGGER → False
+2026-01-28 10:29:14.189 | INFO     | manage:23 | GIT_ASKPASS → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/extensions/git/dist/askpass.sh
+2026-01-28 10:29:14.190 | INFO     | manage:23 | HOME → /home/super
+2026-01-28 10:29:14.190 | INFO     | manage:23 | LANG → en_US.UTF-8
+2026-01-28 10:29:14.190 | INFO     | manage:23 | LC_ADDRESS → nl_NL.UTF-8
+2026-01-28 10:29:14.190 | INFO     | manage:23 | LC_IDENTIFICATION → nl_NL.UTF-8
+2026-01-28 10:29:14.191 | INFO     | manage:23 | LC_MEASUREMENT → nl_NL.UTF-8
+2026-01-28 10:29:14.191 | INFO     | manage:23 | LC_MONETARY → nl_NL.UTF-8
+2026-01-28 10:29:14.191 | INFO     | manage:23 | LC_NAME → nl_NL.UTF-8
+2026-01-28 10:29:14.191 | INFO     | manage:23 | LC_NUMERIC → nl_NL.UTF-8
+2026-01-28 10:29:14.191 | INFO     | manage:23 | LC_PAPER → nl_NL.UTF-8
+2026-01-28 10:29:14.192 | INFO     | manage:23 | LC_TELEPHONE → nl_NL.UTF-8
+2026-01-28 10:29:14.192 | INFO     | manage:23 | LC_TIME → nl_NL.UTF-8
+2026-01-28 10:29:14.192 | INFO     | manage:23 | LISTEN_PORT → 3000
+2026-01-28 10:29:14.193 | INFO     | manage:23 | LOGGED_IN_KEY → Qx0tC: @=43 I&.uV*}SDN>oPy-&*g;lk 6>r*aOX9M=4F~4K=?5v}Yw5FJ{mCKC
+2026-01-28 10:29:14.193 | INFO     | manage:23 | LOGGED_IN_SALT → QUB`#RAL6_LpYjm5zbR(X<y}~5fw[i7;KfJQHpL69QDsNnz$oq}d82[+ar-Cq407
+2026-01-28 10:29:14.193 | INFO     | manage:23 | LOGNAME → super
+2026-01-28 10:29:14.194 | INFO     | manage:23 | MAX_CONTENT_LENGTH → 4294967296
+2026-01-28 10:29:14.194 | INFO     | manage:23 | MAX_COOKIE_SIZE → 4093
+2026-01-28 10:29:14.194 | INFO     | manage:23 | MOTD_SHOWN → pam
+2026-01-28 10:29:14.194 | INFO     | manage:23 | OLDPWD → /home/amadeus/build/sdk_server
+2026-01-28 10:29:14.195 | INFO     | manage:23 | PASSWORD_PRIVATE_KEY_FILE → data/password_private_key.pem
+2026-01-28 10:29:14.195 | INFO     | manage:23 | PATH → /home/super/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand:/home/super/.vscode-server/data/User/globalStorage/github.copilot-chat/copilotCli:/home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/super/.vscode-server/extensions/ms-python.debugpy-2025.18.0-linux-arm64/bundled/scripts/noConfigScripts
+2026-01-28 10:29:14.195 | INFO     | manage:23 | PWD → /home/amadeus/build/sdk_server
+2026-01-28 10:29:14.195 | INFO     | manage:23 | PYDEVD_DISABLE_FILE_VALIDATION → 1
+2026-01-28 10:29:14.196 | INFO     | manage:23 | PYDEVD_USE_FRAME_EVAL → NO
+2026-01-28 10:29:14.196 | INFO     | manage:23 | PYTHONIOENCODING → UTF-8
+2026-01-28 10:29:14.196 | INFO     | manage:23 | PYTHONSTARTUP → /home/super/.vscode-server/data/User/workspaceStorage/7b041cf9e3a43e3f73dedaa48a48e99f/ms-python.python/pythonrc.py
+2026-01-28 10:29:14.196 | INFO     | manage:23 | PYTHONUNBUFFERED → 1
+2026-01-28 10:29:14.197 | INFO     | manage:23 | PYTHON_BASIC_REPL → 1
+2026-01-28 10:29:14.197 | INFO     | manage:23 | RESEND_API_KEY → re_TzTwmfdX_NdW52Ak9uZezLc3TmfhQqWqh
+2026-01-28 10:29:14.197 | INFO     | manage:23 | RESEND_MAIL → admin@kawaimoe.org
+2026-01-28 10:29:14.197 | INFO     | manage:23 | SAKURAXY_LOGIN_PRIVATE_KEY → -----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCtPwbo8IRUX6nX
+ThI5s/B3z8L8CwmsDRHMNpKiDqkV5pixg/FdtzABDQCxVil4ndTVO4UCZpVVPR4p
+tQC8Vv8r+miGQEsQKrC1CsxUunLcNo+RcNNSP7eyXwxhbsUj5khnF5+LKXzZp2Tu
+//NRokxhlsmbfA8ttj6zw7kGXIP/AEyLK+HNLC/mWCrauZwSd8hLCID84ZRu2Oje
+rCmgw0GpgIDrsY/1EveMjeGt6tO5B4YC0hQ91SjGibXOxx8YDXNdBR1T1NNY/MZW
+tFsvGRVlAg5Nx2xA3ymLmEczNzA6YuVPORd6HBxusxygXpzUCtZZ1Th7935dcSgP
+M/f/zQ1fAgMBAAECggEALEM2GL2akZP/aKrhrSxz+6hxQMPxLKwKKAqpXA4y1Q2d
+ZX04ZaEv+pS/4I8K+W4ZuoECcqKS9LwwwKcmEPiJKUtI+UPj6bV+gELKAbvBLNIj
+zBzvYMw2urPeDeanJ4zmYrB+aqem5lUGTKnIGMtGiIhl6fvARQWS74rJ8v4gGz4k
+lERhaRkT4f/Ym1vAJ7lbRv4zA4cLDR42shIoGBwUrl2l5whU2buHeJ8E5P6pgn3N
+CoGnTsbbSoG9CcDRQAzbOeVEIKiuRLFzGcfHXytGcb7oPCadWcaa7dnjl1+H72lt
+JMZynSTUalYxmxASX7bTJ6Mpcs75E61HOnY05FTkAQKBgQDc4cWrh2vk8IbMQUtu
+WlHDsPTdnNCtAeP1LYaziNW+mF0wACw/sx6nI7a/F8ZnmY+YZx9FCdBKdYwJf/OX
+RIhvviw9b8dh4+wMZIGzBlrh1NtSsDWiYJYOVwhEcrx2jbF+qPcaTv3zXPOCzws1
+su08CQETC04cqY23yI9WDtYCHwKBgQDIymixmhvUJdRjMr5colqRAuA8e+v8xETD
+fxuFWQ52jb0es0i1n4SAiYVYllUgJjTJJ4WGqlK/9kfNKBYFy3nVZ8yNHfSCAnZ+
+VJ2KVLwombtvPurPISxKeNyOadWdMSL1qQQbsQ74R4aqT4bQMvR2Qc9cBcENBZ5J
+oRI8BCQMwQKBgQCF3PZVPB8xgmvPQgsa9/XxqT7dR/pXv3uNzWeDSvxvJBvlyVUH
+zeBX3xcTvK7rfm8+J9EVoBrx5UdXQoo4NLqTLifVm/az5tPZtte7zbAqiTvaYxw+
+KlcGncxO31JEbx8Q6gnHkfPqF30k26Gpi6Sm67YQ+pr+V+uhZBUqTJd6dQKBgCTN
+VJsYz/j2ZhM4fcOkzky95jOv0vUlVCUw6u5qAEiiegNigPUpI7QbgKFYDIoz9oDY
+CZVBKqGcllR4AHFXdiEzQT6sOuCJawaEo8ty9HnMk5o0Qf1s6x1LQcGojEqfcvTr
+4aDhtwiys3AL233VmREDxunq9BNa8EQ2jY0KhUEBAoGAGj26nue4DEJPBYeswkoQ
+KIY2dUWC30KCdaMZbFM5atOFzkpmEnP6Q4eNE25JXWAFelM0RJBZymPFvo/f6Zmq
+xW9Do/SRFt5heIBDa1Sncly4ls4XzDq9+ifhr4wqRyNRQz/9FofKkRYvQH2kdI1s
+7dbjsWwMBKqTYYviY4/lx3c=
+2026-01-28 10:29:14.198 | INFO     | manage:23 | SAKURAXY_OAUTH_API → https://sakuraxy.dpdns.org/?oauth_authorize=1
+2026-01-28 10:29:14.198 | INFO     | manage:23 | SAKURAXY_OAUTH_APP_ID → 7463e5d904d72b2bbde0dfb39189d942
+2026-01-28 10:29:14.198 | INFO     | manage:23 | SAKURAXY_OAUTH_TOKEN → 028f37833d0cb4b89c2133fbf4b8b497e970624908cb9e076aa8cfad09af1bcf
+2026-01-28 10:29:14.199 | INFO     | manage:23 | SDK_BASE_URL → https://kawaimoe.org
+2026-01-28 10:29:14.199 | INFO     | manage:23 | SERVER_NAME → SDK_SERVER
+2026-01-28 10:29:14.199 | INFO     | manage:23 | SHELL → /bin/sh
+2026-01-28 10:29:14.200 | INFO     | manage:23 | SHLVL → 1
+2026-01-28 10:29:14.200 | INFO     | manage:23 | SOCKETIO_LOGGER → False
+2026-01-28 10:29:14.200 | INFO     | manage:23 | SQLALCHEMY_DATABASE_URI → mysql+pymysql://www_kawaimoe_org:mPWzt6R5XexHs3QPf@1Panel-mariadb-fMVg/www_kawaimoe_org
+2026-01-28 10:29:14.200 | INFO     | manage:23 | SQLALCHEMY_ECHO → False
+2026-01-28 10:29:14.201 | INFO     | manage:23 | SQLALCHEMY_TRACK_MODIFICATIONS → False
+2026-01-28 10:29:14.201 | INFO     | manage:23 | SSH_CLIENT → 10.0.0.210 60617 22
+2026-01-28 10:29:14.201 | INFO     | manage:23 | SSH_CONNECTION → 10.0.0.210 60617 10.0.0.200 22
+2026-01-28 10:29:14.202 | INFO     | manage:23 | SSL_CERT_DIR → /usr/lib/ssl/certs
+2026-01-28 10:29:14.202 | INFO     | manage:23 | SSL_CERT_FILE → /usr/lib/ssl/certs/ca-certificates.crt
+2026-01-28 10:29:14.202 | INFO     | manage:23 | SUFFIX → moe_
+2026-01-28 10:29:14.202 | INFO     | manage:23 | TELEGRAM_BOT_CHAT_ID → 6868665598
+2026-01-28 10:29:14.203 | INFO     | manage:23 | TELEGRAM_BOT_TOKEN → 8110475845:AAH2AMUoR34cy4PvQXtLxWYw74Zy52cRABA
+2026-01-28 10:29:14.203 | INFO     | manage:23 | TEMPLATES_AUTO_RELOAD → True
+2026-01-28 10:29:14.203 | INFO     | manage:23 | TERM → xterm-256color
+2026-01-28 10:29:14.204 | INFO     | manage:23 | TERM_PROGRAM → vscode
+2026-01-28 10:29:14.204 | INFO     | manage:23 | TERM_PROGRAM_VERSION → 1.108.2
+2026-01-28 10:29:14.204 | INFO     | manage:23 | USER → super
+2026-01-28 10:29:14.205 | INFO     | manage:23 | VSCODE_DEBUGPY_ADAPTER_ENDPOINTS → /home/super/.vscode-server/extensions/ms-python.debugpy-2025.18.0-linux-arm64/.noConfigDebugAdapterEndpoints/endpoint-72a2bb4ccc874de8.txt
+2026-01-28 10:29:14.205 | INFO     | manage:23 | VSCODE_GIT_ASKPASS_EXTRA_ARGS → 
+2026-01-28 10:29:14.205 | INFO     | manage:23 | VSCODE_GIT_ASKPASS_MAIN → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/extensions/git/dist/askpass-main.js
+2026-01-28 10:29:14.206 | INFO     | manage:23 | VSCODE_GIT_ASKPASS_NODE → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/node
+2026-01-28 10:29:14.206 | INFO     | manage:23 | VSCODE_GIT_IPC_HANDLE → /run/user/0/vscode-git-5c0a6a07e1.sock
+2026-01-28 10:29:14.206 | INFO     | manage:23 | VSCODE_IPC_HOOK_CLI → /run/user/0/vscode-ipc-5e2c29f2-c58c-4188-ae79-76f2c33a693f.sock
+2026-01-28 10:29:14.207 | INFO     | manage:23 | VSCODE_NONCE → eb88f109-e99d-43a2-b474-1bccda70b476
+2026-01-28 10:29:14.207 | INFO     | manage:23 | XDG_DATA_DIRS → /usr/local/share:/usr/share:/var/lib/snapd/desktop
+2026-01-28 10:29:14.207 | INFO     | manage:23 | XDG_RUNTIME_DIR → /run/user/0
+2026-01-28 10:29:14.208 | INFO     | manage:23 | XDG_SESSION_CLASS → user
+2026-01-28 10:29:14.208 | INFO     | manage:23 | XDG_SESSION_ID → 540
+2026-01-28 10:29:14.208 | INFO     | manage:23 | XDG_SESSION_TYPE → tty
+2026-01-28 10:29:14.209 | INFO     | manage:23 | _ → /usr/bin/env
+2026-01-28 10:29:46.143 | INFO     | LoggerManager:79 | Traceback (most recent call last):
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask/app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ~^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/sdk_server/app/route/view_service.py", line 34, in view_index
+    response = make_response(render_template("index.html"),200)
+                             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask/templating.py", line 149, in render_template
+    template = app.jinja_env.get_or_select_template(template_name_or_list)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/jinja2/environment.py", line 1087, in get_or_select_template
+    return self.get_template(template_name_or_list, parent, globals)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/jinja2/environment.py", line 1016, in get_template
+    return self._load_template(name, globals)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/jinja2/environment.py", line 975, in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/jinja2/loaders.py", line 126, in load
+    source, filename, uptodate = self.get_source(environment, name)
+                                 ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask/templating.py", line 65, in get_source
+    return self._get_source_fast(environment, template)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask/templating.py", line 99, in _get_source_fast
+    raise TemplateNotFound(template)
+jinja2.exceptions.TemplateNotFound: index.html
+2026-01-28 17:36:39.144 | INFO     | __init__:22 | config load successfully
+2026-01-28 17:36:39.261 | INFO     | __init__:34 | database init successfully
+2026-01-28 17:36:39.419 | INFO     | __init__:36 | socketio init successfully
+2026-01-28 17:36:39.470 | ERROR    | __init__:47 | Failed to create database tables: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '1Panel-mariadb-fMVg' ([Errno -2] Name or service not known)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-28 17:36:39.514 | ERROR    | __init__:48 | Traceback (most recent call last):
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 661, in connect
+    sock = socket.create_connection(
+        (self.host, self.port), self.connect_timeout, **kwargs
+    )
+  File "/usr/local/python3.14/lib/python3.14/socket.py", line 846, in create_connection
+    for res in getaddrinfo(host, port, 0, SOCK_STREAM):
+               ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python3.14/lib/python3.14/socket.py", line 983, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno -2] Name or service not known
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 365, in __init__
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 723, in connect
+    raise exc
+pymysql.err.OperationalError: (2003, "Can't connect to MySQL server on '1Panel-mariadb-fMVg' ([Errno -2] Name or service not known)")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/amadeus/build/sdk_server/sdk_server/app/__init__.py", line 43, in <module>
+    db.create_all()
+    ~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask_sqlalchemy/extension.py", line 900, in create_all
+    self._call_for_binds(bind_key, "create_all")
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/flask_sqlalchemy/extension.py", line 881, in _call_for_binds
+    getattr(metadata, op_name)(bind=engine)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/sql/schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        ddl.SchemaGenerator, self, checkfirst=checkfirst, tables=tables
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ~~~~~~~~~~^^
+  File "/usr/local/python3.14/lib/python3.14/contextlib.py", line 141, in __enter__
+    return next(self.gen)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3249, in begin
+    with self.connect() as conn:
+         ~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        err, dialect, engine
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 711, in checkout
+    rec = pool._do_get()
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 673, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 899, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 365, in __init__
+    self.connect()
+    ~~~~~~~~~~~~^^
+  File "/home/amadeus/build/sdk_server/.venv/lib/python3.14/site-packages/pymysql/connections.py", line 723, in connect
+    raise exc
+sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on '1Panel-mariadb-fMVg' ([Errno -2] Name or service not known)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+2026-01-28 17:36:39.517 | INFO     | manage:24 | BROWSER → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/bin/helpers/browser.sh
+2026-01-28 17:36:39.518 | INFO     | manage:24 | BUNDLED_DEBUGPY_PATH → /home/super/.vscode-server/extensions/ms-python.debugpy-2025.18.0-linux-arm64/bundled/libs/debugpy
+2026-01-28 17:36:39.518 | INFO     | manage:24 | CLIENT_SECRET_KEY_FILE → data/client_secret_key.bin
+2026-01-28 17:36:39.519 | INFO     | manage:24 | CLOUDFLARE_TURN_TOKEN → 0d82cbb6e00b924415075b21fffeef133698e00428355bacdccf9fd89896e454
+2026-01-28 17:36:39.519 | INFO     | manage:24 | COLORTERM → truecolor
+2026-01-28 17:36:39.519 | INFO     | manage:24 | DBUS_SESSION_BUS_ADDRESS → unix:path=/run/user/0/bus
+2026-01-28 17:36:39.520 | INFO     | manage:24 | DEBUG → True
+2026-01-28 17:36:39.520 | INFO     | manage:24 | DEBUGPY_RUNNING → true
+2026-01-28 17:36:39.520 | INFO     | manage:24 | ENGINEIO_LOGGER → False
+2026-01-28 17:36:39.521 | INFO     | manage:24 | GIT_ASKPASS → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/extensions/git/dist/askpass.sh
+2026-01-28 17:36:39.521 | INFO     | manage:24 | HOME → /home/super
+2026-01-28 17:36:39.521 | INFO     | manage:24 | LANG → en_US.UTF-8
+2026-01-28 17:36:39.522 | INFO     | manage:24 | LC_ADDRESS → nl_NL.UTF-8
+2026-01-28 17:36:39.522 | INFO     | manage:24 | LC_IDENTIFICATION → nl_NL.UTF-8
+2026-01-28 17:36:39.523 | INFO     | manage:24 | LC_MEASUREMENT → nl_NL.UTF-8
+2026-01-28 17:36:39.523 | INFO     | manage:24 | LC_MONETARY → nl_NL.UTF-8
+2026-01-28 17:36:39.523 | INFO     | manage:24 | LC_NAME → nl_NL.UTF-8
+2026-01-28 17:36:39.524 | INFO     | manage:24 | LC_NUMERIC → nl_NL.UTF-8
+2026-01-28 17:36:39.524 | INFO     | manage:24 | LC_PAPER → nl_NL.UTF-8
+2026-01-28 17:36:39.525 | INFO     | manage:24 | LC_TELEPHONE → nl_NL.UTF-8
+2026-01-28 17:36:39.525 | INFO     | manage:24 | LC_TIME → nl_NL.UTF-8
+2026-01-28 17:36:39.526 | INFO     | manage:24 | LISTEN_PORT → 80
+2026-01-28 17:36:39.526 | INFO     | manage:24 | LOGGED_IN_KEY → Qx0tC: @=43 I&.uV*}SDN>oPy-&*g;lk 6>r*aOX9M=4F~4K=?5v}Yw5FJ{mCKC
+2026-01-28 17:36:39.526 | INFO     | manage:24 | LOGGED_IN_SALT → QUB`#RAL6_LpYjm5zbR(X<y}~5fw[i7;KfJQHpL69QDsNnz$oq}d82[+ar-Cq407
+2026-01-28 17:36:39.527 | INFO     | manage:24 | LOGNAME → super
+2026-01-28 17:36:39.527 | INFO     | manage:24 | MAX_CONTENT_LENGTH → 4294967296
+2026-01-28 17:36:39.528 | INFO     | manage:24 | MAX_COOKIE_SIZE → 4093
+2026-01-28 17:36:39.528 | INFO     | manage:24 | MOTD_SHOWN → pam
+2026-01-28 17:36:39.529 | INFO     | manage:24 | OLDPWD → /home/amadeus/build/sdk_server
+2026-01-28 17:36:39.530 | INFO     | manage:24 | PASSWORD_PRIVATE_KEY_FILE → data/password_private_key.pem
+2026-01-28 17:36:39.530 | INFO     | manage:24 | PATH → /home/super/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand:/home/super/.vscode-server/data/User/globalStorage/github.copilot-chat/copilotCli:/home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/super/.vscode-server/extensions/ms-python.debugpy-2025.18.0-linux-arm64/bundled/scripts/noConfigScripts
+2026-01-28 17:36:39.531 | INFO     | manage:24 | PWD → /home/amadeus/build/sdk_server
+2026-01-28 17:36:39.531 | INFO     | manage:24 | PYDEVD_DISABLE_FILE_VALIDATION → 1
+2026-01-28 17:36:39.531 | INFO     | manage:24 | PYDEVD_USE_FRAME_EVAL → NO
+2026-01-28 17:36:39.532 | INFO     | manage:24 | PYTHONIOENCODING → UTF-8
+2026-01-28 17:36:39.532 | INFO     | manage:24 | PYTHONSTARTUP → /home/super/.vscode-server/data/User/workspaceStorage/7b041cf9e3a43e3f73dedaa48a48e99f/ms-python.python/pythonrc.py
+2026-01-28 17:36:39.532 | INFO     | manage:24 | PYTHONUNBUFFERED → 1
+2026-01-28 17:36:39.533 | INFO     | manage:24 | PYTHON_BASIC_REPL → 1
+2026-01-28 17:36:39.533 | INFO     | manage:24 | RESEND_API_KEY → re_TzTwmfdX_NdW52Ak9uZezLc3TmfhQqWqh
+2026-01-28 17:36:39.534 | INFO     | manage:24 | RESEND_MAIL → admin@kawaimoe.org
+2026-01-28 17:36:39.534 | INFO     | manage:24 | SAKURAXY_LOGIN_PRIVATE_KEY → -----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCtPwbo8IRUX6nX
+ThI5s/B3z8L8CwmsDRHMNpKiDqkV5pixg/FdtzABDQCxVil4ndTVO4UCZpVVPR4p
+tQC8Vv8r+miGQEsQKrC1CsxUunLcNo+RcNNSP7eyXwxhbsUj5khnF5+LKXzZp2Tu
+//NRokxhlsmbfA8ttj6zw7kGXIP/AEyLK+HNLC/mWCrauZwSd8hLCID84ZRu2Oje
+rCmgw0GpgIDrsY/1EveMjeGt6tO5B4YC0hQ91SjGibXOxx8YDXNdBR1T1NNY/MZW
+tFsvGRVlAg5Nx2xA3ymLmEczNzA6YuVPORd6HBxusxygXpzUCtZZ1Th7935dcSgP
+M/f/zQ1fAgMBAAECggEALEM2GL2akZP/aKrhrSxz+6hxQMPxLKwKKAqpXA4y1Q2d
+ZX04ZaEv+pS/4I8K+W4ZuoECcqKS9LwwwKcmEPiJKUtI+UPj6bV+gELKAbvBLNIj
+zBzvYMw2urPeDeanJ4zmYrB+aqem5lUGTKnIGMtGiIhl6fvARQWS74rJ8v4gGz4k
+lERhaRkT4f/Ym1vAJ7lbRv4zA4cLDR42shIoGBwUrl2l5whU2buHeJ8E5P6pgn3N
+CoGnTsbbSoG9CcDRQAzbOeVEIKiuRLFzGcfHXytGcb7oPCadWcaa7dnjl1+H72lt
+JMZynSTUalYxmxASX7bTJ6Mpcs75E61HOnY05FTkAQKBgQDc4cWrh2vk8IbMQUtu
+WlHDsPTdnNCtAeP1LYaziNW+mF0wACw/sx6nI7a/F8ZnmY+YZx9FCdBKdYwJf/OX
+RIhvviw9b8dh4+wMZIGzBlrh1NtSsDWiYJYOVwhEcrx2jbF+qPcaTv3zXPOCzws1
+su08CQETC04cqY23yI9WDtYCHwKBgQDIymixmhvUJdRjMr5colqRAuA8e+v8xETD
+fxuFWQ52jb0es0i1n4SAiYVYllUgJjTJJ4WGqlK/9kfNKBYFy3nVZ8yNHfSCAnZ+
+VJ2KVLwombtvPurPISxKeNyOadWdMSL1qQQbsQ74R4aqT4bQMvR2Qc9cBcENBZ5J
+oRI8BCQMwQKBgQCF3PZVPB8xgmvPQgsa9/XxqT7dR/pXv3uNzWeDSvxvJBvlyVUH
+zeBX3xcTvK7rfm8+J9EVoBrx5UdXQoo4NLqTLifVm/az5tPZtte7zbAqiTvaYxw+
+KlcGncxO31JEbx8Q6gnHkfPqF30k26Gpi6Sm67YQ+pr+V+uhZBUqTJd6dQKBgCTN
+VJsYz/j2ZhM4fcOkzky95jOv0vUlVCUw6u5qAEiiegNigPUpI7QbgKFYDIoz9oDY
+CZVBKqGcllR4AHFXdiEzQT6sOuCJawaEo8ty9HnMk5o0Qf1s6x1LQcGojEqfcvTr
+4aDhtwiys3AL233VmREDxunq9BNa8EQ2jY0KhUEBAoGAGj26nue4DEJPBYeswkoQ
+KIY2dUWC30KCdaMZbFM5atOFzkpmEnP6Q4eNE25JXWAFelM0RJBZymPFvo/f6Zmq
+xW9Do/SRFt5heIBDa1Sncly4ls4XzDq9+ifhr4wqRyNRQz/9FofKkRYvQH2kdI1s
+7dbjsWwMBKqTYYviY4/lx3c=
+2026-01-28 17:36:39.535 | INFO     | manage:24 | SAKURAXY_OAUTH_API → https://sakuraxy.dpdns.org/?oauth_authorize=1
+2026-01-28 17:36:39.535 | INFO     | manage:24 | SAKURAXY_OAUTH_APP_ID → 7463e5d904d72b2bbde0dfb39189d942
+2026-01-28 17:36:39.535 | INFO     | manage:24 | SAKURAXY_OAUTH_TOKEN → 028f37833d0cb4b89c2133fbf4b8b497e970624908cb9e076aa8cfad09af1bcf
+2026-01-28 17:36:39.536 | INFO     | manage:24 | SDK_BASE_URL → https://kawaimoe.org
+2026-01-28 17:36:39.536 | INFO     | manage:24 | SERVER_NAME → SDK_SERVER
+2026-01-28 17:36:39.537 | INFO     | manage:24 | SHELL → /bin/sh
+2026-01-28 17:36:39.537 | INFO     | manage:24 | SHLVL → 1
+2026-01-28 17:36:39.538 | INFO     | manage:24 | SOCKETIO_LOGGER → False
+2026-01-28 17:36:39.538 | INFO     | manage:24 | SQLALCHEMY_DATABASE_URI → mysql+pymysql://www_kawaimoe_org:mPWzt6R5XexHs3QPf@1Panel-mariadb-fMVg/www_kawaimoe_org
+2026-01-28 17:36:39.538 | INFO     | manage:24 | SQLALCHEMY_ECHO → False
+2026-01-28 17:36:39.539 | INFO     | manage:24 | SQLALCHEMY_TRACK_MODIFICATIONS → False
+2026-01-28 17:36:39.539 | INFO     | manage:24 | SSH_CLIENT → 10.0.0.210 60617 22
+2026-01-28 17:36:39.540 | INFO     | manage:24 | SSH_CONNECTION → 10.0.0.210 60617 10.0.0.200 22
+2026-01-28 17:36:39.540 | INFO     | manage:24 | SSL_CERT_DIR → /usr/lib/ssl/certs
+2026-01-28 17:36:39.540 | INFO     | manage:24 | SSL_CERT_FILE → /usr/lib/ssl/certs/ca-certificates.crt
+2026-01-28 17:36:39.541 | INFO     | manage:24 | SUFFIX → moe_
+2026-01-28 17:36:39.541 | INFO     | manage:24 | TELEGRAM_BOT_CHAT_ID → 6868665598
+2026-01-28 17:36:39.542 | INFO     | manage:24 | TELEGRAM_BOT_TOKEN → 8110475845:AAH2AMUoR34cy4PvQXtLxWYw74Zy52cRABA
+2026-01-28 17:36:39.542 | INFO     | manage:24 | TEMPLATES_AUTO_RELOAD → True
+2026-01-28 17:36:39.543 | INFO     | manage:24 | TERM → xterm-256color
+2026-01-28 17:36:39.543 | INFO     | manage:24 | TERM_PROGRAM → vscode
+2026-01-28 17:36:39.544 | INFO     | manage:24 | TERM_PROGRAM_VERSION → 1.108.2
+2026-01-28 17:36:39.544 | INFO     | manage:24 | TZ → Asia/Shanghai
+2026-01-28 17:36:39.545 | INFO     | manage:24 | USER → super
+2026-01-28 17:36:39.545 | INFO     | manage:24 | VSCODE_DEBUGPY_ADAPTER_ENDPOINTS → /home/super/.vscode-server/extensions/ms-python.debugpy-2025.18.0-linux-arm64/.noConfigDebugAdapterEndpoints/endpoint-72a2bb4ccc874de8.txt
+2026-01-28 17:36:39.546 | INFO     | manage:24 | VSCODE_GIT_ASKPASS_EXTRA_ARGS → 
+2026-01-28 17:36:39.547 | INFO     | manage:24 | VSCODE_GIT_ASKPASS_MAIN → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/extensions/git/dist/askpass-main.js
+2026-01-28 17:36:39.547 | INFO     | manage:24 | VSCODE_GIT_ASKPASS_NODE → /home/super/.vscode-server/cli/servers/Stable-c9d77990917f3102ada88be140d28b038d1dd7c7/server/node
+2026-01-28 17:36:39.547 | INFO     | manage:24 | VSCODE_GIT_IPC_HANDLE → /run/user/0/vscode-git-5c0a6a07e1.sock
+2026-01-28 17:36:39.548 | INFO     | manage:24 | VSCODE_IPC_HOOK_CLI → /run/user/0/vscode-ipc-5e2c29f2-c58c-4188-ae79-76f2c33a693f.sock
+2026-01-28 17:36:39.548 | INFO     | manage:24 | VSCODE_NONCE → eb88f109-e99d-43a2-b474-1bccda70b476
+2026-01-28 17:36:39.548 | INFO     | manage:24 | XDG_DATA_DIRS → /usr/local/share:/usr/share:/var/lib/snapd/desktop
+2026-01-28 17:36:39.548 | INFO     | manage:24 | XDG_RUNTIME_DIR → /run/user/0
+2026-01-28 17:36:39.549 | INFO     | manage:24 | XDG_SESSION_CLASS → user
+2026-01-28 17:36:39.549 | INFO     | manage:24 | XDG_SESSION_ID → 540
+2026-01-28 17:36:39.550 | INFO     | manage:24 | XDG_SESSION_TYPE → tty
+2026-01-28 17:36:39.550 | INFO     | manage:24 | _ → /usr/bin/env
+2026-01-28 17:36:39.572 | ERROR    | manage:34 | Failed to start server : [Errno 98] Address already in use: ('0.0.0.0', 80)
+2026-01-28 17:37:59.625 | INFO     | LoggerManager:79 | Exception ignored while joining a thread in _thread._shutdown()
+2026-01-28 17:37:59.627 | INFO     | LoggerManager:79 | :
+2026-01-28 17:37:59.628 | INFO     | LoggerManager:79 | Traceback (most recent call last):
+2026-01-28 17:37:59.630 | INFO     | LoggerManager:79 | File "/usr/local/python3.14/lib/python3.14/threading.py", line 1583, in _shutdown
+2026-01-28 17:37:59.634 | INFO     | LoggerManager:79 | 
+2026-01-28 17:37:59.635 | INFO     | LoggerManager:79 | _thread_shutdown()
+2026-01-28 17:37:59.636 | INFO     | LoggerManager:79 | 
+2026-01-28 17:37:59.636 | INFO     | LoggerManager:79 | KeyboardInterrupt
+2026-01-28 17:37:59.637 | INFO     | LoggerManager:79 | :
+2026-01-28 17:37:59.637 | INFO     | LoggerManager:79 | 
+2026-01-28 17:37:59.638 | INFO     | LoggerManager:79 | 

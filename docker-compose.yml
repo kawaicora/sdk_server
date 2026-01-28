@@ -11,9 +11,8 @@ services:
       - ./sdk_server:/home/sdk_server  # 挂载本地目录到容器
     working_dir: /home/sdk_server
     command: python manage.py
-    environment:
-      - TZ=Asia/Shanghai  # 新增：设置时区，避免时间同步问题
     restart: unless-stopped
     ports:
-      - "5000:5000"
-    
+      - "5000:80"
+    env_file:
+      - ./.env
