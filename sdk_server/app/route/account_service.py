@@ -179,6 +179,7 @@ def get_userinfo_by_sdk_token(sdk_token:str):
 # 第三方验证登录
 
 def third_login(data):
+    
     req_data = {
         "app_id":data.get('app_id'),
         "token":DefaultConfig.SAKURAXY_OAUTH_TOKEN,
@@ -411,15 +412,18 @@ def site_login(cookies,verify_siteurl=True):
 
 
 def verify_login(request:Request,verify_siteurl=True):
+    #按照步骤验证
     cookies = request.cookies
     try:
         request_json = request.get_json()
         encrypted_login_token = request_json.get("encrypted_login_token" or None)
         app_id = request_json.get("app_id" or None)
     except Exception as e:
+        current_app.logger.info("参数获取失败走本SDK验证")
         result_site = site_login(cookies=cookies,verify_siteurl=verify_siteurl) 
         return result_site
     if encrypted_login_token != None and encrypted_login_token != '':
+        current_app.logger.info("有效的encrypted_login_token走第三方数据处理")
         from cryptography.hazmat.primitives import serialization, hashes
         decoded_bytes = base64.b64decode(encrypted_login_token)
         if not decoded_bytes:
@@ -441,6 +445,7 @@ def verify_login(request:Request,verify_siteurl=True):
         result_third = third_login(data)
         return result_third
     else:
+        current_app.logger.info("无效的encrypted_login_token走site_login")
         result_site = site_login(cookies=cookies,verify_siteurl=verify_siteurl) 
         return result_site
 
@@ -708,7 +713,7 @@ def api_get_public_key():
 
 @bp.route("/api/v3/get_user_info",methods=['GET','POST'])
 def api_v3_get_userinfo():
-
+    #验证登录状态
     result = verify_login(request,verify_siteurl=False)
     
     headers = {
