@@ -1,5 +1,4 @@
 /.venv/
-/.vscode
 /sdk_server/.vscode
 __pycache__/
 /.history/

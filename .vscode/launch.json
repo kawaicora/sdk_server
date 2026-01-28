@@ -10,7 +10,6 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            // "args": ["D:\\Program Files\\P_GAMES\\Red_Alert\\RA2S4.7.1\\YURI.exe", "gamemd.exe","4","16" ],
             "justMyCode": true,
 
         }
