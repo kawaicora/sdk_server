@@ -8,6 +8,7 @@ const $devicesContainer = $('.devices'); // 缓存设备容器DOM
 const room = 'main';
 const title = "主聊天室";
 const room_type ="chat"
+var currentDevices = []
 // 初始化Socket连接（独立函数，便于重连调用）
 function initSocket() {
     // 销毁旧连接（如果存在）
@@ -35,8 +36,7 @@ function initSocket() {
         
         socket.emit('join-room', { 
             room_id: room,  // 统一为room_id与后端匹配
-            title: title, 
-            room_type:room_type
+     
         });
 
         chatLogger.log(`send join-room to=${room}`);

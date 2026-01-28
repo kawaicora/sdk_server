@@ -12,7 +12,8 @@ import hashlib
 import json
 from urllib.parse import quote, quote_plus,unquote,unquote_plus
 import random
-
+import bcrypt
+import hmac
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -476,65 +477,107 @@ class CommonUtils:
         return loop.run_until_complete(coroutine)
     ######################################################密码与验证#############################################
     @staticmethod
-    def password_to_hash(password: str) -> str:
+    def create_sha_passwd(string: str, mode: str = "$6$", salt: str = "96PyRRDpr81m794z") -> str:
         """
-        将明文密码转换为哈希值字符串。
-        该方法会生成一个随机盐值，并使用 Scrypt 算法对密码进行哈希处理。
-        最终返回的哈希值包含盐值和经过哈希处理后的密码，以 Base64 编码的字符串形式存储。
+        生成安全的密码哈希（底层替换为 bcrypt，保持接口兼容）
+        注：原有 mode/salt 参数仅为兼容旧调用，实际使用 bcrypt 自动生成盐值和可调难度
+        :param string: 明文密码
+        :param mode: 兼容旧参数（无实际作用）
+        :param salt: 兼容旧参数（无实际作用）
+        :return: bcrypt 格式的哈希字符串（utf-8 解码）
+        """
+        # 1. 转换明文密码为字节流（bcrypt 必需）
+        password_bytes = string.encode("utf-8")
+        
+        # 2. 自动生成安全盐值 + 哈希（默认 12 轮迭代，可调难度）
+        # bcrypt.gensalt()：自动生成盐值，可传入 rounds 参数调整难度（如 rounds=14）
+        # 推荐 rounds=12-16，数字越大耗时越长，抗破解能力越强
+        salt_bytes = bcrypt.gensalt(rounds=12)  # 自动生成盐值，无需手动配置
+        hashed_bytes = bcrypt.hashpw(password_bytes, salt_bytes)
+        
+        # 3. 转换为字符串返回（兼容原有函数的返回值类型）
+        return hashed_bytes.decode("utf-8")
+    
+    @staticmethod
+    def verify_sha_passwd(plain: str, hashed: str) -> bool:
+        """
+        验证明文密码是否匹配哈希（底层替换为 bcrypt，安全高效）
+        """
+        try:
+            # 1. 转换明文密码和哈希为字节流（bcrypt 必需）
+            plain_bytes = plain.encode("utf-8")
+            hashed_bytes = hashed.encode("utf-8")
+            
+            # 2. bcrypt 内置验证（自动提取哈希中的盐值，无需手动处理）
+            # 核心逻辑：用哈希中存储的盐值重新计算明文哈希，对比是否一致
+            return bcrypt.checkpw(plain_bytes, hashed_bytes)
+        except Exception as e:
+            # 哈希格式非法时返回 False，避免程序崩溃
+            print(f"密码验证失败：{e}")
+            return False
+    
 
-        :param password: 明文密码，字符串类型。
-        :return: 包含盐值和哈希密码的 Base64 编码字符串。
-        """
-        # 生成随机盐值
-        salt = os.urandom(16)
-        # 创建 Scrypt 密钥派生函数实例
-        kdf = Scrypt(
-            salt=salt,
-            length=32,
-            n=2 ** 14,
-            r=8,
-            p=1,
-            backend=default_backend()
-        )
-        # 对密码进行哈希处理
-        hashed = kdf.derive(password.encode())
-        # 组合盐值和哈希密码
-        combined = salt + hashed
-        # 以 Base64 编码为字符串
-        return base64.b64encode(combined).decode()
+
 
     @staticmethod
-    def verify_password(password: str, hashed_password_str: str) -> bool:
+    def wp_hash_password(password: str) -> str:
         """
-        验证输入的明文密码是否与存储的哈希密码匹配。
-        该方法会从存储的 Base64 编码的哈希密码中提取盐值，
-        然后使用相同的 Scrypt 算法对输入的密码进行哈希处理，
-        最后比较两个哈希值是否相同。
-
-        :param password: 明文密码，字符串类型。
-        :param hashed_password_str: 存储的包含盐值和哈希密码的 Base64 编码字符串。
-        :return: 如果密码匹配返回 True，否则返回 False。
+        完全复刻 WordPress 6.8.0+ 的 wp_hash_password 函数逻辑
+        :param password: 原始明文密码
+        :return: WordPress 格式的密码哈希（带 $wp$ 前缀）
         """
-        # 解码 Base64 字符串为字节
-        hashed_password = base64.b64decode(hashed_password_str)
-        # 从存储的哈希密码中提取盐值
-        salt = hashed_password[:16]
-        stored_hash = hashed_password[16:]
-        # 创建 Scrypt 密钥派生函数实例
-        kdf = Scrypt(
-            salt=salt,
-            length=32,
-            n=2 ** 14,
-            r=8,
-            p=1,
-            backend=default_backend()
-        )
+        # Step 1: 去除密码首尾空格（WordPress 核心逻辑）
+        trimmed_password = password.strip()
+        
+        # Step 2: 计算 HMAC-SHA384 二进制摘要（key=wp-sha384）
+        hmac_key = b'wp-sha384'
+        password_bytes = trimmed_password.encode('utf-8')
+        hmac_digest = hmac.new(hmac_key, password_bytes, hashlib.sha384).digest()
+        
+        # Step 3: 对二进制摘要做 base64 编码（WordPress 核心步骤）
+        password_to_hash = base64.b64encode(hmac_digest).decode('utf-8')
+        
+        # Step 4: 生成 bcrypt 哈希（cost=12，前缀 2y，兼容 WordPress）
+        # Python bcrypt 不支持 2y，先以 2b 生成，再替换为 2y
+        salt = bcrypt.gensalt(rounds=12, prefix=b'2b')
+        bcrypt_hash = bcrypt.hashpw(password_to_hash.encode('utf-8'), salt).decode('utf-8')
+        bcrypt_hash = bcrypt_hash.replace('$2b$', '$2y$')
+        
+        # Step 5: 添加 WordPress 特有的 $wp 前缀
+        wp_hash = f'$wp{bcrypt_hash}'
+        
+        return wp_hash
+    @staticmethod
+    def wp_verify_password(password: str, wp_hash: str) -> bool:
+        """
+        完全复刻 WordPress 密码校验逻辑
+        :param password: 原始明文密码
+        :param wp_hash: WordPress 生成的哈希值
+        :return: 匹配返回 True，否则返回 False
+        """
         try:
-            # 对输入的密码进行哈希处理并验证
-            kdf.verify(password.encode(), stored_hash)
-            return True
-        except Exception:
+            # Step 1: 移除 $wp 前缀，还原 bcrypt 哈希
+            bcrypt_hash = wp_hash.replace('$wp', '')
+            # 替换 2y 为 2b（Python bcrypt 兼容）
+            bcrypt_hash = bcrypt_hash.replace('$2y$', '$2b$')
+            bcrypt_hash_bytes = bcrypt_hash.encode('utf-8')
+            
+            # Step 2: 对原始密码执行和哈希时相同的预处理
+            trimmed_password = password.strip()
+            hmac_key = b'wp-sha384'
+            password_bytes = trimmed_password.encode('utf-8')
+            hmac_digest = hmac.new(hmac_key, password_bytes, hashlib.sha384).digest()
+            password_to_verify = base64.b64encode(hmac_digest).decode('utf-8')
+            password_to_verify_bytes = password_to_verify.encode('utf-8')
+            
+            # Step 3: 校验 bcrypt 哈希
+            return bcrypt.checkpw(password_to_verify_bytes, bcrypt_hash_bytes)
+        except (ValueError, TypeError, IndexError):
+            # 哈希格式错误/空值时返回不匹配
             return False
+
+        
+        
     @staticmethod
     def remove_key_recursive(obj, target_key):
         if isinstance(obj, dict):
@@ -913,3 +956,19 @@ class CommonUtils:
             return True
         except Exception:
             return False
+    @staticmethod
+    def paypal_create_product(paypal_request_id:str,data):
+        import requests
+
+        headers = {
+            'Authorization': 'Bearer access_token6V7rbVwmlM1gFZKW_8QtzWXqpcwQ6T5vhEGYNJDAAdn3paCgRpdeMdVYmWzgbKSsECednupJ3Zx5Xd-g',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'PayPal-Request-Id': paypal_request_id,
+            'Prefer': 'return=representation',
+        }
+
+        data = json.dumps(data)
+
+        response = requests.post('https://api-m.sandbox.paypal.com/v1/catalogs/products', headers=headers, data=data)
+        return response.json()

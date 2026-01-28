@@ -1,4 +1,3 @@
-
 import traceback
 from app.utils.LoggerManager import logger
 from flask import Flask

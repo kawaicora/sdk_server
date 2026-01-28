@@ -21,11 +21,6 @@ devices_info = {}
 
 
 
-def remove_offline_devices_loop():
-    while True:
-        remove_offline_devices()
-        time.sleep(0.25)
-    
 def remove_offline_devices():
     to_remove = []
 
@@ -142,7 +137,7 @@ def handle_get_devices_info():
     if not c_room:
         current_app.logger.warning(f"获取设备信息失败：用户无房间 - SID: {sid}")
         return
-
+    
     # 发送设备信息给请求用户
     emit("devices-info", devices_info, room=sid)
     current_app.logger.debug(f"发送设备信息给用户 - SID: {sid}, 设备数量: {len(devices_info)}")
@@ -159,7 +154,12 @@ def handle_device_heap(data):
     if not c_room:
         current_app.logger.warning(f"设备HEAP上报失败：用户无房间 - SID: {sid}")
         return
-    current_app.logger.warning(f"设备HEAP：{data.get("heap")}")
+    current_app.logger.warning(f"""
+设备总计   HEAP：{data.get("total_heap")}KB
+设备已使用 HEAP：{data.get("use_heap")}KB
+设备剩余   HEAP：{data.get("free_heap")}KB
+设备HEAP百分比 ：{str(data.get("heap_usage") ) }%
+""")
         
 # 设备连接成功时调用一次 以及GPIO状态切换时调用 
 @socketio.on("device-status")
@@ -184,13 +184,14 @@ def handle_device_status(data):
     device_key = "".join(mac_char_arr)
 
     # 更新设备信息（包含最新SID）
-    data["sid"] = sid  # 记录当前连接的SID
+    data['sid'] = sid
     old_sid = devices_info.get(device_key, {}).get("sid")
     devices_info[device_key] = data
 
     # 记录SID变更日志
     if old_sid and old_sid != sid:
         current_app.logger.info(f"设备SID变更 - key: {device_key}, 旧SID: {old_sid}, 新SID: {sid}")
+
     # 发送设备信息给请求用户
     emit("devices-info", devices_info, room=c_room.get("room_id"))
     current_app.logger.debug(f"发送设备信息给用户 - SID: {sid}, 设备数量: {len(devices_info)}")
@@ -206,6 +207,3 @@ def remove_device_by_sid(sid):
         logger.info(f"设备断开连接，已移除 - key: {device_key}, SID: {sid}")
     else:
         current_app.logger.debug(f"用户断开连接 - SID: {sid}")
-
-if __name__ :
-    Thread(target=remove_offline_devices_loop).start()

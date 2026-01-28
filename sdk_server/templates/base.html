@@ -133,10 +133,10 @@
 
         // 监听父页面发来的消息（仅接收参数，不本地存Cookie）
         window.addEventListener('message', function(event) {
-            if (event.origin !== 'https://www.sakuraxy.top') {
-                Base.inst().GetUserInfo(null, null);
+            if (Base.inst().isLogined){
+                console.log("已登录，忽略消息");
+                return;
             }
-
             switch (event.data.type){
                 case "TOKEN_ERROR": {
                     Base.inst().BaseLogger.debug(event.data.message);
@@ -204,10 +204,13 @@
             var isHidden = $mainNav.css('left') === '-240px';
             $mainNav.css('left', isHidden ? '0' : '-240px');
         });
-
-        // 初始化与窗口 resize 监听
-        checkScreenSize();
-        $(window).resize(checkScreenSize);
+        document.addEventListener("DOMContentLoaded", function() {
+            Base.inst().GetUserInfo();
+            // 初始化与窗口 resize 监听
+            checkScreenSize();
+            $(window).resize(checkScreenSize);
+        });
+        
     </script>
 </body>
 

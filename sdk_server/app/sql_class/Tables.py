@@ -122,6 +122,13 @@ class Users(db.Model):
     display_name = db.Column(db.String(250), nullable=False, default="")
     father_id = db.Column(INTEGER, nullable=False, default=0)
     reg_ip = db.Column(db.String(100), default="")
+class GameAccount(db.Model):
+    __tablename__ = suffix + 'game_account'
+
+
+    ID = db.Column(BIGINT, primary_key=True)
+    token = db.Column(db.String(255), nullable=False, default="")
+        
 
 
 # ####################################### WordPress Options #######################################

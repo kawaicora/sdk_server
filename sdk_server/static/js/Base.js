@@ -1,6 +1,7 @@
 class Base{
     constructor(){
         this.BaseLogger = new LoggerManager("Base",LoggerManager.LEVELS.DEBUG)
+        this.isLogined = false;
     }
     static inst (){
 
@@ -66,6 +67,7 @@ class Base{
                     $(".nav-user-info").removeClass("hidden");
                     $(".nav-username").html(`<a >${response.data.display_name}</a>`);
                     $(".nav-user-info a img")[0].src = response.data.avatar;
+                    Base.inst().isLogined = true;
                     try{
                         ChatInit();
                     }catch(e){

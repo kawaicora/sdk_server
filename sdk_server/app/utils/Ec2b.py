@@ -20,6 +20,21 @@ class Ec2b:
             random_bytes = random.getrandbits(64).to_bytes(8, byteorder='little')
             struct.pack_into('<Q', temp, i * 8, int.from_bytes(random_bytes, byteorder='little'))
         return temp
+    
+    def SetSeedEx(seed):
+        # 显式初始化Random对象（底层默认使用MT19937算法，符合需求）
+        mt_rng = random.Random(seed)  # 传入seed，保证可复现（相同seed生成相同的4096字节数据）
+        temp = bytearray(4096)
+        
+        for i in range(4096 // 8):
+            # 直接生成64位（8字节）无符号随机整数（MT19937算法）
+            random_64bit = mt_rng.getrandbits(64)
+            # 直接将64位整数打包到bytearray中，小端序（<Q），偏移量i*8
+            struct.pack_into('<Q', temp, i * 8, random_64bit)
+        
+        return temp
+
+
     @staticmethod
     def GetSeed(key, data):
         v = ~ 0xCEAC3B5A867837AC & 0xFFFFFFFFFFFFFFFF

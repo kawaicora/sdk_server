@@ -13,7 +13,7 @@ from engineio.payload import Payload
 Payload.max_decode_packets = 1024
 db:SQLAlchemy = SQLAlchemy()
 socketio:SocketIO = SocketIO(logger=DefaultConfig.SOCKETIO_LOGGER,engineio_logger=DefaultConfig.ENGINEIO_LOGGER,cors_allowed_origins='*',async_mode='gevent')
-# socketio = socketio.Server(async_mode='gevent')
+
 
 
 def set_cookies(response :Response,cookies,samesite:str='None',secure:bool = True,path:str="/",max_age:int|None = None):
@@ -100,9 +100,4 @@ def parse_encrypted_resume():
 
 
     return resume_dict
-
-
-
-
-
 

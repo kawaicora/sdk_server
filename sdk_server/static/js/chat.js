@@ -249,17 +249,20 @@ function register_record_mic() {
 }
 
 
-
-
-async function ChatInit(){
-    const room = 'main';
-    const title = "主聊天室";
+function connect(){
     socket = io(`${window.location.origin}`, 
         {
             transports: ['websocket', 'polling']
         }
     );
+
+}
+
+async function ChatInit(){
+    const room = 'main';
+    const title = "主聊天室";
     
+    connect();
     register_record_mic()
     document.getElementById('send_pic_button').onclick = sendMediaMessage;
     document.getElementById("send_msg_button").onclick = sendChatMessage;
@@ -278,8 +281,6 @@ async function ChatInit(){
 
         socket.emit('join-room', { 
             room_id: room,  // 统一为room_id与后端匹配
-            title: title, 
-            room_type:"chat"
         });
 
         chat_logger.log(`send join-room to=${room}`);
@@ -305,8 +306,51 @@ async function ChatInit(){
     socket.on('chat-message', appendMessage);
     
     socket.emit('user-register');
-}
+    socket.on('open' , (data) => {
+        chat_logger.error('连接打开:', data);
 
+    })
+    socket.on('connect', (data) => {
+        chat_logger.log('连接成功:', data);
+    })
+
+    socket.on('ping', (data) => {
+        chat_logger.log('PING:', data);
+    })
+
+    socket.on('packet', (data) => {
+        chat_logger.log('收到数据包:', data);
+    });
+
+    socket.on('connect_error', (data) => {
+        chat_logger.log('连接错误:', data);
+    })
+    socket.on('disconnect', (data) => {
+        chat_logger.log('连接断开:', data);
+    });
+    socket.on('close', (data) => {
+        chat_logger.log('连接关闭:', data);
+    });
+    socket.on('reconnect_attempt', (data) => {
+        chat_logger.log('重新连接尝试:', data);
+    });
+    socket.on('reconnect_failed', (data) => {
+        chat_logger.log('重新连接失败:', data);
+    });
+    socket.on('reconnect_error', (data) => {
+        chat_logger.log('重新连接错误:', data);
+    });
+    
+    socket.on('error' , (data) => {
+        chat_logger.error('连接错误,错误信息:', data);
+
+    })
+
+    
+    
+
+
+}
 
 // // 页面加载完成后初始化
 // document.addEventListener('DOMContentLoaded', init);

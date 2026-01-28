@@ -10,11 +10,7 @@ let iceServersConfig = {
         { urls: 'stun:stun.l.google.com:19302' },
     ]
 };
-let socket = io(`${window.location.origin}`, 
-    {
-        transports: ['websocket', 'polling']
-    }
-);
+let socket = undefined;
 let localAudioContext;
 let localAnalyser;
 let localSource;
@@ -620,8 +616,7 @@ async function loadIceConfig() {
 function join_room_ex(room_id, title) {
     socket.emit('join-room', { 
         room_id: room_id,  // 统一为room_id与后端匹配
-        title: title, 
-        room_type:"webrtc"
+
     });
     webrtc_logger.debug(`发送进房请求 room_id=${room_id}`);
 }
@@ -635,10 +630,24 @@ function on_show_select_device_click(){
         select_device_ui_status = false;
     }
 }
+
+
+function connect(){
+    socket = io(`${window.location.origin}`, 
+        {
+            transports: ['websocket', 'polling']
+        }
+    );
+
+}
+
+
+
+
 // 初始化
 async function WebrtcInit() {
     await enumerateDevices();
-
+    connect();
     // 统一用jQuery绑定事件（不修改DOM id/class）
     
     $('#videoSelect').on('change', () => {
@@ -844,6 +853,46 @@ async function WebrtcInit() {
     webrtc_logger.log(`开始注册用户`);
     $('.room-select-container').removeClass('hidden');
 
+    
+    socket.on('open' , (data) => {
+        chat_logger.error('连接打开:', data);
+
+    })
+    socket.on('connect', (data) => {
+        chat_logger.log('连接成功:', data);
+    })
+
+    socket.on('ping', (data) => {
+        chat_logger.log('PING:', data);
+    })
+
+    socket.on('packet', (data) => {
+        chat_logger.log('收到数据包:', data);
+    });
+
+    socket.on('connect_error', (data) => {
+        chat_logger.log('连接错误:', data);
+    })
+    socket.on('disconnect', (data) => {
+        chat_logger.log('连接断开:', data);
+    });
+    socket.on('close', (data) => {
+        chat_logger.log('连接关闭:', data);
+    });
+    socket.on('reconnect_attempt', (data) => {
+        chat_logger.log('重新连接尝试:', data);
+    });
+    socket.on('reconnect_failed', (data) => {
+        chat_logger.log('重新连接失败:', data);
+    });
+    socket.on('reconnect_error', (data) => {
+        chat_logger.log('重新连接错误:', data);
+    });
+    
+    socket.on('error' , (data) => {
+        chat_logger.error('连接错误,错误信息:', data);
+
+    })
 
     setInterval(() => {
         if (sessionStorage.getItem("room")) {
@@ -890,12 +939,12 @@ function handleVisibilityChange() {
     }
 }
 
-// 页面加载完成后初始化
-$(document).ready(() => {  // 统一用jQuery ready
-    WebrtcInit();
-    requestWakeLock();
-    $(document).on('click', () => {
-        webrtc_logger.info("document click");
-    });
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-});
+// // 页面加载完成后初始化
+// $(document).ready(() => {  // 统一用jQuery ready
+//     WebrtcInit();
+//     requestWakeLock();
+//     $(document).on('click', () => {
+//         webrtc_logger.info("document click");
+//     });
+//     document.addEventListener('visibilitychange', handleVisibilityChange);
+// });

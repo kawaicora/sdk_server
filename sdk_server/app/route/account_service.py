@@ -19,7 +19,7 @@ import hmac
 import hashlib
 from datetime import datetime
 from flask import Response, request, current_app,Request
-from app.sql_class.Tables import Users, Usermeta, Options
+from app.sql_class.Tables import Users, Usermeta, Options,GameAccount
 from app.utils.ErrorCode import *  # 假设已定义错误码
 import re
 import base64
@@ -485,13 +485,13 @@ def api_send_verify_code():
 #     else:
 #         password = password
 
-#     t_account = Account.query.filter_by(account=account).first()
-#     if t_account: 
+#     user = Account.query.filter_by(account=account).first()
+#     if user: 
 #         # 用户已存在
 #         return Response(get_response_string(-3011),status=200,content_type="application/json")
-#     t_account = Account.query.filter_by(username=username).first()
+#     user = Account.query.filter_by(username=username).first()
     
-#     if t_account:
+#     if user:
 #         return Response(get_response_string(-3011,"用户名重复!"),status=200,content_type="application/json")
     
 #     if verify_code != ticket_data["verify_code"]: 
@@ -503,9 +503,9 @@ def api_send_verify_code():
 
 #     # 生成用户
 #     try:
-#         t_account = Account(
+#         user = Account(
 #             account=account,
-#             password_hash=CommonUtils.password_to_hash(password),
+#             password_hash=CommonUtils.create_sha_passwd(password),
 #             username=username,
 #             avatar=avatar_url,
 #             phone_number=phone_number,
@@ -514,16 +514,16 @@ def api_send_verify_code():
 #             created_at=datetime.now(),
 #             updated_at=datetime.now()
 #         )
-#         db.session.add(t_account)
+#         db.session.add(user)
 #         db.session.commit()
 #     except Exception as e:
 #         current_app.logger.error(f"register error:{e}")
 #         return Response(get_response_string(-3003),status=200,content_type="application/json")
 #     # 注册成功
-#     t_account = Account.query.filter_by(account=account).first()
+#     user = Account.query.filter_by(account=account).first()
 #     cookies = {
-#         # "uid":t_account.id,
-#         # "token": t_account.login_token
+#         # "uid":user.id,
+#         # "token": user.login_token
 #     }
 #     headers = {
 #         'X-Organization': 'Nintendo'
@@ -531,55 +531,88 @@ def api_send_verify_code():
 #     ticket_cache_data.pop(ticket)
 #     return set_cookies(Response(get_response_string(0), status=200, content_type="application/json",headers=headers),cookies )
 
-# @bp.route("/api/login",methods=["POST"])
-# def api_login():
-#     account = request.json.get("account")
-#     password = request.json.get("password")
-#     isencrypted = request.json.get("is_encrypt")
-#     if not account or not password:
-#         return Response(get_response_string(-3002),status=200,content_type="application/json")
-#     if isencrypted == True:
-#         private_pem,public_pem = CommonUtils.get_exist_rsa_key()
-#         private_key = CommonUtils.load_private_key(private_pem)
-#         if not private_key:
-#             return Response(get_response_string(-3001),status=400,content_type="application/json")
-#         try:
-#             password = CommonUtils.rsa_decrypt_chunks(base64.b64decode(password),private_key).decode()
-#         except Exception as e:
-#             return Response(get_response_string(-3001),status=400,content_type="application/json")
+@bp.route("/api/login",methods=["POST"])
+def api_login():
+    account = request.json.get("account")
+    password = request.json.get("password")
+    isencrypted = request.json.get("is_encrypt")
+    if not account or not password:
+        return Response(get_response_string(-3002),status=200,content_type="application/json")
+    if isencrypted == True:
+        private_pem,public_pem = CommonUtils.get_exist_rsa_key()
+        private_key = CommonUtils.load_private_key(private_pem)
+        if not private_key:
+            return Response(get_response_string(-3001),status=400,content_type="application/json")
+        try:
+            password = CommonUtils.rsa_decrypt_chunks(base64.b64decode(password),private_key).decode()
+        except Exception as e:
+            return Response(get_response_string(-3001),status=400,content_type="application/json")
+    user = Users.query.filter_by(user_login=account).first()
+    if not user:
+        current_app.logger.warning(f"Cookie中的用户不存在：{account}")
+        return get_response_json(
+            code=-3010
+        )
+  
+    if not CommonUtils.wp_verify_password(password,user.user_pass):
+        return Response(get_response_string(-3012),status=200,content_type="application/json")
+    token = CommonUtils.random_string()
+    t_game_account = GameAccount.query.filter_by(ID=user.ID).first()
+    if not t_game_account:
+        t_game_account = GameAccount(
+            ID = user.ID,
+            token = token
+        )
+        db.session.add(t_game_account)
+    else:
+        t_game_account.token = token
+    db.session.commit()
 
-#     t_account = Account.query.filter_by(account=account).first()
-#     if not t_account:
-#         return Response(get_response_string(-3010),status=200,content_type="application/json")
-#     if not CommonUtils.verify_password(password,t_account.password_hash):
-#         return Response(get_response_string(-3012),status=200,content_type="application/json")
-#     token = CommonUtils.random_string()
-#     t_account.login_token = token
-#     t_account.updated_at = datetime.now()
-#     db.session.commit()
-#     cookies = {
-#         "uid":t_account.id,
-#         "token": t_account.login_token,
-#     }
-#     headers = {
-#         'X-Organization': 'Nintendo'
-#     }
-    
-#     # 创建响应对象
-#     response = Response(get_response_string(0), status=200, content_type="application/json", headers=headers)
+    cookies = {
+        "token": t_game_account.token,
+    }
+    headers = {
+        'X-Organization': 'Nintendo'
+    }
+    user_meta_list = Usermeta.query.filter_by(user_id=user.ID).all()
+    user_meta = {}
+    for meta in user_meta_list:
+        
+        user_meta[meta.meta_key] = meta.meta_value
 
-#     # 设置持久化 cookie（30 天后过期）
-#     for key, value in cookies.items():
-#         response.set_cookie(
-#             key, 
-#             value=str(value),
-#             max_age=30 * 24 * 60 * 60,  # 30 天（秒）
-#             httponly=True,  # 防止 XSS
-#             secure=True,    # 仅通过 HTTPS 传输
-#             samesite='Lax'  # 防止 CSRF
-#         )
+    # --------------------------
+    # 9. 构造最终响应数据
+    # --------------------------
+    user_data = {
+        "user_id": user.ID,
+        "user_login": user.user_login,
+        "user_email": user.user_email,
+        "display_name": user.display_name,
+        "user_url": user.user_url,
+        "user_registered": user.user_registered.strftime("%Y-%m-%d %H:%M:%S"),
+        "nickname": user_meta.get('nickname', user.display_name),
+        "avatar": user_meta.get('user_avatar', ""),
+        "last_login_time": user_meta.get('last_login_time', "未知"),
+        "last_login_ip": user_meta.get('last_login_ip', "未知"),
+        "current_ip": "",
+        "user_agent": ""
+    }
 
-#     return response
+    # 创建响应对象
+    response = Response(get_response_string(code=0,data=user_data), status=200, content_type="application/json", headers=headers)
+
+    # 设置持久化 cookie（30 天后过期）
+    for key, value in cookies.items():
+        response.set_cookie(
+            key, 
+            value=str(value),
+            max_age=30 * 24 * 60 * 60,  # 30 天（秒）
+            httponly=True,  # 防止 XSS
+            secure=True,    # 仅通过 HTTPS 传输
+            samesite='Lax'  # 防止 CSRF
+        )
+
+    return response
         
 third_cookies = {}
 
@@ -635,9 +668,9 @@ def api_get_user_info():
 #         'X-Organization': 'Nintendo',
 #         "X-Ticket":ticket
 #     }
-#     t_account = Account.query.filter_by(account=account).first()
-#     t_account.password_hash = CommonUtils.password_to_hash(password)
-#     t_account.updated_at = datetime.now()
+#     user = Account.query.filter_by(account=account).first()
+#     user.password_hash = CommonUtils.verify_sha_passwd(password)
+#     user.updated_at = datetime.now()
 #     db.session.commit()
 
 #     return Response(get_response_string(0),status=200,content_type="application/json",headers=headers)

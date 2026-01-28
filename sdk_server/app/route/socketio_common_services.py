@@ -4,7 +4,7 @@ from app.route import bp
 from flask import Request, jsonify, request, current_app
 from app.extensions import socketio
 from app.route.account_service import get_userinfo_by_sdk_token
-from app.sql_class.Tables import Users,Usermeta
+from app.sql_class.Tables import GameAccount, Usermeta,Users
 from flask_socketio import emit, join_room, leave_room 
 from app.utils.CommonUtils import *
 import requests
@@ -285,7 +285,7 @@ def handle_get_sid():
     emit("current-sid",{'sid':request.sid})
 
 @socketio.on('user-register')
-def handle_register_user():
+def handle_register_user(*args):
     """用户注册（建立连接时初始化会话信息）"""
     global guest_counter
     global write_config_thread
@@ -300,8 +300,48 @@ def handle_register_user():
         write_config_thread.daemon = True
         write_config_thread.start()
     ######################################
-    # 获取用户信息（已登录用户用真实 uid，游客生成临时 uid）
-    uid, username,avatar = get_user_info(request)
+    
+    # 处理客户端传入的 username 参数（兼容无参数、None、空字符串）
+    compulsory_username = ''
+    if args:  # 简化判断：args 非空即表示有传入参数
+        data = args[0]
+        # 安全获取 username：仅当 data 是字典且 username 有效时赋值
+        if isinstance(data, dict):
+            # 正确逻辑：username 不为 None 且 不为空字符串（去空格后）
+            uid = data.get('uid', '')  # 默认为空字符串
+            token = data.get('token','')
+            if uid == "" or uid == None or token == "" or token == None:
+                current_app.logger.info("参数错误")
+                emit('error', {"event": "user-register", "msg": "参数错误"}, sid=sid)
+                return
+            t_game_account = GameAccount.query.filter_by(ID=uid).first()
+            if not t_game_account:
+                current_app.logger.info("用户不存在")
+                emit('error', {"event": "user-register", "msg": "用户不存在"}, sid=sid)
+                return
+            if t_game_account.token  != token:
+                current_app.logger.info("TOKEN 错误")
+                emit('error', {"event": "user-register", "msg": "TOKEN 错误"}, sid=sid)
+                return
+            
+            user:Users = Users.query.filter_by(ID=uid).first()
+            user_meta_list:Usermeta = Usermeta.query.filter_by(user_id=user.ID).all()
+            user_meta = {}
+            for meta in user_meta_list:
+                
+                user_meta[meta.meta_key] = meta.meta_value
+
+            username = user.display_name
+            avatar = user_meta.get('user_avatar', "")
+
+    else :
+
+        # 获取用户信息（已登录用户用真实 uid，游客生成临时 uid）
+        uid, username,avatar = get_user_info(request)
+        if compulsory_username:
+            # 若客户端传入有效 username，直接使用
+            username = compulsory_username
+
     t_user = get_room_by_uid(uid)
     current_app.logger.info(f"根据用户获取房间 - SID: {sid}, UID: {uid}, 用户名: {username}")
     if t_user:
@@ -331,25 +371,6 @@ def handle_register_user():
     current_app.logger.info(f"用户注册 - SID: {sid}, UID: {uid}, 用户名: {username}")
 
 
-
-
-@socketio.on("set_userinfo")
-def handle_set_userinfo(data):
-    sid = request.sid
-    user = get_user_by_sid(sid)
-    if not user:
-        return
-    old_uid = user.get("uid")
-    user["username"] = data.get("username")
-    user["uid"] = data.get("uid")
-    t_room = get_room_by_uid(old_uid)
-    if t_room:
-        users:list[dict[str:Any]] = t_room.get("users")
-        for tmp_user in users:
-            if tmp_user.get("uid") == old_uid:
-                tmp_user['uid'] = user["uid"]        
-                break  
-    emit("update-self-info",{'sid':sid,'uid':user.get('uid'),'username':user.get('username')},room = sid)
 
     
 @socketio.on('user-unregister')
@@ -656,7 +677,7 @@ def handle_disconnect():
             "room_id": room["room_id"],
             "users": get_room_users(room["room_id"])
         }, room=room["room_id"])
-
+    
     # 发送断开连接通知
     emit('user-disconnect', {
         "sid":sid,
@@ -666,3 +687,4 @@ def handle_disconnect():
     # 从 user_sessions 中移除该用户会话
 
     remove_user_from_user_sessions(uid)
+    
