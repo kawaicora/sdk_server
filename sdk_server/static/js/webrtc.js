@@ -14,7 +14,7 @@ let socket = undefined;
 let localAudioContext;
 let localAnalyser;
 let localSource;
-let webrtc_logger = new LoggerManager("WebRTC", 1);
+let webrtc_logger = new LoggerManager("WebRTC", LoggerManager.LEVELS.ALL);
 // 可视化参数
 let fftSize = 2048;
 let verticalScale = 2;
@@ -849,48 +849,50 @@ async function WebrtcInit() {
 
     // 加载配置并注册用户
     await loadIceConfig();
-    socket.emit('user-register');
-    webrtc_logger.log(`开始注册用户`);
+    
     $('.room-select-container').removeClass('hidden');
 
     
     socket.on('open' , (data) => {
-        chat_logger.error('连接打开:', data);
+        webrtc_logger.error('连接打开:', data);
 
     })
     socket.on('connect', (data) => {
-        chat_logger.log('连接成功:', data);
+        webrtc_logger.log('连接成功:', data);
+        socket.emit('user-register');
+        webrtc_logger.log(`开始注册用户`);
+
     })
 
     socket.on('ping', (data) => {
-        chat_logger.log('PING:', data);
+        webrtc_logger.log('PING:', data);
     })
 
     socket.on('packet', (data) => {
-        chat_logger.log('收到数据包:', data);
+        webrtc_logger.log('收到数据包:', data);
     });
 
     socket.on('connect_error', (data) => {
-        chat_logger.log('连接错误:', data);
+        webrtc_logger.log('连接错误:', data);
     })
     socket.on('disconnect', (data) => {
-        chat_logger.log('连接断开:', data);
+        webrtc_logger.log('连接断开:', data);
     });
     socket.on('close', (data) => {
-        chat_logger.log('连接关闭:', data);
+        webrtc_logger.log('连接关闭:', data);
     });
     socket.on('reconnect_attempt', (data) => {
-        chat_logger.log('重新连接尝试:', data);
+        webrtc_logger.log('重新连接尝试:', data);
     });
     socket.on('reconnect_failed', (data) => {
-        chat_logger.log('重新连接失败:', data);
+        webrtc_logger.log('重新连接失败:', data);
     });
     socket.on('reconnect_error', (data) => {
-        chat_logger.log('重新连接错误:', data);
+        webrtc_logger.log('重新连接错误:', data);
     });
     
     socket.on('error' , (data) => {
-        chat_logger.error('连接错误,错误信息:', data);
+        webrtc_logger.error('连接错误,错误信息:', data);
 
     })
 

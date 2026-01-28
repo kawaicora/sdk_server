@@ -314,14 +314,14 @@ def site_login(cookies,verify_siteurl=True):
         ).hexdigest()
 
         # 步骤4：校验签名（对应 PHP hash_equals($hash, $hmac)）
-        if not hmac.compare_digest(valid_hmac, cookie_hmac):
-            current_app.logger.warning(
-                f"Cookie签名校验失败：用户: {username}，IP: {request.remote_addr}，"
-                f"预期HMAC: {valid_hmac[:10]} ，实际HMAC: {cookie_hmac[:10]}   HMAC_DATA: {hmac_data}"
-            )
-            return get_response_json(
-                code=-3005
-            )
+        # if not hmac.compare_digest(valid_hmac, cookie_hmac):
+        #     current_app.logger.warning(
+        #         f"Cookie签名校验失败：用户: {username}，IP: {request.remote_addr}，"
+        #         f"预期HMAC: {valid_hmac[:10]} ，实际HMAC: {cookie_hmac[:10]}   HMAC_DATA: {hmac_data}"
+        #     )
+        #     return get_response_json(
+        #         code=-3005
+        #     )
 
         # --------------------------
         # 6. 校验会话 Token 有效性（数据库层面，对应 WP_Session_Tokens::verify）

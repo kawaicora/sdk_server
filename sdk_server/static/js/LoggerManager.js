@@ -1,5 +1,7 @@
 class LoggerManager {
     static LEVELS = {
+        ALL:-1,
+        
         DEBUG: 1,
         INFO: 2,
         WARN: 3,
@@ -11,7 +13,7 @@ class LoggerManager {
     }
     // 日志工具函数 - 仅输出到控制台
 
-    log_ex(type, ...args) {
+    log_ex(type, args) {
         const now = new Date();
         const timeStr = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}]`;
         const { method, file, line } = this.getCallerInfo(); // 假设该方法已正常实现
@@ -25,13 +27,13 @@ class LoggerManager {
         switch (type) {
             case 1:
                 // console.debug 支持多参数，依次传入样式、头部、剩余参数（自动展开）
-                console.debug(`%c${logHeader}`, logStyle, ...args);
+                console.log(`%c${logHeader}`, logStyle, ...args);
                 break;
             case 2:
-                console.debug(`%c${logHeader}`, logStyle, ...args);
+                console.info(`%c${logHeader}`, logStyle, ...args);
                 break;
             case 3:
-                console.debug(`%c${logHeader}`, logStyle, ...args);
+                console.warn(`%c${logHeader}`, logStyle, ...args);
                 break;
             case 4:
                 console.error(`%c${logHeader}`, logStyle, ...args);

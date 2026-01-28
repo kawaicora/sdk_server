@@ -1,5 +1,5 @@
 let socket = undefined;
-let chat_logger = new LoggerManager("Chat",LoggerManager.LEVELS.DEBUG)
+let chat_logger = new LoggerManager("Chat",LoggerManager.LEVELS.ALL)
 let currentRoomId = null
 let notificationManager= NotificationManager.getInstance()
 notificationManager.requestPermission()
@@ -305,13 +305,15 @@ async function ChatInit(){
     // Socket事件监听
     socket.on('chat-message', appendMessage);
     
-    socket.emit('user-register');
+    
     socket.on('open' , (data) => {
         chat_logger.error('连接打开:', data);
 
     })
     socket.on('connect', (data) => {
         chat_logger.log('连接成功:', data);
+
+        socket.emit('user-register');
     })
 
     socket.on('ping', (data) => {
