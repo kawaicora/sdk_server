@@ -10,35 +10,61 @@ class LoggerManager {
         this.LEVEL = LEVEL;
     }
     // 日志工具函数 - 仅输出到控制台
-    log_ex(type,...args) {
+
+    log_ex(type, ...args) {
         const now = new Date();
         const timeStr = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}]`;
-        const { method, file, line } = this.getCallerInfo();
-        // 根据类型输出不同样式的日志
+        const { method, file, line } = this.getCallerInfo(); // 假设该方法已正常实现
+        
+        // 构建日志头部（固定格式部分）
+        const logHeader = `${timeStr} [${this.getLogTypeDesc(type)}] [${this.TAG}] [${file}:${line} in ${method}]`;
+        // 构建 console 样式字符串
+        const logStyle = this.getLogStyle(type);
+
+        // 根据类型选择对应的 console 方法，复用多参数特性输出
         switch (type) {
-            
-            //   case 'sender':
-            //     console.log(`%c${timeStr} [发送方] ${message}`, 'color: #4CAF50; font-weight: bold');
-            //     break;
-            //   case 'receiver':
-            //     console.log(`%c${timeStr} [接收方] ${message}`, 'color: #2196F3; font-weight: bold');
-            //     break;
             case 1:
-                console.debug(`%c${timeStr} [调试] [${this.TAG}] [${file}:${line} in ${method}] ${args}`, 'color: #795548;');
+                // console.debug 支持多参数，依次传入样式、头部、剩余参数（自动展开）
+                console.debug(`%c${logHeader}`, logStyle, ...args);
                 break;
             case 2:
-                console.debug(`%c${timeStr} [信息] [${this.TAG}] [${file}:${line} in ${method}] ${args}`, 'color: #00ffcc;');
+                console.debug(`%c${logHeader}`, logStyle, ...args);
                 break;
             case 3:
-                console.debug(`%c${timeStr} [警告] [${this.TAG}] [${file}:${line} in ${method}] ${args}`, 'color: #ffff55;');
+                console.debug(`%c${logHeader}`, logStyle, ...args);
                 break;
             case 4:
-                console.error(`%c${timeStr} [错误] [${this.TAG}] [${file}:${line} in ${method}] ${args}`, 'color: #F44336; font-weight: bold');
+                console.error(`%c${logHeader}`, logStyle, ...args);
                 break;
             default:
-                console.log(`%c${timeStr} [系统] [${this.TAG}] [${file}:${line} in ${method}] ${args}`, 'color: #607D8B;');
+                console.log(`%c${logHeader}`, logStyle, ...args);
         }
     }
+
+    // 辅助方法：获取日志类型描述（可选，优化可读性）
+    getLogTypeDesc(type) {
+        switch (type) {
+            case 1: return "调试";
+            case 2: return "信息";
+            case 3: return "警告";
+            case 4: return "错误";
+            default: return "系统";
+        }
+    }
+
+    // 辅助方法：获取日志样式（可选，抽离样式便于维护）
+    getLogStyle(type) {
+        switch (type) {
+            case 1: return 'color: #795548;';
+            case 2: return 'color: #00ffcc;';
+            case 3: return 'color: #ffff55;';
+            case 4: return 'color: #F44336; font-weight: bold;';
+            default: return 'color: #607D8B;';
+        }
+    }
+
+
+
 
     // 辅助函数，用于检查是否允许输出该级别的日志
     shouldLog(level) {
@@ -64,40 +90,35 @@ class LoggerManager {
     // 实现 console.log 方法
     log(...args) {
         if (this.shouldLog(LoggerManager.LEVELS.DEBUG)) {
-            const { method, file, line } = this.getCallerInfo();
-            console.log(`[${this.TAG}] [${file}:${line} in ${method}]`, ...args);
+            this.log_ex(0,args)
         }
     }
 
     // 实现 console.info 方法
     info(...args) {
         if (this.shouldLog(LoggerManager.LEVELS.INFO)) {
-            const { method, file, line } = this.getCallerInfo();
-            console.info(`[${this.TAG}] [${file}:${line} in ${method}]`, ...args);
+             this.log_ex(LoggerManager.LEVELS.INFO,args)
         }
     }
 
     // 实现 console.warn 方法
     warn(...args) {
         if (this.shouldLog(LoggerManager.LEVELS.WARN)) {
-            const { method, file, line } = this.getCallerInfo();
-            console.warn(`[${this.TAG}] [${file}:${line} in ${method}]`, ...args);
+           this.log_ex(LoggerManager.LEVELS.WARN,args)
         }
     }
 
     // 实现 console.error 方法
     error(...args) {
         if (this.shouldLog(LoggerManager.LEVELS.ERROR)) {
-            const { method, file, line } = this.getCallerInfo();
-            console.error(`[${this.TAG}] [${file}:${line} in ${method}]`, ...args);
+            this.log_ex(LoggerManager.LEVELS.ERROR,args)
         }
     }
 
     // 实现 console.debug 方法
     debug(...args) {
         if (this.shouldLog(LoggerManager.LEVELS.DEBUG)) {
-            const { method, file, line } = this.getCallerInfo();
-            console.log(`[${this.TAG}] [${file}:${line} in ${method}]`, ...args);
+            this.log_ex(LoggerManager.LEVELS.DEBUG,args)
         }
     }
 

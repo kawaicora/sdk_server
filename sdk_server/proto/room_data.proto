@@ -1,0 +1,54 @@
+
+syntax = "proto3";
+
+// 可选：定义包名，避免命名冲突
+package corasdk_room_data;
+
+// 可选：生成代码的命名空间（以 Go 为例，其他语言可调整或删除）
+option go_package = "./;chat_room";
+
+
+
+// 用户会话/基本信息（对应 JSON 中的单个用户对象）
+message UserInfo {
+  // 会话/连接 ID（对应 sid）
+  string sid = 1;
+  // 用户 ID
+  int64 uid = 2;
+  // 用户名
+  string username = 3;
+  // 头像图片 URL
+  string avatar = 4;
+}
+
+
+// 聊天室信息（对应 JSON 中的单个房间对象）
+message ChatRoom {
+  // 房间 ID
+  string room_id = 1;
+  // 房间标题
+  string title = 2;
+  // 房间描述
+  string desc = 3;
+  // 创建时间（时间戳，秒级）
+  int64 create_time = 4;
+  // 更新时间（时间戳，秒级，null 对应 0 或不赋值）
+  int64 updated_time = 5;
+  // 删除时间（时间戳，秒级，null 对应 0 或不赋值）
+  int64 deleted_time = 6;
+  // 房间封面图地址
+  string cover = 7;
+  // 房间内用户列表（repeated 对应 JSON 数组）
+  repeated UserInfo users = 8;
+  // 禁言用户列表（结构同 User，此处复用 User 消息体）
+  repeated UserInfo ban_users = 9;
+  // 房间创建者 ID
+  int64 creator = 10;
+  // 房间类型
+  string room_type = 11;
+}
+
+// 聊天室列表（对应最外层的 JSON 数组）
+message ChatRoomList {
+  repeated ChatRoom rooms = 1;
+}

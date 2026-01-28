@@ -196,6 +196,7 @@ def third_login(data):
             return get_response_json(code = -1,msg=f"请求第三方API返回错误! {json.dumps(response_json,indent=4,ensure_ascii=False)}")
     except Exception as e:
         current_app.logger.warning(f"请求第三方API返回错误! 非json格式内容:{str(e)}")
+        current_app.logger.warning(f"{rsp.text}")
         return get_response_json(code = -1,msg=f"请求第三方API返回错误! 非json格式内容:{str(e)}")
     
     
@@ -314,8 +315,8 @@ def site_login(cookies,verify_siteurl=True):
         # 步骤4：校验签名（对应 PHP hash_equals($hash, $hmac)）
         if not hmac.compare_digest(valid_hmac, cookie_hmac):
             current_app.logger.warning(
-                f"Cookie签名校验失败：用户{username}，IP{request.remote_addr}，"
-                f"预期HMAC{valid_hmac[:10]}...，实际HMAC{cookie_hmac[:10]}..."
+                f"Cookie签名校验失败：用户: {username}，IP: {request.remote_addr}，"
+                f"预期HMAC: {valid_hmac[:10]} ，实际HMAC: {cookie_hmac[:10]}   HMAC_DATA: {hmac_data}"
             )
             return get_response_json(
                 code=-3005
@@ -420,9 +421,22 @@ def verify_login(request:Request,verify_siteurl=True):
         return result_site
     if encrypted_login_token != None and encrypted_login_token != '':
         from cryptography.hazmat.primitives import serialization, hashes
-        decrypted_login_token =  CommonUtils.rsa_decrypt(base64.b64decode(encrypted_login_token),CommonUtils.load_private_key(DefaultConfig.SAKURAXY_LOGIN_PRIVATE_KEY),padding_scheme='OAEP',oaep_hash_alg=hashes.SHA1,  # 匹配加密端的哈希算法（优先试 SHA-1）
-        oaep_mgf_hash_alg=hashes.SHA1  ).decode()
-
+        decoded_bytes = base64.b64decode(encrypted_login_token)
+        if not decoded_bytes:
+            current_app.logger.info("BASE64 解码失败")
+            return get_response_json(-1)
+        private_key = CommonUtils.load_private_key(DefaultConfig.SAKURAXY_LOGIN_PRIVATE_KEY)
+        if not private_key:
+            current_app.logger.info(f"加载私钥失败 \n {DefaultConfig.SAKURAXY_LOGIN_PRIVATE_KEY}")
+            return get_response_json(-1)
+        try:
+            decrypted_login_token =  CommonUtils.rsa_decrypt(decoded_bytes,private_key,padding_scheme='OAEP',oaep_hash_alg=hashes.SHA1,oaep_mgf_hash_alg=hashes.SHA1  )
+        except Exception as e:
+            current_app.logger.info(f"{str(e)}")
+            return get_response_json(-3056) #解密失败
+        if not decrypted_login_token :
+            current_app.logger.info("解密失败")
+            return get_response_json(-3056) #解密失败
         data = {'app_id':app_id,'decrypted_login_token':decrypted_login_token}
         result_third = third_login(data)
         return result_third
