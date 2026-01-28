@@ -10,7 +10,7 @@ class LoggerManager {
         this.LEVEL = LEVEL;
     }
     // 日志工具函数 - 仅输出到控制台
-    log_ex(message, type = 2) {
+    log_ex(type,...args) {
         const now = new Date();
         const timeStr = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}]`;
         const { method, file, line } = this.getCallerInfo();
@@ -24,19 +24,19 @@ class LoggerManager {
             //     console.log(`%c${timeStr} [接收方] ${message}`, 'color: #2196F3; font-weight: bold');
             //     break;
             case 1:
-                console.debug(`%c${timeStr} [调试] [${this.TAG}] [${file}:${line} in ${method}] ${message}`, 'color: #795548;');
+                console.debug(`%c${timeStr} [调试] [${this.TAG}] [${file}:${line} in ${method}] ${args}`, 'color: #795548;');
                 break;
             case 2:
-                console.debug(`%c${timeStr} [信息] [${this.TAG}] [${file}:${line} in ${method}] ${message}`, 'color: #00ffcc;');
+                console.debug(`%c${timeStr} [信息] [${this.TAG}] [${file}:${line} in ${method}] ${args}`, 'color: #00ffcc;');
                 break;
             case 3:
-                console.debug(`%c${timeStr} [警告] [${this.TAG}] [${file}:${line} in ${method}] ${message}`, 'color: #ffff55;');
+                console.debug(`%c${timeStr} [警告] [${this.TAG}] [${file}:${line} in ${method}] ${args}`, 'color: #ffff55;');
                 break;
             case 4:
-                console.error(`%c${timeStr} [错误] [${this.TAG}] [${file}:${line} in ${method}] ${message}`, 'color: #F44336; font-weight: bold');
+                console.error(`%c${timeStr} [错误] [${this.TAG}] [${file}:${line} in ${method}] ${args}`, 'color: #F44336; font-weight: bold');
                 break;
             default:
-                console.log(`%c${timeStr} [系统] [${this.TAG}] [${file}:${line} in ${method}] ${message}`, 'color: #607D8B;');
+                console.log(`%c${timeStr} [系统] [${this.TAG}] [${file}:${line} in ${method}] ${args}`, 'color: #607D8B;');
         }
     }
 

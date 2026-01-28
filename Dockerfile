@@ -23,8 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libssl-dev \
     libffi-dev \
-    python3-dev
-
+    openssh-server 
 
 # 用 pip 命令直接设置全局源（无需手动创建配置文件）
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/ && \

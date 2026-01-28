@@ -25,7 +25,7 @@ rarfile
 pyodbc
 sqlacodegen
 websocket-client
-cryptography
+bcrypt
 resend
 certbot
 Pillow

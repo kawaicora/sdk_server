@@ -9,4 +9,5 @@ __pycache__/
 /sdk_server/data/resume_default.yaml
 /sdk_server/data/password_private_key.pem
 /sdk_server/logs
+/sdk_server/test.py
 /backups
