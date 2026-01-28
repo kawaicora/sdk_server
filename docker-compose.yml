@@ -1,9 +1,8 @@
-
+networks:
+    1panel-network:
+        external: true
 
 services:
-
-
-
   sdk-server-c294def:
     build: .
     container_name: sdk-server-c294def
@@ -11,9 +10,11 @@ services:
       - ./sdk_server:/home/sdk_server  # 挂载本地目录到容器
     working_dir: /home/sdk_server
     command: python manage.py
-    restart: unless-stopped
-    ports:
-      - "5000:80"
-      - "20022:22"
     env_file:
       - ./.env
+    restart: unless-stopped
+    ports:
+      - "5000:80" # 将容器的80端口映射到主机的5000端口
+    networks:
+      - 1panel-network
+    
