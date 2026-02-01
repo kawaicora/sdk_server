@@ -12,6 +12,7 @@ class BackgroundVideoDisplay {
 
         this.media_com.loop = this.isloop;
         this.media_com.muted = true;
+        this.media_com.volume = 0.3;
         // this.media_com.autoplay = true;
         $('.content-container')[0].appendChild(this.media_com);
 

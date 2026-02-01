@@ -234,15 +234,20 @@
             iframe_chat.contentWindow.postMessage(data, iframe_target_origin);
         }
         
+        try {
+            iframe_chat.onload = function() {
+                // 其他失败：发送错误信息
+                sendMessageToIframe({
+                    type: 'REQUEST_LOGIN_TOKEN',
+                    message: 'OK'
+                });
+            };
+        } catch (error) {
+            
+        }
 
 
-        iframe_chat.onload = function() {
-            // 其他失败：发送错误信息
-            sendMessageToIframe({
-                type: 'REQUEST_LOGIN_TOKEN',
-                message: 'OK'
-            });
-        };
+        
         
     });
 </script>

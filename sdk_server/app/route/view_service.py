@@ -37,9 +37,9 @@ def view_index():
     return response
 
 
-# @bp.route("/favicon.ico")
-# def view_favicon():
-#     return send_from_directory("static/img","favicon.ico")
+@bp.route("/favicon.ico")
+def view_favicon():
+    return send_from_directory("static/img","favicon.ico")
 
 # @bp.route("/view/login")
 # def view_login():
