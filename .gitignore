@@ -11,3 +11,5 @@ __pycache__/
 logs
 /sdk_server/test.py
 /backups
+.env
+.env_dev
