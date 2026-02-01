@@ -30,15 +30,13 @@ import xml.etree.ElementTree as ET
 
     
 @bp.route("/")
-def view_index():
-    response = make_response(render_template("index.html"),200)
-    response.headers['X-Organization'] = 'Nintendo'
-    return response
 @bp.route("/view/")
 def view_index():
     response = make_response(render_template("index.html"),200)
     response.headers['X-Organization'] = 'Nintendo'
     return response
+
+
 # @bp.route("/favicon.ico")
 # def view_favicon():
 #     return send_from_directory("static/img","favicon.ico")
