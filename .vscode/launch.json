@@ -11,7 +11,8 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-
+            "cwd":"${workspaceFolder}/sdk_server",
+            "envFile": "${workspaceFolder}/.env_dev"
         }
     ]
 }
