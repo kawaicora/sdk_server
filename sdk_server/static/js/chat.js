@@ -2,69 +2,74 @@ let socket = undefined;
 let chat_logger = new LoggerManager("Chat",LoggerManager.LEVELS.ALL)
 let currentRoomId = null
 let notificationManager= NotificationManager.getInstance()
+let localUid;
 notificationManager.requestPermission()
+let msgTmp = ""
 // 加载历史消息
 
 async function loadHistoryMessages(room) {
     try {
-        socket.emit('chat-room-messages', { room: room });
+        socket.emit('get-room-message-history', { room: room });
 
     } catch (e) {
         chat_logger.error('加载历史消息失败:', e);
         CommonUtils.MsgBox('加载历史消息失败: ' + e.message);
     }
 }
-
+function getLocalMsgId(){
+    return "msg_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+}
 // 添加消息到聊天框
 function appendMessage(msg) {
-    const chatBox = document.getElementById('chat_message');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message ' + (msg.sender_uid + '' === CommonUtils.GetCookie("uid") ? 'self' : 'other');
-
-    const senderDiv = document.createElement('div');
-    senderDiv.className = 'sender';
-    senderDiv.textContent = msg.sender_username || '未知用户';
-    const msgContentDiv = document.createElement('div');
-    msgContentDiv.className = 'msgContent';
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'content';
     
+    var msgId = getLocalMsgId()
+    if (msgTmp == "")
+        msgTmp = $(".message_list").html()
+
+    var msgCode = msgTmp.replace("msg_id",msgId)
+    $(".message_list").append(msgCode)
+    if ( msg.sender_uid== localUid ) {
+        $(`#${msgId}`).addClass("self");
+    }else{
+        $(`#${msgId}`).addClass("other");
+    }
+    $(`#${msgId} .avatar-container .username`).text(msg.sender_username || "未知用户");
+    $(`#${msgId} .avatar-container .msg-avatar`)[0].src=msg.sender_avatar != "" ? msg.sender_avatar : "/static/img/default_avatar.gif"
     switch (msg.type) {
         case "image":
             const img = document.createElement('img');
             img.src = msg.message;
             img.style.maxWidth = '100%';
-            contentDiv.appendChild(img);
+            $(`#${msgId} .msgContent .content`).append(img)
             // if (msg.sender_uid + '' != CommonUtils.GetCookie("uid")) notificationManager.sendNotification(`新消息来自:${ msg.sender_username}`,"[图片]")
             break;
         case "video":
             const video = document.createElement('video');
             video.src = msg.message;
             video.controls = true;
-            contentDiv.appendChild(video);
+            $(`#${msgId} .msgContent .content`).append(video);
             // if (msg.sender_uid + '' != CommonUtils.GetCookie("uid")) notificationManager.sendNotification(`新消息来自:${ msg.sender_username}`,"[视频]")
             break;
         case "audio":
             const audio = document.createElement('audio');
             audio.src = msg.message;
             audio.controls = true;
-            contentDiv.appendChild(audio);
+            $(`#${msgId} .msgContent .content`).append(audio);
             // if (msg.sender_uid + '' != CommonUtils.GetCookie("uid")) notificationManager.sendNotification(`新消息来自:${ msg.sender_username}`,"[音频]")
             break;
         case "text":
-            contentDiv.innerText = msg.message;
+            $(`#${msgId} .msgContent .content`).text(msg.message);
             
             // if (msg.sender_uid + '' != CommonUtils.GetCookie("uid")) notificationManager.sendNotification(`新消息来自:${ msg.sender_username}`,msg.message)
             break;
         case "html":
-            contentDiv.innerHTML = msg.message
+            $(`#${msgId} .msgContent .content`).html(msg.message);
             // if (msg.sender_uid + '' != CommonUtils.GetCookie("uid")) notificationManager.sendNotification(`新消息来自:${ msg.sender_username}`,"[超文本]")
             break;
     }
 
 
-    const timeDiv = document.createElement('div');
-    timeDiv.className = 'time';
+
     const timestamp = msg.timestamp ? new Date(msg.timestamp) : new Date();
     // 定义日期和时间的格式化选项
     const options = {
@@ -79,14 +84,10 @@ function appendMessage(msg) {
     const formatter = new Intl.DateTimeFormat('zh-CN', options);
     // 获取格式化后的时间字符串
     const formattedTime = formatter.format(timestamp);
-    timeDiv.textContent = formattedTime;
 
-    messageDiv.appendChild(senderDiv);
-    messageDiv.appendChild(msgContentDiv);
-    msgContentDiv.appendChild(contentDiv);
-    msgContentDiv.appendChild(timeDiv);
-    chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    $(`#${msgId} .msgContent .time`).text(formattedTime);
+    $(`#${msgId}`).removeClass("hidden");
+    $("#chat_message").scrollTop = $("#chat_message").scrollHeight;
     window.scrollTo(0, document.body.scrollHeight);
     
     
@@ -276,6 +277,7 @@ async function ChatInit(){
     socket.on('user-registered', (data) => {
         chat_logger.log('Register user:', data);
         localSid = data.sid;
+        localUid = data.uid
         socket.emit('create-room',{room_id:room,title:title,room_type:"chat"})
 
 

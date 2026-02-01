@@ -56,30 +56,38 @@ function removeRemoteVideo(targetSid) {
 function addRemoteVideo(targetSid, streams) {
     if ($(`#remote_video_${targetSid}`).length === 0) {
         const root_div = document.createElement('div');
-        root_div.className = `layui-card`;
+        // 替换layui-card为Tailwind卡片样式，保留原有ID和margin-bottom
+        root_div.className = `bg-card border border-border rounded-lg shadow-md mb-2.5`;
         root_div.id = `remote_video_${targetSid}`;
-        root_div.style.marginBottom = '10px';
 
         const header_div = document.createElement('div');
-        header_div.className = `remote-video-lable layui-card-header remote-video-lable-${targetSid}`;
+        // 替换layui-card-header为Tailwind样式，保留自定义类名用于标识
+        header_div.className = `remote-video-lable px-4 py-3 border-t border-border text-text font-medium remote-video-lable-${targetSid}`;
         try {
-            header_div.innerHTML = `<i class="layui-icon" style="margin-right:5px;">&#xe60e;</i>远程用户: ${remoteUsers[targetSid]['username']}`;
+            // 替换layui图标为Font Awesome，调整间距
+            header_div.innerHTML = `<i class="fa-solid fa-user mr-1.5"></i>远程用户: ${remoteUsers[targetSid]['username']}`;
         } catch (e) {
-            header_div.innerHTML = `<i class="layui-icon" style="margin-right:5px;">&#xe60e;</i>远程用户: ${targetSid}`;
+            header_div.innerHTML = `<i class="fa-solid fa-user mr-1.5"></i>远程用户: ${targetSid}`;
         }
 
         const newVideo = document.createElement('video');
         newVideo.id = `remote_video_${targetSid}_v`;
-        newVideo.className = 'layui-card remote-video';
+        // 移除layui-card，保留业务类名，添加Tailwind视频样式
+        newVideo.className = 'remote-video';
         newVideo.autoplay = true;
         newVideo.playsinline = true;
         newVideo.muted = true;
         newVideo.controls = true;
-        newVideo.style.width = '-webkit-fill-available';
-        newVideo.style.height = '-webkit-fill-available';
+        // 替换内联样式为Tailwind工具类（通过style设置保证优先级）
+        newVideo.style.width = '100%';
+        newVideo.style.height = '100%';
         newVideo.style.backgroundColor = '#000';
         newVideo.style.margin = '0';
+        newVideo.style.objectFit = 'cover';
+        newVideo.style.borderTopLeftRadius = '0.5rem';
+        newVideo.style.borderTopRightRadius = '0.5rem';
 
+        // 保持原有DOM嵌套顺序（视频在前，标题在后）
         root_div.appendChild(newVideo);
         root_div.appendChild(header_div);
         document.getElementById('remoteVideos').appendChild(root_div);
@@ -349,6 +357,7 @@ async function enumerateDevices() {
             if (device.deviceId === selectedVideo) option.selected = true;
         });
 
+
         // 添加音频设备
         audioDevices.forEach(device => {
             const option = document.createElement('option');
@@ -363,7 +372,11 @@ async function enumerateDevices() {
 
         // 设备变更监听
         navigator.mediaDevices.ondevicechange = enumerateDevices;
-        layui.form && layui.form.render('select');
+
+        
+
+
+
     } catch (e) {
         webrtc_logger.error('枚举设备失败:', e);
         CommonUtils.MsgBox('枚举设备失败: ' + e.message);
@@ -738,14 +751,15 @@ async function WebrtcInit() {
         $('.room-select-container').addClass('hidden');
         $('.video-chat-container').removeClass('hidden');
         $('#remoteVideos').html(`
-            <div class="layui-card" style="margin-bottom: 10px;">
-                <div class="layui-card select-device-2">
+            <div class="bg-card border border-border rounded-lg shadow-md mb-2.5 w-full">
+                <div class="select-device-2 relative">
                     <video id="localVideo" muted autoplay playsinline
-                        style="width: -webkit-fill-available; height: -webkit-fill-available; background-color: rgb(0, 0, 0); margin: 0px;"></video>
-                    
+                        class="w-full h-full bg-black m-0 object-cover rounded-t-lg">
+                    </video>
                 </div>
-                
-                <div class="local-video-lable layui-card-header"><i class="layui-icon" style="margin-right:5px;">&#xe60e;</i>本地视频 ${sessionStorage.getItem("sid")}</div>
+                <div class="local-video-lable px-4 py-3 border-t border-border text-text font-medium">
+                    <i class="fa-solid fa-user mr-1.5"></i>本地视频 ${sessionStorage.getItem("sid")}
+                </div>
             </div>
         `);
 
@@ -818,20 +832,21 @@ async function WebrtcInit() {
         room_list.forEach(e => {
             if(e.room_type == "webrtc"){
                 appendHtml += `
-                <div class="layui-col-xs6 layui-col-sm4 layui-col-md3">
-                    <div class="layui-card room-card" data-room-id="${e.room_id}">
-                        <div class="video-container" style="height: 140px;">
-                            <img src="${e.cover || 'https://picsum.photos/300/200?random=1'}" alt="房间封面" style="width: 100%; height: 100%; object-fit: cover;">
-                            <div id="${e.room_id}_room_hum_count" style="position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                <i class="layui-icon layui-icon-user"></i> ${e.user_count}
-                            </div>
+
+
+                <div class="bg-card border border-border rounded-lg shadow-md overflow-hidden room-card" data-room-id="${e.room_id}">
+                    <div class="video-container h-36 relative">
+                        <img src="${e.cover || 'https://picsum.photos/300/200?random=1'}" alt="房间封面" class="w-full h-full object-cover">
+                        <div id="${e.room_id}_room_hum_count" class="absolute bottom-1.5 right-1.5 bg-black/50 px-2 py-0.5 rounded-full text-xs text-white">
+                            <i class="fa-solid fa-user mr-1"></i> ${e.user_count}
                         </div>
-                        <div class="layui-card-body" style="padding: 10px; text-align: center;">
-                            <h4 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${e.title}</h4>
-                            <button class="layui-btn layui-btn-normal layui-btn-sm" onclick="join_room_ex('${e.room_id}','${e.title}')" style="width: 80%; margin-top: 10px;">
-                                进入房间
-                            </button>
-                        </div>
+                    </div>
+                    <div class="p-2.5 text-center">
+                        <h4 class="whitespace-nowrap overflow-hidden text-ellipsis font-medium text-text">${e.title}</h4>
+                        <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-1 rounded-md text-sm w-4/5 mt-2.5 transition-colors" 
+                                onclick="join_room_ex('${e.room_id}','${e.title}')">
+                            进入房间
+                        </button>
                     </div>
                 </div>
                 `;

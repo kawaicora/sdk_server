@@ -3,7 +3,7 @@ import threading
 from app.route import bp
 from flask import Request, jsonify, request, current_app
 from app.extensions import socketio
-from app.route.account_service import get_userinfo_by_sdk_token
+from app.route.account_service import get_userinfo_by_sdk_token,get_userinfo_by_uid
 from app.sql_class.Tables import GameAccount, Usermeta,Users
 from flask_socketio import emit, join_room, leave_room 
 from app.utils.CommonUtils import *
@@ -99,10 +99,14 @@ def get_user_info(request:Request):
 
     
     if result != None:
-        return result.get("user_id"), result.get("display_name"),result.get("avatar")
+        result['sid'] = request.sid
+        return result
     else:
-        return gen_guest_user()
-def gen_guest_user(uid = None):
+        return gen_guest_user(request)
+
+
+    
+def gen_guest_user(request:Request,uid = None):
     global guest_counter
     curren_counter = guest_counter #游客创建永远从guest_counter 开始
     if uid == None:
@@ -114,13 +118,28 @@ def gen_guest_user(uid = None):
         curren_counter += 1
         uid = curren_counter
     username = f"游客_{uid}"
-    return uid,username,""
+
+    user_data = {
+        "sid":request.sid,
+        "user_id": uid,
+        "user_login": "",
+        "user_email": "",
+        "display_name": username,
+        "user_url": "",
+        "user_registered": "",
+        "nickname": "",
+        "avatar": "",
+        "last_login_time": "",
+        "last_login_ip": "",
+        "current_ip": "",
+        "user_agent": ""
+    }
+    return user_data
 
 
 def sid_exists(sid):
     """检查 sid 是否存在于 user_sessions 中"""
     return any(session["sid"] == sid for session in user_sessions)
-
 
 def get_user_by_sid(sid):
     """根据 sid 获取完整的用户会话信息"""
@@ -133,7 +152,7 @@ def get_user_by_sid(sid):
 def get_user_by_uid(uid):
     """根据 uid 获取用户会话信息（可能有多个 sid，返回第一个）"""
     for session in user_sessions:
-        if session["uid"] == uid:
+        if session["user_id"] == uid:
             return session
     return None
 
@@ -147,7 +166,7 @@ def update_sid_by_uid(uid,sid):
         sid (str): 新的Socket.IO会话ID
     """
     for session in user_sessions:
-        if session["uid"] == uid:
+        if session["user_id"] == uid:
             session["sid"] = sid
             break  # 找到用户后立即退出循环
 
@@ -236,7 +255,7 @@ def remove_user_from_user_sessions( uid=None, sid=None):
     
     
     if uid is not None:
-        user_sessions = [user_session for user_session in user_sessions if user_session["uid"] != uid]
+        user_sessions = [user_session for user_session in user_sessions if user_session["user_id"] != uid]
     else:
         user_sessions = [user_session for user_session in user_sessions if user_session["sid"] != sid]
     
@@ -257,7 +276,7 @@ def get_room_users(room_id):
             room_user_details.append({
                 "uid": user["uid"],
                 "sid": user_session["sid"],
-                "username": user_session["username"],
+                "username": user_session["display_name"],
                 "avatar": user_session.get("avatar", ""),
                 "join_time": user["join_time"]
             })
@@ -290,7 +309,7 @@ def handle_register_user(*args):
     global guest_counter
     global write_config_thread
     sid = request.sid
-    
+    user_data = {}
     # 若已注册则跳过（避免重复添加）
     if sid_exists(sid):
         return
@@ -301,8 +320,7 @@ def handle_register_user(*args):
         write_config_thread.start()
     ######################################
     
-    # 处理客户端传入的 username 参数（兼容无参数、None、空字符串）
-    compulsory_username = ''
+    
     if args:  # 简化判断：args 非空即表示有传入参数
         data = args[0]
         # 安全获取 username：仅当 data 是字典且 username 有效时赋值
@@ -332,43 +350,58 @@ def handle_register_user(*args):
                 user_meta[meta.meta_key] = meta.meta_value
 
             username = user.display_name
-            avatar = user_meta.get('user_avatar', "")
-
+            client_ip = request.remote_addr
+            client_ua = request.user_agent.string
+            user_data = {
+                "sid":sid,
+                "user_id": user.ID,
+                "user_login": user.user_login,
+                "user_email": user.user_email,
+                "display_name": user.display_name,
+                "user_url": user.user_url,
+                "user_registered": user.user_registered.strftime("%Y-%m-%d %H:%M:%S"),
+                "nickname": user_meta.get('nickname', user.display_name),
+                "avatar": user_meta.get('user_avatar', ""),
+                "last_login_time": user_meta.get('last_login_time', "未知"),
+                "last_login_ip": user_meta.get('last_login_ip', "未知"),
+                "current_ip": client_ip,
+                "user_agent": client_ua
+            }
     else :
 
         # 获取用户信息（已登录用户用真实 uid，游客生成临时 uid）
-        uid, username,avatar = get_user_info(request)
-        if compulsory_username:
-            # 若客户端传入有效 username，直接使用
-            username = compulsory_username
+        user_data = get_user_info(request)
 
-    t_user = get_room_by_uid(uid)
-    current_app.logger.info(f"根据用户获取房间 - SID: {sid}, UID: {uid}, 用户名: {username}")
-    if t_user:
-        current_app.logger.info(f"用户存在,更新SID-UID关系- SID: {sid}, UID: {uid}, 用户名: {username}")
-        update_sid_by_uid(uid,sid)
-        current_app.logger.info(f"用户存在,退出房间- SID: {sid}, UID: {uid}, 用户名: {username}")
-        remove_user_from_room(t_user.get("room_id"),uid=uid)
-        
+    # 检查用户是否已经存在
+    c_user =  get_user_by_uid(user_data.get("user_id"))
+    if c_user:
+        current_app.logger.info(f"用户存在,更新SID-UID关系- SID: {sid}, UID: {user_data.get("user_id")}, 用户名: {user_data.get("display_name")}")
+        update_sid_by_uid(user_data.get("user_id"),sid)
     else:
-    # 添加到 user_sessions（仅存储用户自身信息，无房间字段）
-        current_app.logger.info(f"没有找到,添加用户 - SID: {sid}, UID: {uid}, 用户名: {username}")
-        user_sessions.append({
-            "sid": sid,
-            "uid": uid,
-            "username": username,
-            "avatar": avatar or ""  # 新增头像支持
-        })
         
+        current_app.logger.info(f"没有找到,添加用户 - SID: {sid}, UID: {user_data.get("user_id")}, 用户名: {user_data.get("display_name")}")
+        user_sessions.append(user_data)
+        c_user = user_data
+
+
+    t_room = get_room_by_uid(user_data.get("user_id"))
+    current_app.logger.info(f"根据用户获取房间 - SID: {sid}, UID: {user_data.get("user_id")}, 用户名: {user_data.get("display_name")}")
+    if t_room :
+        current_app.logger.info(f"用户存在,退出房间- SID: {sid}, UID: {user_data.get("user_id")}, 用户名: {user_data.get("display_name")}")
+        remove_user_from_room(t_room.get("room_id"),uid=c_user.get("user_id"))
+    
+
+        
+
     # 通知客户端注册成功
     emit('user-registered', {
         "sid": sid,
-        "uid": uid,
-        "username": username,
-        "avatar":avatar or ""
+        "uid": c_user.get("user_id"),
+        "username": user_data.get("display_name"),
+        "avatar":user_data.get("avatar") or ""
     })
     emit('room-list-updated', get_room_list(), broadcast=True)
-    current_app.logger.info(f"用户注册 - SID: {sid}, UID: {uid}, 用户名: {username}")
+    current_app.logger.info(f"用户注册 - SID: {sid}, UID: {c_user.get("user_id")}, 用户名: {user_data.get("display_name")}")
 
 
 
@@ -381,8 +414,8 @@ def handle_unregister_user():
     if not user:
         return
     
-    uid = user["uid"]
-    username = user["username"]
+    uid = user.get("user_id")
+    username = user.get("display_name")
     current_app.logger.info(f"用户断开连接 - SID: {sid}, UID: {uid}, 用户名: {username}")
     
     # 从所有房间中移除该用户
@@ -429,8 +462,8 @@ def handle_delete_room(data):
         emit('error', {"event": "create-room", "msg": "用户未注册"}, sid=sid)
         return
     
-    uid = user["uid"]
-    username = user["username"]
+    uid = user["user_id"]
+    username = user["display_name"]
     room_id = data.get("room_id")
 
     room = get_room_by_id(room_id=room_id)
@@ -439,7 +472,7 @@ def handle_delete_room(data):
         return
     
     for t_user in room.get("users"):
-        c_user = get_user_by_uid(t_user.get('uid'))
+        c_user = get_user_by_uid(t_user.get('user_id'))
         emit('user-left-room', {
             "sid": c_user.get('sid'),
             "uid": c_user.get('uid'),
@@ -473,7 +506,7 @@ def handle_create_room(data):
         emit('error', {"event": "create-room", "msg": "用户未注册"}, sid=sid)
         return
     
-    uid = user["uid"]
+    uid = user["user_id"]
     room_id = data.get("room_id")
     title = data.get("title", "未命名房间")
     desc = data.get("desc", "")
@@ -533,7 +566,7 @@ def handle_join_room(data):
         emit('error', {"event": "join-room", "msg": "用户未注册"}, sid=sid)
         return
     
-    uid = user["uid"]
+    uid = user["user_id"]
     room_id = data.get("room_id")
     
     if not room_id:
@@ -565,7 +598,7 @@ def handle_join_room(data):
     emit('user-joined-room', {
         "sid":sid,
         "uid": uid,
-        "username": user["username"],
+        "username": user["display_name"],
         "room_id": room_id,
         "room_info": room
     }, room=room_id,include_self=False)
@@ -577,7 +610,7 @@ def handle_join_room(data):
         "users": get_room_users(room_id),
         "uid":uid,
         "sid":sid,
-        "username": user["username"]
+        "username": user["display_name"]
     }, sid=sid)   #
     
     # 刷新房间用户列表
@@ -596,7 +629,7 @@ def handle_leave_room(data):
     if not user:
         return
     
-    uid = user["uid"]
+    uid = user["user_id"]
     room_id = data.get("room_id")
     room = get_room_by_id(room_id)
     if not room:
@@ -610,7 +643,7 @@ def handle_leave_room(data):
     emit('user-left-room', {
         "sid":sid,
         "uid": uid,
-        "username": user["username"],
+        "username": user["display_name"],
         "room_id": room_id
     }, room=room_id)
     leave_room(room_id)  # Socket.IO 离开房间
@@ -655,7 +688,7 @@ def handle_disconnect():
     if not user:
         return  # 未找到关联会话，可能是无效连接
     
-    uid = user.get("uid")
+    uid = user.get("user_id")
     username = user.get("username")
     room = get_room_by_uid(uid)
     current_app.logger.info(f"用户断开连接 SID: {sid} UID: {uid}")

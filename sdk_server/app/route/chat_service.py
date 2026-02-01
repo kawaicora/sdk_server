@@ -13,9 +13,9 @@ from app.settings import DefaultConfig
 from app.sql_class.Tables import Message
 from app.utils.ErrorCode import *
 from app.route import bp
-from app.route.socketio_common_services import get_user_by_sid, user_sessions,rooms,get_room_by_sid, get_room_by_uid
-
-
+from app.route.socketio_common_services import get_user_by_sid, get_user_by_uid, user_sessions,rooms,get_room_by_sid, get_room_by_uid
+from app.route.account_service import get_userinfo_by_sdk_token,get_userinfo_by_uid
+from app.sql_class.Tables import GameAccount, Usermeta,Users
 @bp.route('/api/chat/upload', methods=['POST'])
 def api_chat_upload():
     # 检查请求中是否包含文件
@@ -77,15 +77,15 @@ def api_chat_upload():
 
 
 
-@socketio.on('chat-room-messages')
+@socketio.on('get-room-message-history')
 def handle_room_messages(data):
     sid = request.sid
     c_user = get_user_by_sid(sid)
     if not c_user:
         current_app.logger.info(f"Error in handle_room_messages: 用户不存在 - SID: {sid}")
         return
-    
-    c_room = get_room_by_uid(c_user.get('uid'))
+    uid = c_user.get("user_id")
+    c_room = get_room_by_uid(c_user.get('user_id'))
     if not c_room:
         current_app.logger.info(f"Error in handle_room_messages: 用户没有匹配的房间 - SID: {sid}")
         return
@@ -94,9 +94,47 @@ def handle_room_messages(data):
     messages = Message.query.filter_by(room=room_id).all()
     
     for message in messages:
+        t_sender_user_info = get_user_by_uid(message.sender_uid)
+        if not t_sender_user_info:
+            t_sender_user_info = get_userinfo_by_uid(message.sender_uid)
+        if not t_sender_user_info:
+            user:Users = Users.query.filter_by(ID=message.sender_uid).first()
+            if user:
+                user_meta_list:Usermeta = Usermeta.query.filter_by(user_id=message.sender_uid).all()
+                user_meta = {}
+                for meta in user_meta_list:
+                    
+                    user_meta[meta.meta_key] = meta.meta_value
+
+                username = user.display_name
+                client_ip = request.remote_addr
+                client_ua = request.user_agent.string
+                t_sender_user_info = {
+                    "sid":sid,
+                    "user_id": user.ID,
+                    "user_login": user.user_login,
+                    "user_email": user.user_email,
+                    "display_name": user.display_name,
+                    "user_url": user.user_url,
+                    "user_registered": user.user_registered.strftime("%Y-%m-%d %H:%M:%S"),
+                    "nickname": user_meta.get('nickname', user.display_name),
+                    "avatar": user_meta.get('user_avatar', ""),
+                    "last_login_time": user_meta.get('last_login_time', "未知"),
+                    "last_login_ip": user_meta.get('last_login_ip', "未知"),
+                    "current_ip": client_ip,
+                    "user_agent": client_ua
+                }
+            else:
+                t_sender_user_info = {
+                   
+                    "avatar": "/static/img/default_avatar.gif",
+                    
+                }
+        sender_avatar = t_sender_user_info.get("avatar")
         emit('chat-message', {
             "sender_sid": message.sender_sid,
             "sender_uid": message.sender_uid,
+            "sender_avatar" : sender_avatar,
             "sender_username": message.sender_username,
             "message": message.message,
             "type":message.type,
@@ -121,8 +159,9 @@ def handle_chat_message(data):
         current_app.logger.info(f"Error in handle_chat_message: 用户不存在 - SID: {sid}")
         return
     
-    sender_uid = c_user.get('uid')
-    sender_username = c_user.get('username')
+    sender_uid = c_user.get('user_id')
+    sender_username = c_user.get('display_name')
+    sender_avatar = c_user.get('avatar')
     room = get_room_by_sid(sid)
     if not room or not message_text:
         return
@@ -162,6 +201,7 @@ def handle_chat_message(data):
         "sender_sid": sid,
         "sender_uid": sender_uid,
         "sender_username": sender_username,
+        "sender_avatar": sender_avatar,
         "message": message_text,
         "type":message_type,
         "timestamp": new_message.timestamp.isoformat()

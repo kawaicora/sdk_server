@@ -52,15 +52,15 @@ def handle_offer(data):
     
     # 检查目标用户是否存在且在同一房间
     target = get_user_by_sid(target_sid)
-    if not target or not is_user_in_room(target["uid"], room_id):
+    if not target or not is_user_in_room(target["user_id"], room_id):
         current_app.logger.warning("target is None or not in room")
         return
     
     # 转发 offer 给目标用户
     emit('offer', {
         "from_sid": sid,
-        "from_uid": sender["uid"],
-        "from_username": sender["username"],
+        "from_uid": sender["user_id"],
+        "from_username": sender["display_name"],
         "offer": offer,
         "room_id": room_id
     }, room=target_sid)
@@ -79,15 +79,15 @@ def handle_answer(data):
     answer = data.get('answer')
     
     target = get_user_by_sid(target_sid)
-    if not target or not is_user_in_room(target["uid"], room_id):
+    if not target or not is_user_in_room(target["user_id"], room_id):
         current_app.logger.warning("target is None or not in room")
         return
     
     # 转发 answer 给目标用户
     emit('answer', {
         "from_sid": sid,
-        "from_uid": sender["uid"],
-        "from_username": sender["username"],
+        "from_uid": sender["user_id"],
+        "from_username": sender["display_name"],
         "answer": answer,
         "room_id": room_id
     }, room=target_sid)
@@ -105,13 +105,13 @@ def handle_ice_candidate(data):
     candidate = data.get('candidate')
     
     target = get_user_by_sid(target_sid)
-    if not target or not is_user_in_room(target["uid"], room_id):
+    if not target or not is_user_in_room(target["user_id"], room_id):
         return
     
     # 转发 ice-candidate 给目标用户
     emit('ice-candidate', {
         "from_sid": sid,
-        "from_uid": sender["uid"],
+        "from_uid": sender["user_id"],
         "candidate": candidate,
         "room_id": room_id
     }, room=target_sid)
@@ -125,11 +125,11 @@ def handle_on_connection_state_change(data):
     target_user = get_user_by_sid(target_sid) 
     target_room = get_room_by_sid(target_sid)
     
-    current_app.logger.info(f"------- 用户:{user.get('username')} SID:{sid} 报告 ,目标用户:{target_user.get('username')} SID:{target_sid} 连接状态: {data.get('state')} -------")
+    current_app.logger.info(f"------- 用户:{user.get('display_name')} SID:{sid} 报告 ,目标用户:{target_user.get('display_name')} SID:{target_sid} 连接状态: {data.get('state')} -------")
     if (data.get('state') == 'disconnected' or data.get('state') == 'failed'  or data.get('state') == 'closed') and target_room:
-        current_app.logger.info(f"------- 用户:{user.get('username')} SID:{sid} 报告 ,目标用户:{target_user.get('username')} SID:{target_sid} 连接异常 -------")
+        current_app.logger.info(f"------- 用户:{user.get('display_name')} SID:{sid} 报告 ,目标用户:{target_user.get('display_name')} SID:{target_sid} 连接异常 -------")
         
         socketio.emit('error',{
             'event':'on-connection-state-change',
-            'msg':f"------- 用户:{user.get('username')} SID:{sid} 报告 ,目标用户:{target_user.get('username')} SID:{target_sid} 连接异常 -------"
+            'msg':f"------- 用户:{user.get('display_name')} SID:{sid} 报告 ,目标用户:{target_user.get('display_name')} SID:{target_sid} 连接异常 -------"
         })

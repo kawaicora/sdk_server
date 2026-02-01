@@ -176,6 +176,13 @@ def parse_php_session_tokens(php_serialized_str):
 def get_userinfo_by_sdk_token(sdk_token:str):
     return userinfo.get(sdk_token )
 
+
+
+def get_userinfo_by_uid(user_id:str):
+    for key in userinfo:
+        if userinfo[key]["user_id"] == user_id:
+            return userinfo[key]
+    return None
 # 第三方验证登录
 
 def third_login(data):
@@ -598,7 +605,8 @@ def api_login():
     for meta in user_meta_list:
         
         user_meta[meta.meta_key] = meta.meta_value
-
+    client_ip = request.remote_addr
+    client_ua = request.user_agent.string
     # --------------------------
     # 9. 构造最终响应数据
     # --------------------------
@@ -613,8 +621,8 @@ def api_login():
         "avatar": user_meta.get('user_avatar', ""),
         "last_login_time": user_meta.get('last_login_time', "未知"),
         "last_login_ip": user_meta.get('last_login_ip', "未知"),
-        "current_ip": "",
-        "user_agent": ""
+        "current_ip": client_ip,
+        "user_agent": client_ua
     }
 
     # 创建响应对象

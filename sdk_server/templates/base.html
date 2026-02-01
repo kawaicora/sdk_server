@@ -5,11 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 引入 layui 样式 -->
-    <link rel="stylesheet" href="/static/layui-v2.6.8/layui/css/layui.css">
+    <!-- 移除layui样式，保留其他依赖 -->
     <script src="/static/js/jquery.min.js"></script>
-    <!-- 引入 layui JS -->
-    <script src="/static/layui-v2.6.8/layui/layui.js"></script>
+    <!-- <script src="/static/js/tailwindcss-3.4.17.js"></script> -->
+     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 进入加密解密库 -->
     <script language="javascript" src="/static/js/jsencrypt.min.js"></script>
     <!-- 引入 socket.io 客户端库 -->
@@ -17,7 +16,8 @@
     <script language="javascript" src="/static/js/CommonUtils.js"></script>
     <script language="javascript" src="/static/js/LoggerManager.js"></script>
     <script language="javascript" src="/static/js/Base.js"></script>
-
+    <!-- 引入Font Awesome图标（替代layui-icon） -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style type="text/css">
         :root {
             --dark-bg: #1a1a1a;
@@ -30,106 +30,149 @@
 
         body {
             min-height: 100vh;
-            background-color: var(--dark-bg);
-            color: var(--dark-text);
+            /* background-color: var(--dark-bg); */
+            /* color: var(--dark-text); */
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
             padding-top: 60px; /* 给固定导航栏留空间 */
         }
 
-        /* 仅保留必要的导航栏基础适配样式，其余用Layui原生 */
-        .main-nav {
-            position: fixed !important;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 999;
-            background-color: var(--dark-card) !important;
+        /* 自定义下拉菜单过渡效果 */
+        .dropdown-content {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
         }
 
-        .nav-switch {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
+        .dropdown:hover .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
         }
-
         .hidden {
-            display: none !important;
-        }
-
-        /* 手机端导航栏适配 */
-        @media (max-width: 768px) {
-            .layui-nav-itemed .layui-nav-child {
-                background-color: var(--dark-card) !important;
-            }
+            display:none !important;
         }
     </style>
     {% block head %}{% endblock %}
 </head>
 
 <body>
-    <!-- 移动端导航开关（Layui原生图标+按钮样式） -->
-    <button class="layui-btn layui-btn-primary nav-switch hidden" style="width: 40px; height: 40px; padding: 0;">
-        <i class="layui-icon layui-icon-align-left" style="font-size: 24px;"></i>
-    </button>
 
-    <!-- 导航栏：完全使用Layui原生导航组件 -->
-    <ul class="layui-nav main-nav layui-nav-tree" lay-filter="mainNav">
-        <!-- 左侧导航组 -->
-        <li class="layui-nav-item layui-nav-logo">
-            <a href="/">
-                <img src="/static/img/favicon.ico" style="height: 40px; width: auto;">
-            </a>
-        </li>
-        <li class="layui-nav-item">
-            <a href="/view/webrtc">连线</a>
-        </li>
-        <li class="layui-nav-item">
-            <a href="/view/chat">聊天</a>
-        </li>
-        <!-- 商品列表导航项 -->
-        <li class="layui-nav-item">
-            <a href="/view/products">商品列表</a>
-        </li>
 
-        <!-- 右侧用户相关（通过layui-nav-right实现右对齐） -->
-        <li class="layui-nav-item layui-nav-right exit-login-btn hidden">
-            <a href="javascript:Base.inst().Logout()">退出</a>
-        </li>
-        <li class="layui-nav-item layui-nav-right nav-user-login-btn hidden">
-            <a href="/?page_id=8" class="layui-btn layui-btn-normal layui-btn-sm nav-user-login-btn">登录</a>
-        </li>
-        <li class="layui-nav-item layui-nav-right nav-user-info hidden" lay-unselect>
-            <!-- 登录后显示：头像+用户名（Layui原生nav-img样式） -->
-            <a href="javascript:;">
-                <img src="/static/img/default_avatar.gif" class="layui-nav-img" style="height: 40px; width: 40px;">
-                <span class="nav-username"></span>
-            </a>
-            <!-- 下拉菜单（Layui原生子导航） -->
-            <dl class="layui-nav-child">
-                <dd>
-                    <a href="https://kawaimoe.org/?page_id=12" target="_blank">
-                        <i class="layui-icon layui-icon-user"></i> 会员中心
+    <!-- 导航栏：完全使用Tailwind CSS重构 -->
+    <nav class="main-nav fixed top-0 left-0 right-0 z-40 bg-dark-card h-15">
+        <div class="container mx-auto h-full flex items-center justify-between px-4">
+            <!-- 左侧Logo和导航项 -->
+            <div class="flex items-center h-full">
+                <!-- Logo -->
+                <a href="/" class="mr-6 flex items-center">
+                    <img src="/static/img/favicon.ico" class="h-10 w-auto" alt="Logo">
+                </a>
+                
+                <!-- PC端导航菜单 -->
+                <ul class="hidden md:flex items-center space-x-6 h-full">
+                    <li class="h-full">
+                        <a href="/view/webrtc" class="flex items-center h-full px-2 text-gray-300 hover:text-accent-color transition-colors">连线</a>
+                    </li>
+                    <li class="h-full">
+                        <a href="/view/chat" class="flex items-center h-full px-2 text-gray-300 hover:text-accent-color transition-colors">聊天</a>
+                    </li>
+                    <li class="h-full">
+                        <a href="/view/products" class="flex items-center h-full px-2 text-gray-300 hover:text-accent-color transition-colors">商品列表</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 右侧用户相关操作 -->
+            <div class="flex items-center space-x-4">
+                <!-- 退出按钮 -->
+                <button class="exit-login-btn hidden px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors" onclick="Base.inst().Logout()">
+                    退出
+                </button>
+                
+                <!-- 登录按钮 -->
+                <a href="/?page_id=8" class="nav-user-login-btn hidden px-4 py-2 rounded-md bg-accent-color text-white hover:bg-hover-color transition-colors text-sm">
+                    登录
+                </a>
+                
+                <!-- 登录后用户信息（下拉菜单） -->
+                <div class="nav-user-info hidden dropdown relative">
+                    <a href="javascript:;" class="flex items-center space-x-2 px-2 py-1 rounded-md hover:bg-gray-700 transition-colors">
+                        <img src="/static/img/default_avatar.gif" class="h-10 w-10 rounded-full" alt="头像">
+                        <span class="nav-username text-gray-300"></span>
+                        <i class="layui-icon layui-icon-down text-xs text-gray-400"></i>
                     </a>
-                </dd>
-                <dd>
-                    <a href="/wp-login.php?action=logout&amp;redirect_to=https%3A%2F%2Fkawaimoe.org&amp;_wpnonce=a2e58cc712">
-                        <i class="layui-icon layui-icon-logout"></i> 退出登录
-                    </a>
-                </dd>
-            </dl>
-        </li>
-    </ul>
+                    
+                    <!-- 下拉菜单内容 -->
+                    <div class="dropdown-content absolute right-0 top-full mt-2 w-48 bg-dark-card border border-dark-border rounded-md shadow-lg z-50">
+                        <ul class="py-2">
+                            <li>
+                                <a href="https://kawaimoe.org/?page_id=12" target="_blank" class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 transition-colors">
+                                    <i class="layui-icon layui-icon-user mr-2"></i> 会员中心
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/wp-login.php?action=logout&redirect_to=https%3A%2F%2Fkawaimoe.org&_wpnonce=a2e58cc712" class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 transition-colors">
+                                    <i class="layui-icon layui-icon-logout mr-2"></i> 退出登录
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 移动端侧边导航（默认隐藏） -->
+        <div class="mobile-nav fixed top-0 left-0 h-screen w-60 bg-dark-card border-r border-dark-border z-40 transform -translate-x-full transition-transform duration-300 md:hidden">
+            <div class="p-4 pt-16">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="/view/webrtc" class="block px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors">连线</a>
+                    </li>
+                    <li>
+                        <a href="/view/chat" class="block px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors">聊天</a>
+                    </li>
+                    <li>
+                        <a href="/view/products" class="block px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors">商品列表</a>
+                    </li>
+                    <!-- 移动端用户操作 -->
+                    <li class="mt-6 border-t border-dark-border pt-4">
+                        <div class="exit-login-btn hidden px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors w-full text-center" onclick="Base.inst().Logout()">
+                            退出
+                        </div>
+                        <a href="/?page_id=8" class="nav-user-login-btn hidden block px-4 py-2 rounded-md bg-accent-color text-white hover:bg-hover-color transition-colors text-center">
+                            登录
+                        </a>
+                        <div class="nav-user-info hidden mt-2">
+                            <a href="javascript:;" class="flex items-center space-x-2 px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">
+                                <img src="/static/img/default_avatar.gif" class="h-8 w-8 rounded-full" alt="头像">
+                                <span class="nav-username text-gray-300"></span>
+                            </a>
+                            <ul class="mt-2 ml-2 space-y-1">
+                                <li>
+                                    <a href="/?page_id=12" target="_blank" class="block px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors">
+                                        <i class="layui-icon layui-icon-user mr-2"></i> 会员中心
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/wp-login.php?action=logout&redirect_to=https%3A%2F%2Fkawaimoe.org&_wpnonce=a2e58cc712" class="block px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors">
+                                        <i class="layui-icon layui-icon-logout mr-2"></i> 退出登录
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     {% block header %}{% endblock %}
     {% block content %}{% endblock %}
     {% block footer %}{% endblock %}
 
     <script type="text/javascript">
-        // 初始化Layui导航组件
-        layui.use('element', function() {
-            var element = layui.element;
-        });
+        // 移除layui初始化代码（已替换为Tailwind）
 
         // 监听父页面发来的消息（仅接收参数，不本地存Cookie）
         window.addEventListener('message', function(event) {
@@ -140,7 +183,6 @@
             switch (event.data.type){
                 case "TOKEN_ERROR": {
                     Base.inst().BaseLogger.debug(event.data.message);
-                    
                 };
                 break;
                 case "SEND_LOGIN_TOKEN":{
@@ -149,68 +191,51 @@
                     Base.inst().BaseLogger.debug(`encrypted_login_token:${app_id},${encrypted_login_token}`);
                     // 传递参数，让接口请求携带Cookie
                     Base.inst().GetUserInfo(app_id, encrypted_login_token);
+                    $(".main-nav").addClass("hidden")
                 };
                 break;
-                
             }
         });
 
-        // 屏幕尺寸适配（保留原逻辑，适配Layui导航样式）
+        // 屏幕尺寸适配（适配Tailwind导航样式）
         function checkScreenSize() {
             var isMobile = window.matchMedia("(max-width: 768px)").matches;
             var $mainNav = $('.main-nav');
             var $navSwitch = $('.nav-switch');
+            var $mobileNav = $('.mobile-nav');
             var $exitLogin = $('.exit-login-btn');
             var $navLogin = $('.nav-user-login-btn');
             var $navUser = $('.nav-user-info');
 
-            if (isMobile) {
-                // 手机端：导航树折叠，显示开关
-                $mainNav.addClass('layui-nav-tree').css({
-                    'position': 'absolute',
-                    'height': '100vh',
-                    'width': '240px',
-                    'left': '-240px',
-                    'transition': 'left 0.3s'
-                });
-                $navSwitch.removeClass('hidden');
-                // 隐藏右侧退出按钮（移到用户下拉菜单）
-                $exitLogin.addClass('hidden');
-                // 登录/用户信息按钮自适应
-                $navLogin.css('margin-right', '60px');
-                $navUser.css('margin-right', '60px');
-            } else {
-                // PC端：导航横向展开，隐藏开关
-                $mainNav.removeClass('layui-nav-tree').css({
-                    'position': 'fixed',
-                    'height': '60px',
-                    'width': '100%',
-                    'left': '0'
-                });
-                $navSwitch.addClass('hidden');
-                // 显示右侧退出按钮（仅未登录时）
-                if ($navLogin.hasClass('hidden') && $navUser.hasClass('hidden')) {
-                    $exitLogin.removeClass('hidden');
-                }
-                // 恢复默认边距
-                $navLogin.css('margin-right', '0');
-                $navUser.css('margin-right', '0');
-            }
+            // if (isMobile) {
+            //     // 手机端：显示开关，隐藏PC端退出按钮
+            //     $navSwitch.removeClass('hidden');
+            //     $exitLogin.addClass('hidden');
+            //     // 重置移动端导航位置
+            //     $mobileNav.css('transform', '-translate-x-full');
+            // } else {
+            //     // PC端：隐藏开关，显示PC端退出按钮（仅未登录时）
+            //     $navSwitch.addClass('hidden');
+            //     $mobileNav.css('transform', '-translate-x-full');
+            //     if ($navLogin.hasClass('hidden') && $navUser.hasClass('hidden')) {
+            //         $exitLogin.removeClass('hidden');
+            //     }
+            // }
         }
 
         // 导航开关点击事件（手机端展开/收起）
         $('.nav-switch').on('click', function() {
-            var $mainNav = $('.main-nav');
-            var isHidden = $mainNav.css('left') === '-240px';
-            $mainNav.css('left', isHidden ? '0' : '-240px');
+            var $mobileNav = $('.mobile-nav');
+            var isHidden = $mobileNav.css('transform').includes('-translate-x-full');
+            $mobileNav.css('transform', isHidden ? 'translate-x-0' : '-translate-x-full');
         });
+
         document.addEventListener("DOMContentLoaded", function() {
             Base.inst().GetUserInfo();
             // 初始化与窗口 resize 监听
             checkScreenSize();
             $(window).resize(checkScreenSize);
         });
-        
     </script>
 </body>
 
