@@ -372,11 +372,6 @@ async function enumerateDevices() {
 
         // 设备变更监听
         navigator.mediaDevices.ondevicechange = enumerateDevices;
-
-        
-
-
-
     } catch (e) {
         webrtc_logger.error('枚举设备失败:', e);
         CommonUtils.MsgBox('枚举设备失败: ' + e.message);
