@@ -13,10 +13,10 @@ class LoggerManager {
     }
     // 日志工具函数 - 仅输出到控制台
 
-    log_ex(type, args) {
+    log_ex(type,method, file, line, args) {
         const now = new Date();
         const timeStr = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}]`;
-        const { method, file, line } = this.getCallerInfo(); // 假设该方法已正常实现
+        
         
         // 构建日志头部（固定格式部分）
         const logHeader = `${timeStr} [${this.getLogTypeDesc(type)}] [${this.TAG}] [${file}:${line} in ${method}]`;
@@ -92,35 +92,40 @@ class LoggerManager {
     // 实现 console.log 方法
     log(...args) {
         if (this.shouldLog(LoggerManager.LEVELS.DEBUG)) {
-            this.log_ex(0,args)
+            const { method, file, line } = this.getCallerInfo(); 
+            this.log_ex(0,method, file, line,args)
         }
     }
 
     // 实现 console.info 方法
     info(...args) {
         if (this.shouldLog(LoggerManager.LEVELS.INFO)) {
-             this.log_ex(LoggerManager.LEVELS.INFO,args)
+            const { method, file, line } = this.getCallerInfo(); 
+            this.log_ex(LoggerManager.LEVELS.INFO,method, file, line,args)
         }
     }
 
     // 实现 console.warn 方法
     warn(...args) {
         if (this.shouldLog(LoggerManager.LEVELS.WARN)) {
-           this.log_ex(LoggerManager.LEVELS.WARN,args)
+            const { method, file, line } = this.getCallerInfo(); 
+            this.log_ex(LoggerManager.LEVELS.WARN,method, file, line,args)
         }
     }
 
     // 实现 console.error 方法
     error(...args) {
         if (this.shouldLog(LoggerManager.LEVELS.ERROR)) {
-            this.log_ex(LoggerManager.LEVELS.ERROR,args)
+            const { method, file, line } = this.getCallerInfo(); 
+            this.log_ex(LoggerManager.LEVELS.ERROR,method, file, line,args)
         }
     }
 
     // 实现 console.debug 方法
     debug(...args) {
         if (this.shouldLog(LoggerManager.LEVELS.DEBUG)) {
-            this.log_ex(LoggerManager.LEVELS.DEBUG,args)
+            const { method, file, line } = this.getCallerInfo(); 
+            this.log_ex(LoggerManager.LEVELS.DEBUG,method, file, line,args)
         }
     }
 
