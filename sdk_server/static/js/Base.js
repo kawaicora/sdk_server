@@ -40,7 +40,7 @@ class Base{
               
 
                 $('.nav-user-login-btn').addClass('hidden');
-                $('.exit-login-btn').removeClass('hidden');
+                // $('.exit-login-btn').removeClass('hidden');
                 $('.nav-user-info').removeClass('hidden');
                 $('.nav-username').text(response.data.display_name);
                 $(".nav-user-info a img")[0].src = response.data.avatar;

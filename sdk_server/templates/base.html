@@ -17,7 +17,7 @@
     
     <style type="text/css">
         :root {
-            /* 1. 全局字体属性（核心修复：恢复font-family-base，避免空值） */
+            /* 1. 全局字体属性 */
             --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Microsoft YaHei', sans-serif;
             --font-size-base: 16px;
             --font-size-sm: 14px;
@@ -27,7 +27,7 @@
             --font-weight-medium: 500;
             --font-weight-semibold: 600;
 
-            /* 2. 主题颜色（保留原有，新增登录相关颜色适配） */
+            /* 2. 主题颜色 */
             --dark-bg: #1a1a1a;
             --dark-card: #242424;
             --dark-border: #333;
@@ -44,7 +44,7 @@
             --danger-color: #dc3545; /* 退出按钮颜色 */
             --success-color: #28a745; /* 登录成功相关 */
 
-            /* 3. 登录/退出元素颜色（深浅色适配） */
+            /* 3. 登录/退出元素颜色 */
             --login-btn-bg: var(--accent-color);
             --login-btn-text: #ffffff;
             --login-btn-hover: var(--accent-color-hover);
@@ -56,8 +56,8 @@
             --dark-user-info-text: var(--dark-text);
         }
 
-        /* 全局样式：核心修复——排除Font Awesome图标元素的字体强制覆盖 */
-        *:not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab) {
+        /* 全局样式：应用统一字体属性 */
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -67,10 +67,10 @@
             font-weight: var(--font-weight-normal);
         }
 
-        /* 单独给Font Awesome图标设置正确的字体（关键修复） */
+        /* Font Awesome图标专属样式 */
         [class*="fa-"], .fa, .fas, .far, .fab {
             font-family: "Font Awesome 6 Free" !important;
-            font-weight: 900 !important; /* Solid样式需要900权重 */
+            font-weight: 900 !important;
             font-style: normal;
             font-variant: normal;
             text-rendering: auto;
@@ -79,10 +79,10 @@
 
         body {
             min-height: 100vh;
-            padding-top: 60px; /* 顶部导航高度 */
             background-color: var(--light-bg);
             color: var(--light-text);
             z-index: 1;
+            /* 移除body的max-width，交给layout-container控制 */
         }
 
         /* 深色模式全局样式 */
@@ -91,17 +91,62 @@
             color: var(--dark-text);
         }
 
-        /* PC端：给侧边菜单留左侧空间 */
-        @media (min-width: 768px) {
-            body {
-                padding-left: 64px;
+        /* 核心：布局容器（PC居中+移动端并列） */
+        .layout-container {
+            display: flex;
+            max-width: 1200px;
+            min-height: calc(100vh - 80px); /* 减去顶部导航80px，避免滚动条 */
+            margin: 0 auto;
+            padding-top: 80px; /* 匹配顶部导航高度 */
+            width: 100%;
+        }
+
+        /* 侧边菜单核心样式（统一PC/移动端） */
+        .sidebar-menu {
+            background-color: var(--light-card) !important;
+            width: 64px; /* PC端固定宽度 */
+            flex-shrink: 0; /* 禁止收缩 */
+            overflow: hidden; /* 隐藏溢出，配合宽度动画 */
+            transition: width 0.3s ease-in-out; /* 宽度动画 */
+            border-right: 1px solid var(--light-border);
+        }
+        .dark .sidebar-menu {
+            background-color: var(--dark-card) !important;
+            border-right-color: var(--dark-border);
+        }
+
+        /* 主内容区域（占满剩余宽度） */
+        .main-content {
+            flex: 1; /* 移动端/PC端都占剩余宽度 */
+            padding: 0 16px;
+        }
+
+        /* 移动端适配（<768px） */
+        @media (max-width: 767px) {
+            .sidebar-menu {
+                width: 0; /* 移动端默认隐藏（宽度0） */
+            }
+            /* 移动端展开侧边栏时的遮罩（仅遮罩主内容） */
+            .sidebar-overlay {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0px;
+                background: rgba(0,0,0,0.5);
+                z-index: 3;
             }
         }
 
-        /* 移动端：无左侧padding */
-        @media (max-width: 767px) {
-            body {
-                padding-left: 0;
+        /* PC端适配（≥768px） */
+        @media (min-width: 768px) {
+            /* PC端隐藏菜单按钮和关闭按钮 */
+            .nav-menu-btn, .sidebar-close-btn {
+                display: none !important;
+            }
+            /* PC端隐藏遮罩层 */
+            .sidebar-overlay {
+                display: none !important;
             }
         }
 
@@ -148,18 +193,7 @@
             color: white;
         }
 
-        /* 关键修复：侧边菜单强制不透明背景 */
-        .sidebar-menu {
-            background-color: var(--light-card) !important;
-            opacity: 1 !important;
-            z-index: 50 !important;
-        }
-        .dark .sidebar-menu {
-            background-color: var(--dark-card) !important;
-        }
-
-        /* 2. 登录/退出相关元素样式优化（核心：深浅色颜色反转适配） */
-        /* 登录按钮 */
+        /* 登录/退出相关元素样式 */
         .nav-user-login-btn {
             background-color: var(--login-btn-bg) !important;
             color: var(--login-btn-text) !important;
@@ -170,11 +204,10 @@
             background-color: var(--login-btn-hover) !important;
         }
         .nav-user-login-btn i {
-            color: inherit !important; /* 图标继承按钮文字颜色 */
+            color: inherit !important;
             font-size: inherit !important;
         }
 
-        /* 退出按钮 */
         .exit-login-btn {
             color: var(--logout-btn-text) !important;
             font-size: var(--font-size-sm) !important;
@@ -247,7 +280,7 @@
             display:none !important;
         }
 
-        /* 辅助：小字体工具类 */
+        /* 辅助工具类 */
         .text-sm {
             font-size: var(--font-size-sm) !important;
         }
@@ -263,13 +296,11 @@
     </style>
 
     <script>
-        // 修复：Tailwind配置移除CSS变量，改用静态值（避免解析报错）
         tailwind.config = {
             mode: 'jit',
             darkMode: 'class',
             theme: {
                 extend: {
-                    // 静态值定义（和CSS变量保持一致，避免样式不一致）
                     fontFamily: {
                         'base': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Microsoft YaHei', 'sans-serif'],
                     },
@@ -307,9 +338,9 @@
 </head>
 
 <body>
-    <!-- 顶部条状导航栏 -->
-    <nav class="main-nav fixed top-0 left-0 right-0 z-40 bg-light-card dark:bg-dark-card border-b border-light-border dark:border-dark-border h-15">
-        <div class="container mx-auto h-full flex items-center justify-between px-4">
+    <!-- 顶部导航栏（固定高度80px） -->
+    <nav class="main-nav fixed top-0 left-0 right-0 z-50 bg-light-card dark:bg-dark-card border-b border-light-border dark:border-dark-border h-[80px]">
+        <div class="container h-full flex items-center justify-between px-4 mx-auto">
             <!-- 左侧Logo -->
             <div class="flex items-center h-full">
                 <a href="/" class="flex items-center">
@@ -319,17 +350,17 @@
 
             <!-- 右侧：登录按钮 + 用户信息 + 菜单触发按钮 -->
             <div class="flex items-center space-x-4">
-                <!-- 退出按钮：优化图标和颜色适配 -->
+                <!-- 退出按钮 -->
                 <button class="exit-login-btn hidden px-4 py-2 rounded-md transition-colors">
                     <i class="fa-solid fa-right-from-bracket mr-1"></i> 退出
                 </button>
                 
-                <!-- 登录按钮：优化图标和颜色适配 -->
+                <!-- 登录按钮 -->
                 <a href="/?page_id=8" class="nav-user-login-btn hidden px-4 py-2 rounded-md transition-colors text-sm font-medium">
                     <i class="fa-solid fa-right-to-bracket mr-1"></i> 登录
                 </a>
                 
-                <!-- 登录后用户信息下拉：优化文字和图标颜色 -->
+                <!-- 登录后用户信息下拉 -->
                 <div class="nav-user-info hidden dropdown relative">
                     <a href="javascript:;" class="flex items-center space-x-2 px-2 py-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" tabindex="0">
                         <img src="/static/img/default_avatar.gif" class="h-8 w-8 rounded-full" alt="头像">
@@ -352,112 +383,116 @@
                     </div>
                 </div>
 
-                <!-- 侧边菜单触发按钮：颜色适配 -->
-                <button class="nav-menu-btn p-2 md:hidden" aria-label="打开侧边菜单">
+                <!-- 侧边菜单触发按钮（仅移动端显示） -->
+                <button class="nav-menu-btn p-2" aria-label="打开侧边菜单">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- 侧边菜单 -->
-    <div class="sidebar-menu fixed top-0 left-0 h-screen w-64 border-r border-light-border dark:border-dark-border z-50 
-                md:translate-x-0 
-                -translate-x-full 
-                transition-transform duration-300 ease-in-out shadow-lg" tabindex="-1">
-        <div class="p-4 h-full flex flex-col">
-            <!-- 菜单标题 + 移动端关闭按钮 -->
-            <div class="flex items-center justify-between mb-6 mt-4">
-                <h2 class="text-lg font-semibold">主导航</h2>
-                <button class="sidebar-close-btn text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 md:hidden" aria-label="关闭侧边菜单">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </div>
+    <!-- 核心：布局容器（侧边栏+主内容） -->
+    <div class="layout-container">
+        <!-- 侧边菜单 -->
+        <div class="sidebar-menu" tabindex="-1">
+            <div class="p-4 h-full flex flex-col">
+                <!-- 菜单标题 + 移动端关闭按钮 -->
+                <div class="flex items-center justify-between mb-6 mt-4">
+                    <h2 class="text-lg font-semibold">主导航</h2>
+                    <button class="sidebar-close-btn text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" aria-label="关闭侧边菜单">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
 
-            <!-- 更多下拉 -->
-            <div class="more-dropdown focus:outline-none" tabindex="0">
-                <a href="javascript:;" class="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 w-full text-sm">
-                    <span class="flex items-center">
-                        <i class="fa-solid fa-chevron-down mr-2 text-xs"></i> 更多
-                    </span>
-                    <i class="fa-solid fa-angle-down text-xs transition-transform duration-200"></i>
-                </a>
-                <div class="more-dropdown-content pl-6 space-y-1">
-                    <a href="/view/webrtc" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                        <i class="fa-solid fa-video mr-2"></i> 视频连线
+                <!-- 更多下拉 -->
+                <div class="more-dropdown focus:outline-none" tabindex="0">
+                    <a href="javascript:;" class="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 w-full text-sm">
+                        <span class="flex items-center">
+                            <i class="fa-solid fa-chevron-down mr-2 text-xs"></i> 更多
+                        </span>
+                        <i class="fa-solid fa-angle-down text-xs transition-transform duration-200"></i>
                     </a>
-                    <a href="/view/chat" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                        <i class="fa-solid fa-comments mr-2"></i> 聊天
-                    </a>
-                    <a href="/view/products" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                        <i class="fa-solid fa-shopping-cart mr-2"></i> 商品列表
+                    <div class="more-dropdown-content pl-6 space-y-1">
+                        <a href="/view/webrtc" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                            <i class="fa-solid fa-video mr-2"></i> 视频连线
+                        </a>
+                        <a href="/view/chat" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                            <i class="fa-solid fa-comments mr-2"></i> 聊天
+                        </a>
+                        <a href="/view/products" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                            <i class="fa-solid fa-shopping-cart mr-2"></i> 商品列表
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 话题分类 -->
+                <div class="mt-4">
+                    <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">话题类别</p>
+                    <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                        <i class="fa-solid fa-list-ul mr-2"></i> 所有类别
                     </a>
                 </div>
-            </div>
 
-            <!-- 话题分类 -->
-            <div class="mt-4">
-                <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">话题类别</p>
-                <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                    <i class="fa-solid fa-list-ul mr-2"></i> 所有类别
-                </a>
-            </div>
+                <!-- 热门标签 -->
+                <div class="mt-4">
+                    <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">热门标签</p>
+                    <ul class="space-y-1 pl-2">
+                        <li>
+                            <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                                <i class="fa-solid fa-droplet text-amber-500 mr-2"></i> 纯水
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                                <i class="fa-solid fa-clock text-green-500 mr-2"></i> 快快快答
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                                <i class="fa-solid fa-palette text-purple-500 mr-2"></i> dailyart
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                                <i class="fa-solid fa-star text-yellow-500 mr-2"></i> 二次元
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-700 text-sm">
+                                <i class="fa-solid fa-folder-open text-green-600 mr-2"></i> 作品集
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
-            <!-- 热门标签 -->
-            <div class="mt-4">
-                <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">热门标签</p>
-                <ul class="space-y-1 pl-2">
-                    <li>
-                        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                            <i class="fa-solid fa-droplet text-amber-500 mr-2"></i> 纯水
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                            <i class="fa-solid fa-clock text-green-500 mr-2"></i> 快快快答
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                            <i class="fa-solid fa-palette text-purple-500 mr-2"></i> dailyart
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                            <i class="fa-solid fa-star text-yellow-500 mr-2"></i> 二次元
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-700 text-sm">
-                            <i class="fa-solid fa-folder-open text-green-600 mr-2"></i> 作品集
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- 主题切换区域 -->
-            <div class="mt-auto pt-4 border-t border-light-border dark:border-dark-border">
-                <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">主题切换</p>
-                <div class="flex space-x-2 px-3">
-                    <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="light">
-                        <i class="fa-solid fa-sun mr-1"></i> 白天
-                    </button>
-                    <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="dark">
-                        <i class="fa-solid fa-moon mr-1"></i> 夜晚
-                    </button>
-                    <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="auto">
-                        <i class="fa-solid fa-circle-half-stroke mr-1"></i> 自动
-                    </button>
+                <!-- 主题切换区域 -->
+                <div class="mt-auto pt-4 border-t border-light-border dark:border-dark-border">
+                    <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">主题切换</p>
+                    <div class="flex space-x-2 px-3">
+                        <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="light">
+                            <i class="fa-solid fa-sun mr-1"></i> 白天
+                        </button>
+                        <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="dark">
+                            <i class="fa-solid fa-moon mr-1"></i> 夜晚
+                        </button>
+                        <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="auto">
+                            <i class="fa-solid fa-circle-half-stroke mr-1"></i> 自动
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- 主内容区域（新增容器，占满剩余宽度） -->
+        <div class="main-content">
+            <!-- 移动端遮罩层（仅遮罩主内容） -->
+            <div class="sidebar-overlay hidden transition-opacity duration-300"></div>
+
+            {% block header %}{% endblock %}
+            {% block content %}{% endblock %}
+        </div>
     </div>
 
-    <!-- 移动端遮罩层 -->
-    <div class="sidebar-overlay fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden transition-opacity duration-300"></div>
-
-    {% block header %}{% endblock %}
-    {% block content %}{% endblock %}
     {% block footer %}{% endblock %}
 
     <script type="text/javascript">
@@ -493,38 +528,56 @@
 
             // 初始化主题
             initTheme();
-
-            // 移动端侧边菜单逻辑
+            
+            // 移动端侧边菜单逻辑（宽度动画）
             const $sidebar = $('.sidebar-menu');
             const $overlay = $('.sidebar-overlay');
             const $menuBtn = $('.nav-menu-btn');
             const $closeBtn = $('.sidebar-close-btn');
+            const SIDEBAR_WIDTH = '500px'; // 侧边栏展开宽度
 
+            // 打开侧边菜单（宽度展开）
             $menuBtn.on('click', function() {
-                $sidebar.removeClass('-translate-x-full').addClass('translate-x-0');
-                $overlay.removeClass('hidden');
+                $sidebar.css('width', SIDEBAR_WIDTH);
+                // $overlay.removeClass('hidden');
                 $('body').addClass('overflow-hidden');
             });
 
+            // 关闭侧边菜单（宽度收缩为0）
             function closeSidebar() {
-                $sidebar.removeClass('translate-x-0').addClass('-translate-x-full');
+                $sidebar.css('width', '0');
                 $overlay.addClass('hidden');
                 $('body').removeClass('overflow-hidden');
             }
+
+            // 绑定关闭事件
             $closeBtn.on('click', closeSidebar);
             $overlay.on('click', closeSidebar);
 
-            
+            // 初始化移动端侧边栏为关闭状态
+            if ($(window).width() < 768) {
+                closeSidebar();
+            }
+
+            // 窗口大小变化时适配
+            $(window).resize(function() {
+                if ($(window).width() >= 768) {
+                    $sidebar.css('width', SIDEBAR_WIDTH); // PC端强制展开
+                    $overlay.addClass('hidden');
+                    $('body').removeClass('overflow-hidden');
+                } else {
+                    closeSidebar(); // 移动端默认关闭
+                }
+            });
         });
 
-        // 修复：增加Base对象容错，避免未定义时报错
+        // Base对象容错
         document.addEventListener("DOMContentLoaded", function() {
             // 初始化登录状态UI
             $('.nav-user-login-btn').removeClass('hidden');
             $('.exit-login-btn').addClass('hidden');
             $('.nav-user-info').addClass('hidden');
 
-            // 容错：检查Base是否存在，避免报错
             if (typeof Base !== 'undefined' && Base.inst) {
                 Base.inst().GetUserInfo();
             } else {
@@ -532,9 +585,8 @@
             }
         });
 
-        // 修复：监听消息时增加Base容错
+        // 监听消息容错
         window.addEventListener('message', function(event) {
-            // 容错：Base未定义时直接返回
             if (typeof Base === 'undefined' || !Base.inst) {
                 console.warn('Base对象未定义，忽略消息：', event.data);
                 return;
