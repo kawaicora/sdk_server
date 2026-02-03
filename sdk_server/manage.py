@@ -2,7 +2,7 @@
 import os
 import dotenv  # 导入 python-dotenv
 dotenv.load_dotenv()
-from app import app, socketio,logger
+from app import app, socketio
 from app.utils.LoggerManager import logger
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="google_crc32c")
@@ -27,7 +27,7 @@ if __name__ == "__main__":
             app, 
             host=os.getenv("LISTEN_HOST","0.0.0.0"), 
             port=int(os.getenv("LISTEN_PORT",80)),
-            debug=True, 
+            debug=os.getenv("DEBUG",False), 
             use_reloader=False,
             allow_unsafe_werkzeug=True  # 允许在异步模式下使用调试功能
         )

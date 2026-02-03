@@ -2,6 +2,7 @@ from email.utils import formataddr
 import hashlib
 import asyncio
 import os
+import re
 import string
 import time
 from typing import Any, Optional, Type, TypeVar, Coroutine
@@ -192,11 +193,7 @@ class CommonUtils:
         characters = string.ascii_letters + string.digits
         random_part = ''.join(random.choice(characters) for i in range(10))
         return f"{prefix}{random_part}"
-
-
-
     @staticmethod
-    
     def calc_cloud_sign_suffix(origin_data, secret_key, urlencode=False):
         # 按key排序
         sorted_data = sorted(origin_data, key=lambda x: x['key'])
@@ -222,7 +219,7 @@ class CommonUtils:
         rqtime = int(time.time())
         rqrandom = CommonUtils.generate_random_id("Box")
         value_str += f"{secret_key}{rqtime}{rqrandom}"
-        print(f"isCloudLogin : RequestIsCloudLogin {value_str}")
+        logger.info(f"isCloudLogin : RequestIsCloudLogin {value_str}")
         
         # 计算MD5签名
         sign_md5 = hashlib.md5(value_str.encode('utf-8')).hexdigest()
@@ -273,15 +270,15 @@ class CommonUtils:
             if file_path.endswith('.zip'):
                 with zipfile.ZipFile(file_path, 'r') as zip_ref:
                     zip_ref.extractall(extract_path)
-                print(f"成功解压 {file_path} 到 {extract_path}")
+                logger.info(f"成功解压 {file_path} 到 {extract_path}")
             elif file_path.endswith('.rar'):
                 rf = rarfile.RarFile(file_path)
                 rf.extractall(extract_path)
-                print(f"成功解压 {file_path} 到 {extract_path}")
+                logger.info(f"成功解压 {file_path} 到 {extract_path}")
             else:
-                print("不支持的压缩文件格式，请使用 ZIP 或 RAR 格式。")
+                logger.info("不支持的压缩文件格式，请使用 ZIP 或 RAR 格式。")
         except Exception as e:
-            print(f"解压过程中出现错误: {e}")
+            logger.error(f"解压过程中出现错误: {e}")
     @staticmethod
     def get_time_of_day() -> str:
         # 获取当前时间
@@ -513,7 +510,7 @@ class CommonUtils:
             return bcrypt.checkpw(plain_bytes, hashed_bytes)
         except Exception as e:
             # 哈希格式非法时返回 False，避免程序崩溃
-            print(f"密码验证失败：{e}")
+            logger.error(f"密码验证失败：{e}")
             return False
     
 
@@ -576,8 +573,297 @@ class CommonUtils:
             # 哈希格式错误/空值时返回不匹配
             return False
 
+    @staticmethod    
+    def parse_php_session_tokens(php_serialized_str):
+        """
+        健壮的PHP序列化解析函数
+        """
         
-        
+        try:
+            session_tokens = {}
+            
+            # 方法1：精确匹配（针对您提供的格式）
+            pattern1 = r's:64:"([a-f0-9]{64})";a:4:\{s:10:"expiration";i:(\d+);s:2:"ip";s:\d+:"([^"]*)";s:2:"ua";s:\d+:"([^"]*)";s:5:"login";i:(\d+);\}'
+            matches1 = re.findall(pattern1, php_serialized_str)
+            
+            if matches1:
+
+                for token, expiration, ip, ua, login in matches1:
+                    session_tokens[token] = {
+                        'expiration': int(expiration),
+                        'ip': ip,
+                        'ua': ua,
+                        'login': int(login)
+                    }
+                return session_tokens
+            
+            # 方法2：更通用的匹配（如果格式有微小变化）
+            pattern2 = r's:64:"([a-f0-9]{64})";a:\d+:\{(.*?)\}'
+            matches2 = re.findall(pattern2, php_serialized_str)
+            
+            if matches2:
+                for token, content in matches2:
+                    session_data = {}
+                    
+                    # 提取各个字段
+                    exp_match = re.search(r's:10:"expiration";i:(\d+);', content)
+                    ip_match = re.search(r's:2:"ip";s:\d+:"([^"]*)";', content)
+                    ua_match = re.search(r's:2:"ua";s:\d+:"([^"]*)";', content)
+                    login_match = re.search(r's:5:"login";i:(\d+);', content)
+                    
+                    if exp_match:
+                        session_data['expiration'] = int(exp_match.group(1))
+                    if ip_match:
+                        session_data['ip'] = ip_match.group(1)
+                    if ua_match:
+                        session_data['ua'] = ua_match.group(1)
+                    if login_match:
+                        session_data['login'] = int(login_match.group(1))
+                    
+                    session_tokens[token] = session_data
+                
+                return session_tokens
+            
+            logger.warning("无法解析session_tokens数据")
+            return None
+            
+        except Exception as e:
+            logger.error(f"解析 session_tokens 失败: {str(e)}", exc_info=True)
+            return None
+    @staticmethod
+    def set_php_session_tokens(session_tokens):
+        """
+        生成PHP序列化格式的session_tokens字符串（与parse函数反向兼容）
+        :param session_tokens: 字典，格式如 {
+            "64位token字符串": {
+                "expiration": 时间戳整数,
+                "ip": IP字符串,
+                "ua": 用户代理字符串,
+                "login": 登录状态整数(1/0)
+            }
+        }
+        :return: PHP序列化字符串 | None（失败时）
+        """
+        try:
+            # 入参校验
+            if not isinstance(session_tokens, dict) or len(session_tokens) == 0:
+                logger.warning("session_tokens入参为空或非字典类型")
+                return None
+            
+            serialized_parts = []
+            # 遍历每个token，生成对应序列化片段
+            for token, data in session_tokens.items():
+                # 校验token格式（64位十六进制）
+                if not re.match(r'^[a-f0-9]{64}$', token, re.I):
+                    logger.warning(f"无效的token格式: {token}，需为64位十六进制字符串")
+                    continue
+                
+                # 校验必要字段
+                required_fields = ['expiration', 'ip', 'ua', 'login']
+                for field in required_fields:
+                    if field not in data:
+                        logger.warning(f"token {token} 缺少必要字段: {field}")
+                        break
+                else:  # 所有必要字段都存在时执行
+                    # 生成IP字段的PHP序列化格式（s:长度:"值"）
+                    ip_len = len(data['ip'])
+                    ip_serialized = f's:2:"ip";s:{ip_len}:"{data["ip"]}";'
+                    
+                    # 生成UA字段的PHP序列化格式
+                    ua_len = len(data['ua'])
+                    ua_serialized = f's:2:"ua";s:{ua_len}:"{data["ua"]}";'
+                    
+                    # 生成expiration/login字段（整数类型：i:值;）
+                    exp_serialized = f's:10:"expiration";i:{data["expiration"]};'
+                    login_serialized = f's:5:"login";i:{data["login"]};'
+                    
+                    # 拼接数组内容（固定4个字段，与parse的pattern1匹配）
+                    array_content = f'{exp_serialized}{ip_serialized}{ua_serialized}{login_serialized}'
+                    # 拼接完整的token片段（s:64:"token";a:4:{数组内容};）
+                    token_serialized = f's:64:"{token}";a:4:{{{array_content}}}'
+                    serialized_parts.append(token_serialized)
+            
+            # 拼接所有token片段，返回最终序列化字符串
+            if serialized_parts:
+                return ''.join(serialized_parts)
+            else:
+                logger.warning("无有效token数据生成序列化字符串")
+                return None
+            
+        except Exception as e:
+            logger.error(f"生成PHP session_tokens失败: {str(e)}", exc_info=True)
+            return None    
+    
+    @staticmethod
+    def parse_php_serialize(serialized_str):
+        """
+        解析PHP序列化字符串为Python字典/列表
+        :param serialized_str: PHP序列化字符串（如你的示例）
+        :return: 解析后的Python数据（字典/列表）| None（失败）
+        """
+        try:
+            # 去除首尾空白，保证解析准确性
+            serialized_str = serialized_str.strip()
+            if not serialized_str:
+                logger.warning("空的序列化字符串，解析失败")
+                return None
+            
+            # 递归解析核心函数
+            def _parse(data, pos):
+                # 跳过空白字符
+                while pos < len(data) and data[pos].isspace():
+                    pos += 1
+                if pos >= len(data):
+                    return None, pos
+                
+                # 匹配类型标识（a/s/b/i/d）
+                type_match = re.match(r'([asbid]):', data[pos:])
+                if not type_match:
+                    logger.error(f"不支持的类型标识，位置{pos}：{data[pos:pos+10]}")
+                    return None, pos
+                data_type = type_match.group(1)
+                pos += len(type_match.group(0))
+
+                if data_type == 'a':  # 解析数组
+                    # 匹配数组长度：a:3:{ → 提取3
+                    len_match = re.match(r'(\d+):\{', data[pos:])
+                    if not len_match:
+                        logger.error(f"数组格式错误，位置{pos}：{data[pos:pos+10]}")
+                        return None, pos
+                    arr_len = int(len_match.group(1))
+                    pos += len(len_match.group(0))
+                    
+                    arr = {} if arr_len > 0 else []
+                    for _ in range(arr_len):
+                        # 解析键
+                        key, pos = _parse(data, pos)
+                        if key is None:
+                            break
+                        # 解析值
+                        value, pos = _parse(data, pos)
+                        if value is None:
+                            break
+                        arr[key] = value
+                    
+                    # 跳过数组结束符 }
+                    while pos < len(data) and data[pos] != '}':
+                        pos += 1
+                    pos += 1
+                    return arr, pos
+
+                elif data_type == 's':  # 解析字符串
+                    # 匹配字符串长度：s:4:"core"; → 提取4
+                    len_match = re.match(r'(\d+):"', data[pos:])
+                    if not len_match:
+                        logger.error(f"字符串格式错误，位置{pos}：{data[pos:pos+10]}")
+                        return None, pos
+                    str_len = int(len_match.group(1))
+                    pos += len(len_match.group(0))
+                    
+                    # 提取字符串内容（长度为str_len）
+                    str_val = data[pos:pos+str_len]
+                    pos += str_len
+                    # 跳过结束符 ";
+                    if pos < len(data) and data[pos:pos+2] == '";':
+                        pos += 2
+                    return str_val, pos
+
+                elif data_type == 'b':  # 解析布尔值
+                    # 匹配布尔值：b:1; → 提取1/0
+                    bool_match = re.match(r'([01]);', data[pos:])
+                    if not bool_match:
+                        logger.error(f"布尔值格式错误，位置{pos}：{data[pos:pos+10]}")
+                        return None, pos
+                    bool_val = bool(int(bool_match.group(1)))
+                    pos += len(bool_match.group(0))
+                    return bool_val, pos
+
+                elif data_type == 'i':  # 解析整数
+                    # 匹配整数：i:123; → 提取123
+                    int_match = re.match(r'(-?\d+);', data[pos:])
+                    if not int_match:
+                        logger.error(f"整数格式错误，位置{pos}：{data[pos:pos+10]}")
+                        return None, pos
+                    int_val = int(int_match.group(1))
+                    pos += len(int_match.group(0))
+                    return int_val, pos
+
+                elif data_type == 'd':  # 解析浮点数
+                    # 匹配浮点数：d:3.14; → 提取3.14
+                    float_match = re.match(r'(-?\d+\.?\d*);', data[pos:])
+                    if not float_match:
+                        logger.error(f"浮点数格式错误，位置{pos}：{data[pos:pos+10]}")
+                        return None, pos
+                    float_val = float(float_match.group(1))
+                    pos += len(float_match.group(0))
+                    return float_val, pos
+
+                else:
+                    logger.error(f"未实现的类型：{data_type}")
+                    return None, pos
+
+            # 启动递归解析
+            result, _ = _parse(serialized_str, 0)
+            return result
+
+        except Exception as e:
+            logger.error(f"解析PHP序列化数据失败：{str(e)}", exc_info=True)
+            return None
+
+    @staticmethod
+    def build_php_serialize(python_data):
+        """
+        将Python字典/列表/基本类型转为PHP序列化字符串
+        :param python_data: Python数据（字典/列表/字符串/布尔/整数等）
+        :return: PHP序列化字符串 | None（失败）
+        """
+        try:
+            # 递归构建核心函数
+            def _build(data):
+                if isinstance(data, dict):  # 构建数组（关联数组）
+                    arr_items = []
+                    for key, value in data.items():
+                        # 键必须是字符串/整数（PHP数组键规则）
+                        key_str = _build(key) if isinstance(key, (str, int, bool)) else _build(str(key))
+                        val_str = _build(value)
+                        arr_items.append(f"{key_str}{val_str}")
+                    arr_content = ''.join(arr_items)
+                    return f"a:{len(arr_items)}:{{{arr_content}}}"
+
+                elif isinstance(data, list):  # 构建索引数组
+                    arr_items = []
+                    for idx, value in enumerate(data):
+                        key_str = _build(idx)
+                        val_str = _build(value)
+                        arr_items.append(f"{key_str}{val_str}")
+                    arr_content = ''.join(arr_items)
+                    return f"a:{len(arr_items)}:{{{arr_content}}}"
+
+                elif isinstance(data, str):  # 构建字符串
+                    str_len = len(data)
+                    return f"s:{str_len}:\"{data}\";"
+
+                elif isinstance(data, bool):  # 构建布尔值
+                    bool_val = 1 if data else 0
+                    return f"b:{bool_val};"
+
+                elif isinstance(data, int):  # 构建整数
+                    return f"i:{data};"
+
+                elif isinstance(data, float):  # 构建浮点数
+                    return f"d:{data};"
+
+                else:
+                    logger.warning(f"不支持的类型：{type(data)}，转为字符串处理")
+                    return _build(str(data))
+
+            # 启动递归构建
+            result = _build(python_data)
+            return result
+
+        except Exception as e:
+            logger.error(f"构建PHP序列化数据失败：{str(e)}", exc_info=True)
+            return None
     @staticmethod
     def remove_key_recursive(obj, target_key):
         if isinstance(obj, dict):

@@ -1,13 +1,8 @@
 # -*- coding:utf-8 -*-
-import base64
-from datetime import datetime
-import io
-import secrets
 from app.route import bp
 
 from flask import *
 from app.settings import *
-import gzip
 import yaml
 from app.extensions import parse_encrypted_resume
 from app.sql_class.Tables import Users,Usermeta
@@ -95,14 +90,14 @@ def write_yaml(data):
         yaml.dump(data, file, allow_unicode=True, default_flow_style=False)
 
 
-@bp.route("/view/online_video_player")
-def online_video_player():
-    
-    response = make_response(render_template("online_video_player.html"),200)
+
+
+
+@bp.route("/view/forum")
+def view_forum():
+    if len(request.args) >0:
+        return Response(get_response_string(0),status=200,content_type="application/json")
+    response = make_response(render_template("forum.html"),200)
     response.headers['X-Organization'] = 'Nintendo'
     return response
-
-
-
-
 

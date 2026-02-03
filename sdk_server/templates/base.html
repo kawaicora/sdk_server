@@ -5,238 +5,563 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 移除layui样式，保留其他依赖 -->
+    <!-- 依赖引入 -->
     <script src="/static/js/jquery.min.js"></script>
-    <!-- <script src="/static/js/tailwindcss-3.4.17.js"></script> -->
-     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 进入加密解密库 -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script language="javascript" src="/static/js/jsencrypt.min.js"></script>
-    <!-- 引入 socket.io 客户端库 -->
     <script src="/static/js/socket.io.js"></script>
     <script language="javascript" src="/static/js/CommonUtils.js"></script>
     <script language="javascript" src="/static/js/LoggerManager.js"></script>
     <script language="javascript" src="/static/js/Base.js"></script>
-    <!-- 引入Font Awesome图标（替代layui-icon） -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/font-awesome/6.4.0/css/all.min.css">
+    
     <style type="text/css">
         :root {
+            /* 1. 全局字体属性（核心修复：恢复font-family-base，避免空值） */
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Microsoft YaHei', sans-serif;
+            --font-size-base: 16px;
+            --font-size-sm: 14px;
+            --font-size-xs: 12px;
+            --line-height-base: 1.5;
+            --font-weight-normal: 400;
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+
+            /* 2. 主题颜色（保留原有，新增登录相关颜色适配） */
             --dark-bg: #1a1a1a;
             --dark-card: #242424;
             --dark-border: #333;
             --dark-text: #e0e0e0;
+            --dark-text-secondary: #a0a0a0;
+            --light-bg: #ffffff;
+            --light-card: #f8f9fa;
+            --light-border: #e9ecef;
+            --light-text: #333333;
+            --light-text-secondary: #6c757d;
+            
             --accent-color: #1E9FFF;
-            --hover-color: #2196f3;
+            --accent-color-hover: #2196f3;
+            --danger-color: #dc3545; /* 退出按钮颜色 */
+            --success-color: #28a745; /* 登录成功相关 */
+
+            /* 3. 登录/退出元素颜色（深浅色适配） */
+            --login-btn-bg: var(--accent-color);
+            --login-btn-text: #ffffff;
+            --login-btn-hover: var(--accent-color-hover);
+            --logout-btn-text: var(--light-text);
+            --logout-btn-hover-bg: #e9ecef;
+            --dark-logout-btn-text: var(--dark-text);
+            --dark-logout-btn-hover-bg: #343a40;
+            --user-info-text: var(--light-text);
+            --dark-user-info-text: var(--dark-text);
+        }
+
+        /* 全局样式：核心修复——排除Font Awesome图标元素的字体强制覆盖 */
+        *:not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab) {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-family-base) !important;
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-base);
+            font-weight: var(--font-weight-normal);
+        }
+
+        /* 单独给Font Awesome图标设置正确的字体（关键修复） */
+        [class*="fa-"], .fa, .fas, .far, .fab {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important; /* Solid样式需要900权重 */
+            font-style: normal;
+            font-variant: normal;
+            text-rendering: auto;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
             min-height: 100vh;
-            /* background-color: var(--dark-bg); */
-            /* color: var(--dark-text); */
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
-            padding-top: 60px; /* 给固定导航栏留空间 */
+            padding-top: 60px; /* 顶部导航高度 */
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            z-index: 1;
         }
 
-        /* 自定义下拉菜单过渡效果 */
+        /* 深色模式全局样式 */
+        .dark body {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+        }
+
+        /* PC端：给侧边菜单留左侧空间 */
+        @media (min-width: 768px) {
+            body {
+                padding-left: 64px;
+            }
+        }
+
+        /* 移动端：无左侧padding */
+        @media (max-width: 767px) {
+            body {
+                padding-left: 0;
+            }
+        }
+
+        /* 纯CSS实现更多下拉菜单展开 */
+        .more-dropdown-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .more-dropdown:focus-within .more-dropdown-content,
+        .more-dropdown:hover .more-dropdown-content {
+            max-height: 200px;
+        }
+        .more-dropdown:focus-within .fa-angle-down,
+        .more-dropdown:hover .fa-angle-down {
+            transform: rotate(180deg);
+            transition: transform 0.2s ease;
+        }
+
+        /* 下拉菜单过渡 */
         .dropdown-content {
             opacity: 0;
             visibility: hidden;
             transform: translateY(10px);
             transition: all 0.2s ease;
+            background-color: var(--light-card);
         }
-
+        .dark .dropdown-content {
+            background-color: var(--dark-card);
+        }
         .dropdown:hover .dropdown-content {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
         }
+
+        /* 主题切换按钮样式 */
+        .theme-switch-btn {
+            transition: all 0.2s ease;
+            font-size: var(--font-size-sm);
+        }
+        .theme-switch-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        /* 关键修复：侧边菜单强制不透明背景 */
+        .sidebar-menu {
+            background-color: var(--light-card) !important;
+            opacity: 1 !important;
+            z-index: 50 !important;
+        }
+        .dark .sidebar-menu {
+            background-color: var(--dark-card) !important;
+        }
+
+        /* 2. 登录/退出相关元素样式优化（核心：深浅色颜色反转适配） */
+        /* 登录按钮 */
+        .nav-user-login-btn {
+            background-color: var(--login-btn-bg) !important;
+            color: var(--login-btn-text) !important;
+            font-size: var(--font-size-sm) !important;
+            font-weight: var(--font-weight-medium) !important;
+        }
+        .nav-user-login-btn:hover {
+            background-color: var(--login-btn-hover) !important;
+        }
+        .nav-user-login-btn i {
+            color: inherit !important; /* 图标继承按钮文字颜色 */
+            font-size: inherit !important;
+        }
+
+        /* 退出按钮 */
+        .exit-login-btn {
+            color: var(--logout-btn-text) !important;
+            font-size: var(--font-size-sm) !important;
+        }
+        .exit-login-btn:hover {
+            background-color: var(--logout-btn-hover-bg) !important;
+        }
+        .dark .exit-login-btn {
+            color: var(--dark-logout-btn-text) !important;
+        }
+        .dark .exit-login-btn:hover {
+            background-color: var(--dark-logout-btn-hover-bg) !important;
+        }
+        .exit-login-btn i {
+            color: inherit !important;
+            font-size: inherit !important;
+        }
+
+        /* 用户信息区域 */
+        .nav-user-info a {
+            color: var(--user-info-text) !important;
+        }
+        .dark .nav-user-info a {
+            color: var(--dark-user-info-text) !important;
+        }
+        .nav-username {
+            font-size: var(--font-size-sm) !important;
+            font-weight: var(--font-weight-medium) !important;
+        }
+        .nav-user-info i {
+            color: var(--light-text-secondary) !important;
+            font-size: var(--font-size-xs) !important;
+        }
+        .dark .nav-user-info i {
+            color: var(--dark-text-secondary) !important;
+        }
+
+        /* 用户下拉菜单选项 */
+        .dropdown-content li a {
+            color: var(--user-info-text) !important;
+            font-size: var(--font-size-sm) !important;
+        }
+        .dark .dropdown-content li a {
+            color: var(--dark-user-info-text) !important;
+        }
+        .dropdown-content li a:hover {
+            background-color: var(--logout-btn-hover-bg) !important;
+        }
+        .dark .dropdown-content li a:hover {
+            background-color: var(--dark-logout-btn-hover-bg) !important;
+        }
+        .dropdown-content li a i {
+            color: inherit !important;
+            font-size: inherit !important;
+            margin-right: 8px !important;
+        }
+
+        /* 侧边菜单触发按钮 */
+        .nav-menu-btn {
+            color: var(--light-text) !important;
+        }
+        .dark .nav-menu-btn {
+            color: var(--dark-text) !important;
+        }
+        .nav-menu-btn:hover {
+            color: var(--accent-color) !important;
+        }
+
         .hidden {
             display:none !important;
         }
+
+        /* 辅助：小字体工具类 */
+        .text-sm {
+            font-size: var(--font-size-sm) !important;
+        }
+        .text-xs {
+            font-size: var(--font-size-xs) !important;
+        }
+        .font-medium {
+            font-weight: var(--font-weight-medium) !important;
+        }
+        .font-semibold {
+            font-weight: var(--font-weight-semibold) !important;
+        }
     </style>
+
+    <script>
+        // 修复：Tailwind配置移除CSS变量，改用静态值（避免解析报错）
+        tailwind.config = {
+            mode: 'jit',
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    // 静态值定义（和CSS变量保持一致，避免样式不一致）
+                    fontFamily: {
+                        'base': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                    fontSize: {
+                        'base': '16px',
+                        'sm': '14px',
+                        'xs': '12px',
+                    },
+                    lineHeight: {
+                        'base': 1.5,
+                    },
+                    fontWeight: {
+                        'normal': 400,
+                        'medium': 500,
+                        'semibold': 600,
+                    },
+                    colors: {
+                        'dark-card': '#242424',
+                        'dark-border': '#333',
+                        'light-card': '#f8f9fa',
+                        'light-border': '#e9ecef',
+                        'accent-color': '#1E9FFF',
+                        'hover-color': '#2196f3',
+                    },
+                    screens: {
+                        sm: '640px',
+                        md: '768px',
+                        lg: '1024px',
+                    }
+                }
+            }
+        }
+    </script>
     {% block head %}{% endblock %}
 </head>
 
 <body>
-
-
-    <!-- 导航栏：完全使用Tailwind CSS重构 -->
-    <nav class="main-nav fixed top-0 left-0 right-0 z-40 bg-dark-card h-15">
+    <!-- 顶部条状导航栏 -->
+    <nav class="main-nav fixed top-0 left-0 right-0 z-40 bg-light-card dark:bg-dark-card border-b border-light-border dark:border-dark-border h-15">
         <div class="container mx-auto h-full flex items-center justify-between px-4">
-            <!-- 左侧Logo和导航项 -->
+            <!-- 左侧Logo -->
             <div class="flex items-center h-full">
-                <!-- Logo -->
-                <a href="/" class="mr-6 flex items-center">
+                <a href="/" class="flex items-center">
                     <img src="/static/img/favicon.ico" class="h-10 w-auto" alt="Logo">
                 </a>
-                
-                <!-- PC端导航菜单 -->
-                <ul class="hidden md:flex items-center space-x-6 h-full">
-                    <li class="h-full">
-                        <a href="/view/webrtc" class="flex items-center h-full px-2 text-gray-300 hover:text-accent-color transition-colors">连线</a>
-                    </li>
-                    <li class="h-full">
-                        <a href="/view/chat" class="flex items-center h-full px-2 text-gray-300 hover:text-accent-color transition-colors">聊天</a>
-                    </li>
-                    <li class="h-full">
-                        <a href="/view/products" class="flex items-center h-full px-2 text-gray-300 hover:text-accent-color transition-colors">商品列表</a>
-                    </li>
-                </ul>
             </div>
 
-            <!-- 右侧用户相关操作 -->
+            <!-- 右侧：登录按钮 + 用户信息 + 菜单触发按钮 -->
             <div class="flex items-center space-x-4">
-                <!-- 退出按钮 -->
-                <button class="exit-login-btn hidden px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors" onclick="Base.inst().Logout()">
-                    退出
+                <!-- 退出按钮：优化图标和颜色适配 -->
+                <button class="exit-login-btn hidden px-4 py-2 rounded-md transition-colors">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i> 退出
                 </button>
                 
-                <!-- 登录按钮 -->
-                <a href="/?page_id=8" class="nav-user-login-btn hidden px-4 py-2 rounded-md bg-accent-color text-white hover:bg-hover-color transition-colors text-sm">
-                    登录
+                <!-- 登录按钮：优化图标和颜色适配 -->
+                <a href="/?page_id=8" class="nav-user-login-btn hidden px-4 py-2 rounded-md transition-colors text-sm font-medium">
+                    <i class="fa-solid fa-right-to-bracket mr-1"></i> 登录
                 </a>
                 
-                <!-- 登录后用户信息（下拉菜单） -->
+                <!-- 登录后用户信息下拉：优化文字和图标颜色 -->
                 <div class="nav-user-info hidden dropdown relative">
-                    <a href="javascript:;" class="flex items-center space-x-2 px-2 py-1 rounded-md hover:bg-gray-700 transition-colors">
-                        <img src="/static/img/default_avatar.gif" class="h-10 w-10 rounded-full" alt="头像">
-                        <span class="nav-username text-gray-300"></span>
-                        <i class="layui-icon layui-icon-down text-xs text-gray-400"></i>
+                    <a href="javascript:;" class="flex items-center space-x-2 px-2 py-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" tabindex="0">
+                        <img src="/static/img/default_avatar.gif" class="h-8 w-8 rounded-full" alt="头像">
+                        <span class="nav-username text-sm font-medium">用户名</span>
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
                     </a>
-                    
-                    <!-- 下拉菜单内容 -->
-                    <div class="dropdown-content absolute right-0 top-full mt-2 w-48 bg-dark-card border border-dark-border rounded-md shadow-lg z-50">
+                    <div class="dropdown-content absolute right-0 top-full mt-2 w-48 border border-light-border dark:border-dark-border rounded-md shadow-lg z-50">
                         <ul class="py-2">
                             <li>
-                                <a href="https://kawaimoe.org/?page_id=12" target="_blank" class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 transition-colors">
-                                    <i class="layui-icon layui-icon-user mr-2"></i> 会员中心
+                                <a href="https://kawaimoe.org/?page_id=12" target="_blank" class="flex items-center px-4 py-2 transition-colors text-sm">
+                                    <i class="fa-solid fa-user"></i> 会员中心
                                 </a>
                             </li>
                             <li>
-                                <a href="/wp-login.php?action=logout&redirect_to=https%3A%2F%2Fkawaimoe.org&_wpnonce=a2e58cc712" class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 transition-colors">
-                                    <i class="layui-icon layui-icon-logout mr-2"></i> 退出登录
+                                <a href="/wp-login.php?action=logout&redirect_to=https%3A%2F%2Fkawaimoe.org&_wpnonce=a2e58cc712" class="flex items-center px-4 py-2 transition-colors text-sm">
+                                    <i class="fa-solid fa-right-from-bracket"></i> 退出登录
                                 </a>
                             </li>
                         </ul>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- 移动端侧边导航（默认隐藏） -->
-        <div class="mobile-nav fixed top-0 left-0 h-screen w-60 bg-dark-card border-r border-dark-border z-40 transform -translate-x-full transition-transform duration-300 md:hidden">
-            <div class="p-4 pt-16">
-                <ul class="space-y-2">
-                    <li>
-                        <a href="/view/webrtc" class="block px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors">连线</a>
-                    </li>
-                    <li>
-                        <a href="/view/chat" class="block px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors">聊天</a>
-                    </li>
-                    <li>
-                        <a href="/view/products" class="block px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors">商品列表</a>
-                    </li>
-                    <!-- 移动端用户操作 -->
-                    <li class="mt-6 border-t border-dark-border pt-4">
-                        <div class="exit-login-btn hidden px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors w-full text-center" onclick="Base.inst().Logout()">
-                            退出
-                        </div>
-                        <a href="/?page_id=8" class="nav-user-login-btn hidden block px-4 py-2 rounded-md bg-accent-color text-white hover:bg-hover-color transition-colors text-center">
-                            登录
-                        </a>
-                        <div class="nav-user-info hidden mt-2">
-                            <a href="javascript:;" class="flex items-center space-x-2 px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">
-                                <img src="/static/img/default_avatar.gif" class="h-8 w-8 rounded-full" alt="头像">
-                                <span class="nav-username text-gray-300"></span>
-                            </a>
-                            <ul class="mt-2 ml-2 space-y-1">
-                                <li>
-                                    <a href="/?page_id=12" target="_blank" class="block px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors">
-                                        <i class="layui-icon layui-icon-user mr-2"></i> 会员中心
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="/wp-login.php?action=logout&redirect_to=https%3A%2F%2Fwww.kawaimoe.org&_wpnonce=a2e58cc712" class="block px-4 py-2 rounded-md text-gray-300 hover:bg-gray-700 transition-colors">
-                                        <i class="layui-icon layui-icon-logout mr-2"></i> 退出登录
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                </ul>
+                <!-- 侧边菜单触发按钮：颜色适配 -->
+                <button class="nav-menu-btn p-2 md:hidden" aria-label="打开侧边菜单">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- 侧边菜单 -->
+    <div class="sidebar-menu fixed top-0 left-0 h-screen w-64 border-r border-light-border dark:border-dark-border z-50 
+                md:translate-x-0 
+                -translate-x-full 
+                transition-transform duration-300 ease-in-out shadow-lg" tabindex="-1">
+        <div class="p-4 h-full flex flex-col">
+            <!-- 菜单标题 + 移动端关闭按钮 -->
+            <div class="flex items-center justify-between mb-6 mt-4">
+                <h2 class="text-lg font-semibold">主导航</h2>
+                <button class="sidebar-close-btn text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 md:hidden" aria-label="关闭侧边菜单">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- 更多下拉 -->
+            <div class="more-dropdown focus:outline-none" tabindex="0">
+                <a href="javascript:;" class="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 w-full text-sm">
+                    <span class="flex items-center">
+                        <i class="fa-solid fa-chevron-down mr-2 text-xs"></i> 更多
+                    </span>
+                    <i class="fa-solid fa-angle-down text-xs transition-transform duration-200"></i>
+                </a>
+                <div class="more-dropdown-content pl-6 space-y-1">
+                    <a href="/view/webrtc" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                        <i class="fa-solid fa-video mr-2"></i> 视频连线
+                    </a>
+                    <a href="/view/chat" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                        <i class="fa-solid fa-comments mr-2"></i> 聊天
+                    </a>
+                    <a href="/view/products" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                        <i class="fa-solid fa-shopping-cart mr-2"></i> 商品列表
+                    </a>
+                </div>
+            </div>
+
+            <!-- 话题分类 -->
+            <div class="mt-4">
+                <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">话题类别</p>
+                <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                    <i class="fa-solid fa-list-ul mr-2"></i> 所有类别
+                </a>
+            </div>
+
+            <!-- 热门标签 -->
+            <div class="mt-4">
+                <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">热门标签</p>
+                <ul class="space-y-1 pl-2">
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                            <i class="fa-solid fa-droplet text-amber-500 mr-2"></i> 纯水
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                            <i class="fa-solid fa-clock text-green-500 mr-2"></i> 快快快答
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                            <i class="fa-solid fa-palette text-purple-500 mr-2"></i> dailyart
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
+                            <i class="fa-solid fa-star text-yellow-500 mr-2"></i> 二次元
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-700 text-sm">
+                            <i class="fa-solid fa-folder-open text-green-600 mr-2"></i> 作品集
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 主题切换区域 -->
+            <div class="mt-auto pt-4 border-t border-light-border dark:border-dark-border">
+                <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">主题切换</p>
+                <div class="flex space-x-2 px-3">
+                    <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="light">
+                        <i class="fa-solid fa-sun mr-1"></i> 白天
+                    </button>
+                    <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="dark">
+                        <i class="fa-solid fa-moon mr-1"></i> 夜晚
+                    </button>
+                    <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="auto">
+                        <i class="fa-solid fa-circle-half-stroke mr-1"></i> 自动
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 移动端遮罩层 -->
+    <div class="sidebar-overlay fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden transition-opacity duration-300"></div>
 
     {% block header %}{% endblock %}
     {% block content %}{% endblock %}
     {% block footer %}{% endblock %}
 
     <script type="text/javascript">
-        // 移除layui初始化代码（已替换为Tailwind）
+        // 主题切换核心逻辑
+        $(document).ready(function() {
+            // 1. 初始化主题
+            const initTheme = () => {
+                const savedTheme = localStorage.getItem('site-theme') || 'auto';
+                $('.theme-switch-btn').removeClass('active');
+                $(`.theme-switch-btn[data-theme="${savedTheme}"]`).addClass('active');
+                
+                if (savedTheme === 'auto') {
+                    const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    $('html').toggleClass('dark', isSystemDark);
+                } else {
+                    $('html').toggleClass('dark', savedTheme === 'dark');
+                }
+            };
 
-        // 监听父页面发来的消息（仅接收参数，不本地存Cookie）
+            // 2. 主题切换按钮点击事件
+            $('.theme-switch-btn').on('click', function() {
+                const theme = $(this).data('theme');
+                localStorage.setItem('site-theme', theme);
+                initTheme();
+            });
+
+            // 3. 监听系统主题变化
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                if (localStorage.getItem('site-theme') === 'auto') {
+                    initTheme();
+                }
+            });
+
+            // 初始化主题
+            initTheme();
+
+            // 移动端侧边菜单逻辑
+            const $sidebar = $('.sidebar-menu');
+            const $overlay = $('.sidebar-overlay');
+            const $menuBtn = $('.nav-menu-btn');
+            const $closeBtn = $('.sidebar-close-btn');
+
+            $menuBtn.on('click', function() {
+                $sidebar.removeClass('-translate-x-full').addClass('translate-x-0');
+                $overlay.removeClass('hidden');
+                $('body').addClass('overflow-hidden');
+            });
+
+            function closeSidebar() {
+                $sidebar.removeClass('translate-x-0').addClass('-translate-x-full');
+                $overlay.addClass('hidden');
+                $('body').removeClass('overflow-hidden');
+            }
+            $closeBtn.on('click', closeSidebar);
+            $overlay.on('click', closeSidebar);
+
+            
+        });
+
+        // 修复：增加Base对象容错，避免未定义时报错
+        document.addEventListener("DOMContentLoaded", function() {
+            // 初始化登录状态UI
+            $('.nav-user-login-btn').removeClass('hidden');
+            $('.exit-login-btn').addClass('hidden');
+            $('.nav-user-info').addClass('hidden');
+
+            // 容错：检查Base是否存在，避免报错
+            if (typeof Base !== 'undefined' && Base.inst) {
+                Base.inst().GetUserInfo();
+            } else {
+                console.warn('Base对象未定义，跳过用户信息获取');
+            }
+        });
+
+        // 修复：监听消息时增加Base容错
         window.addEventListener('message', function(event) {
-            if (Base.inst().isLogined){
+            // 容错：Base未定义时直接返回
+            if (typeof Base === 'undefined' || !Base.inst) {
+                console.warn('Base对象未定义，忽略消息：', event.data);
+                return;
+            }
+
+            if (Base.inst().isLogined) {
                 console.log("已登录，忽略消息");
                 return;
             }
-            switch (event.data.type){
-                case "TOKEN_ERROR": {
-                    Base.inst().BaseLogger.debug(event.data.message);
-                };
-                break;
-                case "SEND_LOGIN_TOKEN":{
+            switch (event.data.type) {
+                case "TOKEN_ERROR":
+                    if (Base.inst().BaseLogger) {
+                        Base.inst().BaseLogger.debug(event.data.message);
+                    }
+                    break;
+                case "SEND_LOGIN_TOKEN":
                     const app_id = event.data.app_id || null;
                     const encrypted_login_token = event.data.encrypted_login_token || null;
-                    Base.inst().BaseLogger.debug(`encrypted_login_token:${app_id},${encrypted_login_token}`);
-                    // 传递参数，让接口请求携带Cookie
+                    if (Base.inst().BaseLogger) {
+                        Base.inst().BaseLogger.debug(`encrypted_login_token:${app_id},${encrypted_login_token}`);
+                    }
                     Base.inst().GetUserInfo(app_id, encrypted_login_token);
                     $(".main-nav").addClass("hidden")
-                };
-                break;
+                    break;
             }
         });
-
-        // 屏幕尺寸适配（适配Tailwind导航样式）
-        function checkScreenSize() {
-            var isMobile = window.matchMedia("(max-width: 768px)").matches;
-            var $mainNav = $('.main-nav');
-            var $navSwitch = $('.nav-switch');
-            var $mobileNav = $('.mobile-nav');
-            var $exitLogin = $('.exit-login-btn');
-            var $navLogin = $('.nav-user-login-btn');
-            var $navUser = $('.nav-user-info');
-
-            // if (isMobile) {
-            //     // 手机端：显示开关，隐藏PC端退出按钮
-            //     $navSwitch.removeClass('hidden');
-            //     $exitLogin.addClass('hidden');
-            //     // 重置移动端导航位置
-            //     $mobileNav.css('transform', '-translate-x-full');
-            // } else {
-            //     // PC端：隐藏开关，显示PC端退出按钮（仅未登录时）
-            //     $navSwitch.addClass('hidden');
-            //     $mobileNav.css('transform', '-translate-x-full');
-            //     if ($navLogin.hasClass('hidden') && $navUser.hasClass('hidden')) {
-            //         $exitLogin.removeClass('hidden');
-            //     }
-            // }
-        }
-
-        // 导航开关点击事件（手机端展开/收起）
-        $('.nav-switch').on('click', function() {
-            var $mobileNav = $('.mobile-nav');
-            var isHidden = $mobileNav.css('transform').includes('-translate-x-full');
-            $mobileNav.css('transform', isHidden ? 'translate-x-0' : '-translate-x-full');
-        });
-
-        document.addEventListener("DOMContentLoaded", function() {
-            Base.inst().GetUserInfo();
-            // 初始化与窗口 resize 监听
-            checkScreenSize();
-            $(window).resize(checkScreenSize);
-        });
     </script>
-</body>
 
+</body>
 </html>

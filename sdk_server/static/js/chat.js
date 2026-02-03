@@ -16,54 +16,71 @@ async function loadHistoryMessages(room) {
         CommonUtils.MsgBox('加载历史消息失败: ' + e.message);
     }
 }
-function getLocalMsgId(){
-    return "msg_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+
+
+
+var msgTemplateCache =null ;
+
+function initMsgTemplate(msgId) {
+  // 从 message_list 中读取模板
+  msgTemplateCache = $(".message_list #msg_id").clone();
+  // 清空message_list的模板只留缓存
+  $(".message_list #msg_id").remove();
+  msgTemplateCache.removeClass("hidden");
+  console.log("模板读取成功：", msgTemplateCache.length ? "是" : "否");
+  
 }
+
+
+
 // 添加消息到聊天框
 function appendMessage(msg) {
-    
-    var msgId = getLocalMsgId()
-    if (msgTmp == "")
-        msgTmp = $(".message_list").html()
 
-    var msgCode = msgTmp.replace("msg_id",msgId)
-    $(".message_list").append(msgCode)
+    if (msgTemplateCache == null)
+        initMsgTemplate()
+    var obj = msgTemplateCache.clone() //复制一个避免全局变化
+    
     if ( msg.sender_uid== localUid ) {
-        $(`#${msgId}`).addClass("self");
+        obj.find(".other-msg").remove() //自己的消息移除other-msg
+        
     }else{
-        $(`#${msgId}`).addClass("other");
+        obj.find(".self-msg").remove() //别人的消息移除self-msg
     }
-    $(`#${msgId} .avatar-container .username`).text(msg.sender_username || "未知用户");
-    $(`#${msgId} .avatar-container .msg-avatar`)[0].src=msg.sender_avatar != "" ? msg.sender_avatar : "/static/img/default_avatar.gif"
+    obj.find(".items-start .msg-div .username").text(msg.sender_username || "未知用户");
+
+    obj.find(".items-start .msg-avatar").attr("src",msg.sender_avatar != "" ? msg.sender_avatar : "/static/img/default_avatar.gif");
+
+
     switch (msg.type) {
         case "image":
             const img = document.createElement('img');
             img.src = msg.message;
             img.style.maxWidth = '100%';
-            $(`#${msgId} .msgContent .content`).append(img)
+            obj.find(".items-start .msg-div .msg-bubble .content").append(img)
+            
             // if (msg.sender_uid + '' != CommonUtils.GetCookie("uid")) notificationManager.sendNotification(`新消息来自:${ msg.sender_username}`,"[图片]")
             break;
         case "video":
             const video = document.createElement('video');
             video.src = msg.message;
             video.controls = true;
-            $(`#${msgId} .msgContent .content`).append(video);
+            obj.find(".items-start .msg-div .msg-bubble .content").append(video);
             // if (msg.sender_uid + '' != CommonUtils.GetCookie("uid")) notificationManager.sendNotification(`新消息来自:${ msg.sender_username}`,"[视频]")
             break;
         case "audio":
             const audio = document.createElement('audio');
             audio.src = msg.message;
             audio.controls = true;
-            $(`#${msgId} .msgContent .content`).append(audio);
+            obj.find(".items-start .msg-div .msg-bubble .content").append(audio);
             // if (msg.sender_uid + '' != CommonUtils.GetCookie("uid")) notificationManager.sendNotification(`新消息来自:${ msg.sender_username}`,"[音频]")
             break;
         case "text":
-            $(`#${msgId} .msgContent .content`).text(msg.message);
+            obj.find(".items-start .msg-div .msg-bubble .content").text(msg.message);
             
             // if (msg.sender_uid + '' != CommonUtils.GetCookie("uid")) notificationManager.sendNotification(`新消息来自:${ msg.sender_username}`,msg.message)
             break;
         case "html":
-            $(`#${msgId} .msgContent .content`).html(msg.message);
+            obj.find(".items-start .msg-div .msg-bubble .content").html(msg.message);
             // if (msg.sender_uid + '' != CommonUtils.GetCookie("uid")) notificationManager.sendNotification(`新消息来自:${ msg.sender_username}`,"[超文本]")
             break;
     }
@@ -85,8 +102,8 @@ function appendMessage(msg) {
     // 获取格式化后的时间字符串
     const formattedTime = formatter.format(timestamp);
 
-    $(`#${msgId} .msgContent .time`).text(formattedTime);
-    $(`#${msgId}`).removeClass("hidden");
+    obj.find(".items-start .msg-div .msg-bubble .time").text(formattedTime);
+    $(".message_list").append(obj)
     $("#chat_message").scrollTop = $("#chat_message").scrollHeight;
     window.scrollTo(0, document.body.scrollHeight);
     

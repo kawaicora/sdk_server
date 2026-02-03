@@ -115,62 +115,6 @@ def wp_salt(scheme='logged_in'):
     # 其他 scheme 可扩展（如 'auth'/'secure_auth'），此处仅需登录验证的 'logged_in'
     return ''
 
-def parse_php_session_tokens(php_serialized_str):
-    """
-    健壮的PHP序列化解析函数
-    """
-    try:
-        session_tokens = {}
-        
-        # 方法1：精确匹配（针对您提供的格式）
-        pattern1 = r's:64:"([a-f0-9]{64})";a:4:\{s:10:"expiration";i:(\d+);s:2:"ip";s:\d+:"([^"]*)";s:2:"ua";s:\d+:"([^"]*)";s:5:"login";i:(\d+);\}'
-        matches1 = re.findall(pattern1, php_serialized_str)
-        
-        if matches1:
-
-            for token, expiration, ip, ua, login in matches1:
-                session_tokens[token] = {
-                    'expiration': int(expiration),
-                    'ip': ip,
-                    'ua': ua,
-                    'login': int(login)
-                }
-            return session_tokens
-        
-        # 方法2：更通用的匹配（如果格式有微小变化）
-        pattern2 = r's:64:"([a-f0-9]{64})";a:\d+:\{(.*?)\}'
-        matches2 = re.findall(pattern2, php_serialized_str)
-        
-        if matches2:
-            for token, content in matches2:
-                session_data = {}
-                
-                # 提取各个字段
-                exp_match = re.search(r's:10:"expiration";i:(\d+);', content)
-                ip_match = re.search(r's:2:"ip";s:\d+:"([^"]*)";', content)
-                ua_match = re.search(r's:2:"ua";s:\d+:"([^"]*)";', content)
-                login_match = re.search(r's:5:"login";i:(\d+);', content)
-                
-                if exp_match:
-                    session_data['expiration'] = int(exp_match.group(1))
-                if ip_match:
-                    session_data['ip'] = ip_match.group(1)
-                if ua_match:
-                    session_data['ua'] = ua_match.group(1)
-                if login_match:
-                    session_data['login'] = int(login_match.group(1))
-                
-                session_tokens[token] = session_data
-            
-            return session_tokens
-        
-        current_app.logger.warning("无法解析session_tokens数据")
-        return None
-        
-    except Exception as e:
-        current_app.logger.error(f"解析 session_tokens 失败: {str(e)}", exc_info=True)
-        return None
-
 
 
 def get_userinfo_by_sdk_token(sdk_token:str):
@@ -349,7 +293,7 @@ def site_login(cookies,verify_siteurl=True):
         
         current_app.logger.debug(f"Token转换: {cookie_token} -> {hashed_token}")
         # 解析 session_tokens（PHP 序列化格式）
-        session_tokens = parse_php_session_tokens(session_meta.meta_value)
+        session_tokens = CommonUtils.parse_php_session_tokens(session_meta.meta_value)
         # 在token验证失败的部分添加：
         if not session_tokens or hashed_token not in session_tokens:
             current_app.logger.warning(

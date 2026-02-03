@@ -2,122 +2,189 @@
 
 {% block head %}
 <title>聊天</title>
-<!-- 确保已引入 Tailwind CSS -->
+<!-- 确保已引入 Tailwind CSS 和 Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style type="text/tailwindcss">
   @layer utilities {
-    /* 自定义工具类，方便复用 */
+    /* 自定义工具类，复用性更强 */
     .content-auto {
       content-visibility: auto;
     }
+    /* 滚动条样式：深浅色适配 + 更细腻的样式 */
     .scrollbar-custom {
       scrollbar-width: thin;
-      scrollbar-color: #d1d5db #f9fafb; /* 亮色滚动条 */
+      scrollbar-color: #d1d5db #f9fafb;
+    }
+    .dark .scrollbar-custom {
+      scrollbar-color: #4b5563 #1f2937;
     }
     .scrollbar-custom::-webkit-scrollbar {
       width: 6px;
+      height: 6px;
     }
     .scrollbar-custom::-webkit-scrollbar-track {
-      background: #f9fafb; /* 亮色滚动条轨道 */
-    }
-    .scrollbar-custom::-webkit-scrollbar-thumb {
-      background: #d1d5db; /* 亮色滚动条滑块 */
+      background: #f9fafb;
       border-radius: 3px;
     }
-    .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-      background: #b90600; /* hover 保留红色 */
+    .dark .scrollbar-custom::-webkit-scrollbar-track {
+      background: #1f2937;
     }
-    .chat_message {
+    .scrollbar-custom::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 3px;
+      transition: background 0.2s ease;
+    }
+    .dark .scrollbar-custom::-webkit-scrollbar-thumb {
+      background: #4b5563;
+    }
+    .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+      background: #b90600; /* 品牌红 hover 效果 */
+    }
+    /* 消息背景图：深浅色适配 + 更自然的融合 */
+    .chat-bg {
       background-image: url("https://t.alcy.cc/ycy");
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center;
-      background-opacity: 0.1; /* 背景图透明度 */
+      background-blend-mode: soft-light; /* 背景图与底色融合更自然 */
     }
-    /* 头像容器样式 */
-    .avatar-container {
-      @apply flex items-center gap-2 mb-1;
+    .chat-bg {
+      opacity: 0.9;
     }
-    /* 头像样式 */
-    .msg-avatar {
-      @apply w-8 h-8 rounded-full object-cover border border-gray-200;
+    .dark .chat-bg {
+      opacity: 0.8;
     }
-    /* 自己消息的头像样式 */
-    .message.self .msg-avatar {
-      @apply border-[#b90600]/20;
+    /* 头像 hover 动效 */
+    .avatar-hover {
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .avatar-hover:hover {
+      transform: scale(1.05);
+      border-color: #b90600 !important;
     }
   }
 </style>
 
 <script>
   tailwind.config = {
-    mode: 'jit', // 关键：启用即时编译，识别@apply中的类
+    mode: 'jit',
+    darkMode: 'class', // 对齐base.html的深色模式配置
     theme: {
-      extend: {},
+      extend: {
+        colors: {
+          primary: '#b90600', // 品牌红，统一管理
+          // primary-light: '#ff4f4f', // 品牌红 hover
+        },
+        spacing: {
+          '128': '32rem', // 自定义间距，适配聊天区域高度
+        },
+        transitionProperty: {
+          'height': 'height',
+          'spacing': 'margin, padding',
+        }
+      }
     }
   }
 </script>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-2 sm:px-4 lg:px-0 w-full">
-  <!-- 聊天区域 -->
-  <div class="w-full mt-4">
-    <!-- 主容器：亮色背景 + 浅灰色边框 -->
-    <div class="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-      <!-- 聊天室标题：亮色标题栏 -->
-      <div class="px-4 py-4 bg-gray-50 text-gray-800 border-b border-gray-200 font-medium">
-        <i class="layui-icon layui-icon-dialogue mr-2"></i> 聊天室
+<!-- 页面主容器：适配不同屏幕宽度，增加最大宽度限制 -->
+<div class="min-h-screen w-full px-2 sm:px-4 lg:px-6 xl:px-8">
+  <div class="max-w-6xl mx-auto w-full pt-6 pb-10">
+    <!-- 聊天区域：优化响应式布局，增加阴影层级 -->
+    <div class="w-full rounded-xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <!-- 聊天室标题栏：优化布局和图标 -->
+      <div class="px-5 py-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-gray-800 dark:text-gray-200 font-medium text-lg">
+          <i class="fa-solid fa-comments text-primary dark:text-primary-light"></i>
+          <span>聊天室</span>
+        </div>
+        <!-- 可选：新增在线人数提示（可根据需求开启） -->
+        <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+          <i class="fa-solid fa-users"></i>
+          <span id="online-count">0 人在线</span>
+        </div>
       </div>
       
-      <!-- 聊天内容区域 -->
-      <div class="p-0">
-        <!-- 消息展示区：亮色背景 -->
-        <div id="chat_message" class="h-[calc(100vh-220px)] sm:h-[500px] overflow-y-auto scrollbar-custom p-4 bg-gray-50 border-b border-gray-200">
-          <div class="message_list">
-            <!-- 消息模板：亮色默认样式（他人消息）- 新增头像 -->
-            <div class="message mb-3 px-3 py-2 rounded-lg max-w-[80%] sm:max-w-[400px] min-w-[280px] bg-white text-gray-800 border border-gray-200 hidden" id="msg_id">
-              <!-- 头像 + 发送者名称容器 -->
-              <div class="avatar-container">
-                <!-- 头像 -->
-                <img class="msg-avatar" src="/static/img/default_avatar.gif" alt="用户头像" data-avatar="">
-                <!-- 发送者名称 -->
-                <div class="sender username font-medium text-green-600 text-base"></div>
+      <!-- 聊天内容区域：优化高度计算和响应式 -->
+      <div class="flex flex-col h-[calc(100vh-240px)] sm:h-[calc(100vh-260px)] md:h-[calc(100vh-280px)]">
+        <!-- 消息展示区：优化滚动、内边距和背景 -->
+        <div id="chat_message" class="flex-1 overflow-y-auto scrollbar-custom p-4 sm:p-6 chat-bg bg-gray-50 dark:bg-gray-900">
+          <div class="message_list space-y-4">
+            <!-- 消息模板：优化间距、圆角和样式 -->
+            <div class="message mb-4 px-0 sm:px-1 hidden" id="msg_id">
+
+              <!-- 他人消息 -->
+              <div class="flex items-start gap-3 max-w-[80%] sm:max-w-[70%] md:max-w-[60%] mr-auto">
+                <!-- 头像：优化样式和动效 -->
+                <img class="msg-avatar avatar-hover w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0" 
+                     src="/static/img/default_avatar.gif" alt="" data-avatar="">
+                <!-- 消息内容容器 -->
+                <div class="msg-div flex-1">
+                  <!-- 发送者名称：优化样式 -->
+                  <div class="sender username font-medium text-green-600 dark:text-green-400 text-sm mb-1"></div>
+                  <!-- 消息气泡：优化圆角和内边距 -->
+                  <div class="msg-bubble bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg rounded-tl-none p-3 shadow-sm">
+                    <div class="content"></div>
+                    <!-- 时间戳：优化位置和样式 -->
+                    <div class="time text-xs text-gray-500 dark:text-gray-400 mt-1 text-right"></div>
+                  </div>
+                </div>
               </div>
-              <!-- 消息内容区 -->
-              <div class="msgContent">
-                <div class="content"></div>
-                <!-- 时间戳：亮色文字 -->
-                <div class="time text-xs text-gray-500 mt-1 text-right"></div>
+              <!-- 他人消息 -->
+              <!-- 自己消息 -->
+              <div class="self-msg flex items-start gap-3 max-w-[80%] sm:max-w-[70%] md:max-w-[60%] ml-auto">
+                <div class="msg-div flex-1 text-right">
+                  <div class="sender username font-medium text-sky-200 dark:text-sky-300 text-sm mb-1"></div>
+                  <div class="msg-bubble bg-primary text-white border border-primary/20 dark:border-primary/30 rounded-lg rounded-tr-none p-3 shadow-sm">
+                    <div class="content"></div>
+                    <div class="time text-xs text-gray-200 dark:text-gray-300 mt-1 text-right"></div>
+                  </div>
+                </div>
+                <img class="msg-avatar avatar-hover w-9 h-9 rounded-full object-cover border border-primary/20 dark:border-primary/30 flex-shrink-0" 
+                     src="/static/img/default_avatar.gif" alt="" data-avatar="">
               </div>
+              
+
             </div>
           </div>
         </div>
         
-        <!-- 输入区域：亮色背景 -->
-        <div class="p-4 bg-gray-50">
-          <!-- 输入框 + 按钮组：响应式布局 -->
+        <!-- 输入区域：深度优化响应式布局 -->
+        <div class="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
           <div class="flex flex-col sm:flex-row gap-3 w-full">
-            <!-- 输入框：亮色样式 -->
+            <!-- 输入框：优化样式和响应式 -->
             <input 
               type="text" 
               id="chat_input" 
-              placeholder="输入聊天内容..." 
+              placeholder="输入聊天内容...按Enter发送" 
               autocomplete="off"
-              class="flex-1 px-4 py-3 rounded bg-white text-gray-800 border border-gray-200 focus:border-[#b90600] focus:outline-none transition-colors shadow-sm"
+              class="flex-1 px-4 py-3 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all shadow-sm"
             >
-            <!-- 按钮组：移动端竖向排列，PC端横向 -->
-            <div class="flex flex-col sm:flex-row gap-2">
-              <button id="send_msg_button" class="px-4 py-2 bg-[#b90600] hover:bg-[#ff4f4f] text-white rounded transition-colors shadow-sm">
-                <i class="layui-icon layui-icon-release mr-1"></i> 发送消息
+            <!-- 按钮组：优化布局，使用FA图标，适配移动端 -->
+            <div class="flex flex-row sm:flex-row gap-2 justify-center sm:justify-start">
+              <!-- 发送消息按钮：FA纸飞机图标 -->
+              <button id="send_msg_button" class="w-12 h-12 flex items-center justify-center bg-primary hover:bg-primary-light text-white rounded-lg transition-colors shadow-sm">
+                <i class="fa-solid fa-paper-plane text-lg"></i>
               </button>
-              <button id="send_pic_button" class="px-4 py-2 bg-[#b90600] hover:bg-[#ff4f4f] text-white rounded transition-colors shadow-sm">
-                <i class="layui-icon layui-icon-release mr-1"></i> 发送媒体
+              <!-- 发送媒体按钮：FA图片图标 -->
+              <button id="send_pic_button" class="w-12 h-12 flex items-center justify-center bg-primary hover:bg-primary-light text-white rounded-lg transition-colors shadow-sm">
+                <i class="fa-solid fa-image text-lg"></i>
               </button>
-              <button id="recordButton" class="px-4 py-2 bg-[#b90600] hover:bg-[#ff4f4f] text-white rounded transition-colors shadow-sm">
-                <i class="layui-icon layui-icon-release mr-1"></i> <span id="recordButtonText">发送语音</span>
+              <!-- 发送语音按钮：FA麦克风图标 -->
+              <button id="recordButton" class="w-12 h-12 flex items-center justify-center bg-primary hover:bg-primary-light text-white rounded-lg transition-colors shadow-sm">
+                <i class="fa-solid fa-microphone text-lg"></i>
+                <span id="recordButtonText" class="hidden">发送语音</span>
               </button>
             </div>
+          </div>
+          
+          <!-- 辅助提示：新增操作提示，提升用户体验 -->
+          <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>支持发送文字、图片和语音消息</span>
           </div>
         </div>
       </div>
@@ -125,38 +192,31 @@
   </div>
 </div>
 
-<!-- 消息样式：亮色模式适配 -->
+<!-- 消息样式：统一用Tailwind工具类，简化冗余样式 -->
 <style type="text/tailwindcss">
   @layer utilities {
     /* 消息气泡基础样式 */
-    .message {
-      @apply mb-3 px-3 py-2 rounded-lg max-w-[80%] sm:max-w-[400px] min-w-[280px] sm:min-w-[300px];
+    .msg-bubble {
+      @apply rounded-lg p-3 shadow-sm;
     }
-    /* 自己发送的消息：红色背景 + 白色文字（保留品牌色） */
-    .message.self {
-      @apply ml-auto bg-[#b90600] text-white border border-[#b90600]/20; 
+    /* 他人消息气泡 */
+    .msg-bubble.other {
+      @apply bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-tl-none;
     }
-    /* 他人发送的消息：白色背景 + 深灰色文字 + 浅边框 */
-    .message.other {
-      @apply mr-auto bg-white text-gray-800 border border-gray-200 shadow-sm;
+    /* 自己消息气泡 */
+    .msg-bubble.self {
+      @apply bg-primary text-white border border-primary/20 dark:border-primary/30 rounded-tr-none;
     }
-    /* 发送者名称：他人消息用绿色，自己消息用浅蓝 */
-    .message .sender {
-      @apply font-medium text-green-600 text-base;
-    }
-    .message.self .sender {
-      @apply text-sky-200 font-normal text-left;
-    }
-    /* 自己消息的头像容器样式调整 */
-    .message.self .avatar-container {
-
-    }
-    /* 消息内容 */
+    /* 消息内容自适应 */
     .msgContent .content {
-      @apply flex items-center justify-center w-full;
+      @apply w-full break-words;
     }
-    .msgContent .content * {
-      @apply w-full rounded-lg;
+    .msgContent .content img, .msgContent .content video {
+      @apply max-w-full rounded-lg my-1;
+    }
+    /* 深色模式背景融合优化 */
+    .dark .chat-bg {
+      background-blend-mode: overlay;
     }
   }
 </style>

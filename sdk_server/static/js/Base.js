@@ -26,17 +26,23 @@ class Base{
             contentType: "application/json",
             data: JSON.stringify(requestData), // 序列化请求体
             success: function(response) {
-            
+                
+
+       
                 if(response.retcode != 0){
-                    $(".nav-user-info").addClass("hidden");
-                    $(".nav-user-login-btn").removeClass("hidden");
+                    $('.nav-user-login-btn').removeClass('hidden');
+                    $('.exit-login-btn').addClass('hidden');
+                    $('.nav-user-info').addClass('hidden');
                     Base.inst().BaseLogger.debug(`登陆失败 ${JSON.stringify( response, null, 2)}`);
                     return;
                 }
                 Base.inst().BaseLogger.debug(`登陆成功 ${JSON.stringify( response, null, 2)}`);
-                $(".nav-user-login-btn").addClass("hidden");
-                $(".nav-user-info").removeClass("hidden");
-                $(".nav-username").html(`<a >${response.data.display_name}</a>`);
+              
+
+                $('.nav-user-login-btn').addClass('hidden');
+                $('.exit-login-btn').removeClass('hidden');
+                $('.nav-user-info').removeClass('hidden');
+                $('.nav-username').text(response.data.display_name);
                 $(".nav-user-info a img")[0].src = response.data.avatar;
                 Base.inst().isLogined = true;
                 try{
