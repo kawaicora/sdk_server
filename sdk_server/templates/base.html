@@ -370,7 +370,7 @@
                     <div class="dropdown-content absolute right-0 top-full mt-2 w-48 border border-light-border dark:border-dark-border rounded-md shadow-lg z-50">
                         <ul class="py-2">
                             <li>
-                                <a href="https://kawaimoe.org/?page_id=12" target="_blank" class="flex items-center px-4 py-2 transition-colors text-sm">
+                                <a href="/?page_id=12" target="_blank" class="flex items-center px-4 py-2 transition-colors text-sm">
                                     <i class="fa-solid fa-user"></i> 会员中心
                                 </a>
                             </li>
@@ -444,7 +444,7 @@
                         </li>
                         <li>
                             <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                                <i class="fa-solid fa-clock text-green-500 mr-2"></i> 快快快答
+                                <i class="fa-solid fa-clock text-green-500 mr-2"></i> 快问快答
                             </a>
                         </li>
                         <li>
@@ -557,6 +557,8 @@
             // 初始化移动端侧边栏为关闭状态
             if ($(window).width() < 768) {
                 closeSidebar();
+            }else {
+                $sidebar.css('width', SIDEBAR_WIDTH);
             }
 
             // 窗口大小变化时适配
