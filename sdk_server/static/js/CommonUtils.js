@@ -10,6 +10,9 @@ class CommonUtils {
         }
         return CommonUtils.instance;
     }
+    static GetSocketIOURL(){
+        return "app.kawaimoe.dpdns.org:5200";
+    }
     // 静态方法，用于设置带有过期时间的cookie
     static SetCookieWithExpire(k, v, t) {
         // 创建一个新的Date对象，用于设置cookie的过期时间

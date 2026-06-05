@@ -222,4 +222,31 @@
 </style>
 
 <script src="/static/js/chat.js"></script>
+
+
+<script language="javascript">
+
+
+  /**
+   * 判断当前页面是否在iframe中
+   * @returns {boolean} true表示在iframe中，false表示不在
+   */
+  function isInIframe() {
+    try {
+      // 核心判断：当前窗口是否不等于顶层窗口
+      // 使用try-catch是为了防止跨域访问top.window时出现安全错误
+      return window.self !== window.top;
+    } catch (e) {
+      // 如果捕获到错误，通常是跨域导致无法访问top，也说明在iframe中
+      return true;
+    }
+  }
+
+  // 调用示例
+  if (isInIframe()) {
+    console.log('当前页面在iframe中运行');
+  } else {
+    console.log('当前页面是顶级窗口，不在iframe中');
+  }
+</script>
 {% endblock %}

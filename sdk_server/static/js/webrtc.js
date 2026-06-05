@@ -641,12 +641,16 @@ function on_show_select_device_click(){
 
 
 function connect(){
-    socket = io(`${window.location.origin}`, 
+    // socket = io(`${window.location.origin}`, 
+    //     {
+    //         transports: ['websocket', 'polling']
+    //     }
+    // );
+    socket = io(`app.kawaimoe.dpdns.org:5200`, 
         {
             transports: ['websocket', 'polling']
         }
     );
-
 }
 
 

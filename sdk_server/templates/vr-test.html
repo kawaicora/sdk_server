@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="/static/aframe/aframe.min.js"></script>
+    <style>
+        /* Hide control bar elements in the 2D view */
+        #vr180,
+        #vr360 {
+            display: none;
+        }
+
+        /* Style for control bar in VR */
+        .control-bar {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Style for buttons */
+        .control-bar button {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .control-bar input[type="range"] {
+            width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- VR Scene -->
+    <a-scene>
+        <!-- Camera and cursor for interactivity -->
+        <a-camera position="0 1.6 0">
+            <a-cursor color="white"></a-cursor>
+        </a-camera>
+
+        <!-- VR180 Container, hidden by default -->
+        <a-entity id="vr180" visible="false">
+            <!-- VR180 Video Player -->
+            <a-video src="#vr-video" position="0 1.5 -4" width="8" height="4.5" rotation="0 0 0"
+                id="vr180-player"></a-video>
+        </a-entity>
+
+        <!-- VR360 Container, hidden by default -->
+        <a-entity id="vr360" visible="false">
+            <!-- VR360 Video Player -->
+            <a-videosphere src="#vr-video" id="vr360-player"></a-videosphere>
+        </a-entity>
+
+        <!-- Video assets -->
+        <a-assets>
+            <video id="vr-video" src autoplay="false" loop="true"></video>
+        </a-assets>
+
+        <!-- Floating Control Bar in VR -->
+        <a-entity id="control-bar" position="0 0 -3" scale="1 1 1" rotation="0 0 0">
+            <!-- Play/Pause Button -->
+            <a-box id="play-pause-btn" position="0 -0.25 0" depth="0.2" height="0.3" width="0.6" color="black"
+                text="value: Play; color: white; align: center" class="control-button"
+                event-set__mouseenter="_event: mouseenter; color: gray"
+                event-set__mouseleave="_event: mouseleave; color: black"></a-box>
+
+            <!-- Volume Control -->
+            <a-cylinder id="volume-control" position="0 -0.25 1" radius="0.1" height="0.3" color="gray"
+                class="control-button"></a-cylinder>
+
+        </a-entity>
+
+
+        <!-- Debug Text -->
+        <a-text id="debug-text" value="Press any button to test..." position="0 -0.50 -3" color="yellow"
+            align="center"></a-text>
+
+        <!-- Controllers -->
+        <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .control-button; far: 5"
+            controller-input></a-entity>
+        <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .control-button; far: 5"
+            controller-input></a-entity>
+
+    </a-scene>
+    <script src="/static/VrUtils.js"></script>
+    <script src="/static/vr_lib.js"></script>
+
+
+</body>
+
+</html>
