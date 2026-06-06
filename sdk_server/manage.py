@@ -21,8 +21,8 @@ if __name__ == "__main__":
 
         import os
         # 遍历所有环境变量并排序打印
-        for k, v in sorted(os.environ.items()):
-            logger.info(f"{k} → {v}")
+        # for k, v in sorted(os.environ.items()):
+        #     logger.info(f"{k} → {v}")
         socketio.run(
             app, 
             host=os.getenv("LISTEN_HOST","0.0.0.0"), 

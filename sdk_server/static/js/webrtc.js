@@ -873,40 +873,7 @@ async function WebrtcInit() {
     })
     socket.on('connect', (data) => {
         webrtc_logger.log('连接成功:', data);
-        socket.emit('user-register');
-        webrtc_logger.log(`开始注册用户`);
-
-    })
-
-    socket.on('ping', (data) => {
-        webrtc_logger.log('PING:', data);
-    })
-
-    socket.on('packet', (data) => {
-        webrtc_logger.log('收到数据包:', data);
-    });
-
-    socket.on('connect_error', (data) => {
-        webrtc_logger.log('连接错误:', data);
-    })
-    socket.on('disconnect', (data) => {
-        webrtc_logger.log('连接断开:', data);
-    });
-    socket.on('close', (data) => {
-        webrtc_logger.log('连接关闭:', data);
-    });
-    socket.on('reconnect_attempt', (data) => {
-        webrtc_logger.log('重新连接尝试:', data);
-    });
-    socket.on('reconnect_failed', (data) => {
-        webrtc_logger.log('重新连接失败:', data);
-    });
-    socket.on('reconnect_error', (data) => {
-        webrtc_logger.log('重新连接错误:', data);
-    });
-    
-    socket.on('error' , (data) => {
-        webrtc_logger.error('连接错误,错误信息:', data);
+        
 
     })
 
@@ -917,6 +884,9 @@ async function WebrtcInit() {
         // socket.emit('get-current-sid');
         
     }, 10000);
+
+    socket.emit('user-register');
+    webrtc_logger.log(`开始注册用户`);
 }
 
 // 唤醒锁相关

@@ -35,7 +35,49 @@ class Message(db.Model):
     type = db.Column(VARCHAR(50))
     message = db.Column(LONGTEXT,nullable=False)
     timestamp = db.Column(DATETIME,nullable=False, default=datetime.now)
+# #######################################房间模型#####################################
+class Room(db.Model):
+    __tablename__ = suffix + 'room'
 
+    ID = db.Column(BIGINT, primary_key=True, autoincrement=True)
+
+    room_id = db.Column(VARCHAR(64), nullable=False, unique=True, default="")
+    title = db.Column(VARCHAR(255), nullable=False, default="")
+    desc = db.Column(TEXT, nullable=False, default="")
+
+    password = db.Column(VARCHAR(255), nullable=False, default="")
+
+    cover = db.Column(VARCHAR(255), nullable=False, default="")
+
+    creator = db.Column(BIGINT, nullable=False)
+
+    room_type = db.Column(VARCHAR(32), nullable=False, default="chat")
+
+    create_time = db.Column(BIGINT, nullable=False, default=0)
+    updated_time = db.Column(BIGINT, nullable=True)
+    deleted_time = db.Column(BIGINT, nullable=True)
+
+class RoomUser(db.Model):
+    __tablename__ = suffix + 'room_user'
+
+    ID = db.Column(BIGINT, primary_key=True, autoincrement=True)
+
+    room_id = db.Column(VARCHAR(64), nullable=False, index=True)
+
+    uid = db.Column(BIGINT, nullable=False)
+
+    join_time = db.Column(BIGINT, nullable=False)
+
+class RoomBanUser(db.Model):
+    __tablename__ = suffix + 'room_ban_user'
+
+    ID = db.Column(BIGINT, primary_key=True, autoincrement=True)
+
+    room_id = db.Column(VARCHAR(64), nullable=False, index=True)
+
+    uid = db.Column(BIGINT, nullable=False)
+
+    ban_time = db.Column(BIGINT, nullable=False, default=0)
 
 # ####################################### 商品分类 #######################################
 class ProductCategory(db.Model):

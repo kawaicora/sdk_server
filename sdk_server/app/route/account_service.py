@@ -55,7 +55,7 @@ def ticker_cache_data_auto_clear():
             pass
         time.sleep(1)
 
-threading.Thread(target=ticker_cache_data_auto_clear).start()
+# threading.Thread(target=ticker_cache_data_auto_clear).start()
 
 
 

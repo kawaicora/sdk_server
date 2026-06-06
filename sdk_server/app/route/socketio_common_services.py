@@ -2,9 +2,9 @@
 import threading
 from app.route import bp
 from flask import Request, jsonify, request, current_app
-from app.extensions import socketio
+from app.extensions import socketio, db
 from app.route.account_service import get_userinfo_by_sdk_token,get_userinfo_by_uid
-from app.sql_class.Tables import GameAccount, Usermeta,Users
+from app.sql_class.Tables import GameAccount, Usermeta,Users,Room,RoomUser,RoomBanUser
 from flask_socketio import emit, join_room, leave_room 
 from app.utils.CommonUtils import *
 import requests
@@ -66,30 +66,9 @@ def read_user_sessions():
             user_sessions = json.load(fp)
         except Exception as e:
             user_sessions = []
-def write_rooms():
-    global rooms
-    with open("data/rooms.json","w",encoding='utf-8') as fp:
-        json.dump(rooms,fp,ensure_ascii=False,indent=4)
-def read_rooms():
-    global rooms
-    with open("data/rooms.json","r",encoding='utf-8') as fp:
-        try:
-            rooms = json.load(fp)
-        except Exception as e:
-            rooms = []
 
 
 guest_counter = 900000000
-# read_user_sessions()
-# read_rooms()
-
-def write_conf_loop():
-    while True:
-        time.sleep(5)
-        write_rooms()
-        write_user_sessions()
-        
-
 
 # ---------------------- 工具函数（用户相关） ----------------------
 def get_user_info(request:Request):
@@ -171,78 +150,30 @@ def update_sid_by_uid(uid,sid):
             break  # 找到用户后立即退出循环
 
 def get_room_by_uid(uid):
-    for room in rooms:
-        for t_user in room.get("users"):
-            if t_user.get('uid') == uid:
-                return room
+    if db.session.query(RoomUser).filter_by(uid=uid).first():
+        room_user = db.session.query(RoomUser).filter_by(uid=uid).first()
+        room = db.session.query(Room).filter_by(room_id=room_user.room_id).first()
+        return {
+            "room_id": room.room_id,
+            "title": room.title,
+            "desc": room.desc,
+            "create_time": room.create_time,
+            "updated_time": room.updated_time,
+            "deleted_time": room.deleted_time,
+            "cover": room.cover,
+            "creator": room.creator,
+            "room_type": room.room_type
+        }
     return None
 
 def get_room_by_sid(sid):
-    for room in rooms:
-        for t_user in room.get("users"):
-            c_user = get_user_by_uid(t_user.get('uid')) 
-            if c_user.get('sid') == sid:
-                return room
+    user = get_user_by_sid(sid)
+    if user is None:
+        return None
+    room_user = db.session.query(RoomUser).filter_by(uid=user.get("user_id")).first()
+    if room_user:
+        return get_room_by_id(room_user.room_id)
     return None
-
-
-
-# ---------------------- 工具函数（房间相关） ----------------------
-def get_room_by_id(room_id):
-    """根据 room_id 获取房间完整信息"""
-    for room in rooms:
-        if room["room_id"] == room_id:
-            return room
-    return None
-
-
-def room_exists(room_id):
-    """检查房间是否存在"""
-    return get_room_by_id(room_id) is not None
-
-
-def is_user_in_room(uid, room_id):
-    """检查用户是否在指定房间内"""
-    room = get_room_by_id(room_id)
-    if not room:
-        return False
-    return any(user["uid"] == uid for user in room["users"])
-
-
-def add_user_to_room(uid, room_id):
-    """将用户添加到房间的 users 列表（记录加入时间）"""
-    room = get_room_by_id(room_id)
-    if not room:
-        return False
-    # 避免重复添加
-    if is_user_in_room(uid, room_id):
-        return True
-    room["users"].append({
-        "uid": uid,
-        "join_time": int(datetime.now().timestamp()) # 假设存在获取当前时间戳的工具函数
-    })
-    return True
-
-def remove_user_from_room(room_id, uid=None, sid=None):
-    """将用户从房间的 users 列表中移除"""
-    # 参数校验
-    if uid is None and sid is None:
-        raise ValueError("至少需要提供 uid 或 sid 其中一个参数")
-    if uid is not None and sid is not None:
-        raise ValueError("只能提供 uid 或 sid 其中一个参数")
-    
-    room = get_room_by_id(room_id)
-    if not room:
-        return False
-    
-    if uid is not None:
-        room["users"] = [user for user in room["users"] if user["uid"] != uid]
-    else:
-        room["users"] = [user for user in room["users"] if user["sid"] != sid]
-    
-    return True
-
-
 
 def remove_user_from_user_sessions( uid=None, sid=None):
     """将用户从user_sessions  列表中移除"""
@@ -263,37 +194,90 @@ def remove_user_from_user_sessions( uid=None, sid=None):
 
 
 
-def get_room_users(room_id):
-    """获取房间内所有用户的详细信息（结合 user_sessions）"""
-    room = get_room_by_id(room_id)
+# ---------------------- 工具函数（房间相关） ----------------------
+def get_room_by_id(room_id) ->Room :
+    """根据 room_id 获取房间完整信息"""
+    room:Room = db.session.query(Room).filter_by(room_id=room_id).first()
+    return {
+        "room_id": room.room_id,
+        "title": room.title,
+        "desc": room.desc,
+        "create_time": room.create_time,
+        "updated_time": room.updated_time,
+        "deleted_time": room.deleted_time,
+        "cover": room.cover,
+        "creator": room.creator,
+        "room_type": room.room_type
+    }
+   
+
+
+def room_exists(room_id) ->bool:
+    """检查房间是否存在"""
+    return db.session.query(Room).filter_by(room_id=room_id).first() is not None
+
+
+def is_user_in_room(uid, room_id):
+    """检查用户是否在指定房间内"""
+    if db.session.query(RoomUser).filter_by(room_id=room_id,uid=uid).first():
+        return True
+    return False
+
+def add_user_to_room(uid, room_id):
+    """将用户添加到房间的 users 列表（记录加入时间）"""
+    room:Room = db.session.query(Room).filter_by(room_id=room_id).first()
     if not room:
-        return []
-    # 从 user_sessions 中查询每个 uid 对应的用户详情
-    room_user_details = []
-    for user in room["users"]:
-        user_session = get_user_by_uid(user["uid"])
-        if user_session:
-            room_user_details.append({
-                "uid": user["uid"],
-                "sid": user_session["sid"],
-                "username": user_session["display_name"],
-                "avatar": user_session.get("avatar", ""),
-                "join_time": user["join_time"]
-            })
-    return room_user_details
+        return False
+    # 避免重复添加
+    if is_user_in_room(uid, room_id):
+        return True
+    room_user = RoomUser(uid=uid, room_id=room_id, join_time=int(datetime.now().timestamp()))
+    db.session.add(room_user)
+    db.session.commit()
+    return True
+
+def remove_user_from_room(room_id, uid=None):
+    """将用户从房间的 users 列表中移除"""
+    db.session.query(RoomUser).filter_by(room_id=room_id,uid=uid).delete()
+    db.session.commit()
+    return True
+
 
 
 def is_user_banned(uid, room_id):
     """检查用户是否被禁止进入房间"""
-    room = get_room_by_id(room_id)
-    if not room:
-        return False
-    return any(ban["uid"] == uid for ban in room["ban_users"])
+    if db.session.query(RoomBanUser).filter_by(room_id=room_id,uid=uid).first():
+        return True
+    return False
+
+def get_room_users(room_id):
+    """获取房间内所有用户的详细信息（结合 user_sessions）"""
+    # 从 user_sessions 中查询每个 uid 对应的用户详情
+    room_user_details = []
+    room_users = db.session.query(RoomUser).filter_by(room_id=room_id).all()
+    if room_users is None:
+        return []
+    for user in room_users:
+        user_session = get_user_by_uid(user.uid)
+        if user_session:
+            room_user_details.append({
+                "uid": user.uid,
+                "sid": user_session["sid"],
+                "username": user_session["display_name"],
+                "avatar": user_session.get("avatar", ""),
+                "join_time": user.join_time
+            })
+    return room_user_details
+
+
+
 
 
 def title_exists(title):
     """检查是否存在相同标题的房间（不区分大小写）"""
-    return any(r["title"].lower() == title.lower() for r in rooms)
+    if db.session.query(Room).filter(Room.title.ilike(title)).first():
+        return True
+    return False
 
 # ---------------------- Socket.IO 事件处理 ----------------------
 
@@ -313,12 +297,7 @@ def handle_register_user(*args):
     # 若已注册则跳过（避免重复添加）
     if sid_exists(sid):
         return
-    ########################################
-    if not write_config_thread:
-        write_config_thread = threading.Thread(target=write_conf_loop)
-        write_config_thread.daemon = True
-        write_config_thread.start()
-    ######################################
+   
     
     
     if args:  # 简化判断：args 非空即表示有传入参数
@@ -383,22 +362,21 @@ def handle_register_user(*args):
         user_sessions.append(user_data)
         c_user = user_data
 
+    rows = (
+        db.session.query(RoomUser)
+        .filter_by(uid=c_user.get("user_id"))
+        .delete()
+    )
 
-    t_room = get_room_by_uid(user_data.get("user_id"))
-    current_app.logger.info(f"根据用户获取房间 - SID: {sid}, UID: {user_data.get("user_id")}, 用户名: {user_data.get("display_name")}")
-    if t_room :
-        current_app.logger.info(f"用户存在,退出房间- SID: {sid}, UID: {user_data.get("user_id")}, 用户名: {user_data.get("display_name")}")
-        remove_user_from_room(t_room.get("room_id"),uid=c_user.get("user_id"))
-    
-
-        
+    if rows:
+        db.session.commit()
 
     # 通知客户端注册成功
     emit('user-registered', {
         "sid": sid,
         "uid": c_user.get("user_id"),
-        "username": user_data.get("display_name"),
-        "avatar":user_data.get("avatar") or ""
+        "username": c_user.get("display_name"),
+        "avatar":c_user.get("avatar") or ""
     })
     emit('room-list-updated', get_room_list(), broadcast=True)
     current_app.logger.info(f"用户注册 - SID: {sid}, UID: {c_user.get("user_id")}, 用户名: {user_data.get("display_name")}")
@@ -417,23 +395,7 @@ def handle_unregister_user():
     uid = user.get("user_id")
     username = user.get("display_name")
     current_app.logger.info(f"用户断开连接 - SID: {sid}, UID: {uid}, 用户名: {username}")
-    
-    # 从所有房间中移除该用户
-    for room in rooms:
-        if is_user_in_room(uid, room["room_id"]):
-            remove_user_from_room(uid = uid,room_id= room["room_id"])
-            # 通知房间内其他用户该用户离开
-            emit('user-left-room', {
-                "sid": sid,
-                "uid": uid,
-                "username": username,
-                "room_id": room["room_id"]
-            }, room=room["room_id"])
-            # 刷新房间用户列表
-            emit('room-users-updated', {
-                "room_id": room["room_id"],
-                "users": get_room_users(room["room_id"])
-            }, room=room["room_id"])
+    db.session.query(RoomUser).filter_by(uid=uid).delete()
     
     # 从 user_sessions 中移除该用户
     global user_sessions
@@ -465,26 +427,28 @@ def handle_delete_room(data):
     uid = user["user_id"]
     username = user["display_name"]
     room_id = data.get("room_id")
+    room = db.session.query(Room).filter_by(room_id=room_id).first()
+    users = db.session.query(RoomUser).filter_by(room_id=room_id).all()
+    if users :
+        for t_user in users:
+            c_user = get_user_by_uid(t_user.user_id)
+            emit('user-left-room', {
+                "sid": c_user.get('sid'),
+                "uid": c_user.get('uid'),
+                "username": c_user.get('username'),
+                "room_id":t_user.room_id
+            }, room=t_user.room_id)
 
-    room = get_room_by_id(room_id=room_id)
-    if not room:
-        current_app.logger.info(f"删除房间失败:房间{room_id}不存在")
-        return
+    db.session.query(RoomUser).filter_by(room_id=room_id).delete()
+    db.session.commit()
+
+    db.session.query(Room).filter_by(room_id=room_id).delete()
+    db.session.commit()
+
     
-    for t_user in room.get("users"):
-        c_user = get_user_by_uid(t_user.get('user_id'))
-        emit('user-left-room', {
-            "sid": c_user.get('sid'),
-            "uid": c_user.get('uid'),
-            "username": c_user.get('username'),
-            "room_id": room["room_id"]
-        }, room=room["room_id"])
-
-    rooms.remove(room)
-    # 通知客户端创建成功
     emit('room-deleted', {
         "room_id": room_id,
-        "title": room.get('title'),
+        "title": room.title,
         "sid":sid,
         "uid":uid,
         "username":username
@@ -492,7 +456,7 @@ def handle_delete_room(data):
     
     # 广播房间列表更新
     emit('room-list-updated', get_room_list(), broadcast=True)
-    current_app.logger.info(f"房间删除 - 房间ID: {room_id}, 标题: {room.get('title')}")
+    current_app.logger.info(f"房间删除 - 房间ID: {room_id}, 标题: {room.title}")
 
 
 
@@ -509,6 +473,8 @@ def handle_create_room(data):
     uid = user["user_id"]
     room_id = data.get("room_id")
     title = data.get("title", "未命名房间")
+    password = data.get("password", "")
+    isencrypted = data.get("isencrypted", False)
     desc = data.get("desc", "")
     cover = data.get("cover", "")
     room_type = data.get('room_type') 
@@ -521,27 +487,39 @@ def handle_create_room(data):
     if title_exists(title):
         emit('error', {"event": "create-room", "msg": "房间标题已存在，请使用其他标题"}, sid=sid)
         return
+
+    if isencrypted and password != "":
+        password = CommonUtils.rsa_decrypt(password.encode('utf-8'))
     
-    # 创建新房间
-    new_room = {
-        "room_id": room_id,
-        "title": title,
-        "desc": desc,
-        "create_time": int(datetime.now().timestamp()),
-        "updated_time": None,
-        "deleted_time": None,
-        "cover": cover,
-        "users": [],
-        "ban_users": [],
-        "creator": uid,
-        "room_type":room_type
-    }
-    rooms.append(new_room)
+    room = Room(
+        room_id = room_id,
+        title = title,
+        desc = desc,
+        create_time = int(datetime.now().timestamp()),
+        updated_time = None,
+        deleted_time = None,
+        password = CommonUtils.create_sha_passwd(password) if password else "",
+        cover = cover,
+        creator = uid,
+        room_type = room_type
+    )
+    db.session.add(room)
+    db.session.commit()
     
     # 通知客户端创建成功
     emit('room-created', {
         "room_id": room_id,
-        "room_info": new_room,
+        "room_info":{
+            "room_id": room.room_id,
+            "title": room.title,
+            "desc": room.desc,
+            "create_time": room.create_time,
+            "updated_time": room.updated_time,
+            "deleted_time": room.deleted_time,
+            "cover": room.cover,
+            "creator": room.creator,
+            "room_type": room.room_type
+        },
         "users": get_room_users(room_id)
     }, sid=sid)
     
@@ -665,16 +643,18 @@ def handle_leave_room(data):
 
 def get_room_list():
     """生成房间列表（简化版，仅包含基础信息）"""
+    room_list:Room = db.session.query(Room).filter(Room.deleted_time == None).all()
+    
     return [
         {
-            "room_id": room["room_id"],
-            "title": room["title"],
-            "cover": room["cover"],
-            "room_type":room["room_type"],
-            "user_count": len(room["users"]),  # 房间人数
-            "create_time": room["create_time"]
+            "room_id": room.room_id,
+            "title": room.title,
+            "cover": room.cover,
+            "room_type":room.room_type,
+            "user_count": len(db.session.query(RoomUser).filter(RoomUser.room_id == room.room_id).all()),  # 房间人数
+            "create_time": room.create_time
 
-        } for room in rooms
+        } for room in room_list
     ]
 
 
@@ -690,27 +670,25 @@ def handle_disconnect():
     
     uid = user.get("user_id")
     username = user.get("username")
-    room = get_room_by_uid(uid)
-    current_app.logger.info(f"用户断开连接 SID: {sid} UID: {uid}")
-    if room :
-        success = remove_user_from_room(uid = uid,room_id=room.get("room_id"))
-        
-        if success == False:
-            current_app.logger.warnning(f"从 房间{str(room.get('room_id'))} 移除用户: {uid} SID: {user.get("sid")} USERNAME: {username} 失败  ")
-        # 通知房间内其他用户该用户离开
+    room_users = db.session.query(RoomUser).filter_by(uid=uid).first()
+    if room_users:
+        db.session.query(RoomUser).filter_by(uid=uid).delete()
+        db.session.commit()
         emit('user-left-room', {
             "sid":sid,
             "uid": uid,
             "username": username,
-            "room_id": room["room_id"]
-        }, room=room["room_id"])
+            "room_id": room_users.room_id
+        }, room=room_users.room_id)
         
         # 刷新房间用户列表
         emit('room-users-updated', {
-            "room_id": room["room_id"],
-            "users": get_room_users(room["room_id"])
-        }, room=room["room_id"])
-    
+            "room_id": room_users.room_id,
+            "users": get_room_users(room_users.room_id)
+        }, room=room_users.room_id)
+
+    current_app.logger.info(f"用户断开连接 SID: {sid} UID: {uid}")
+   
     # 发送断开连接通知
     emit('user-disconnect', {
         "sid":sid,

@@ -28,10 +28,14 @@ def handle_ice_servers_config():
     }
 
     # 发送POST请求
+    # response = requests.post(url, json=data, headers=headers,timeout=5)
     response = requests.post(url, json=data, headers=headers)
-    
     # 检查请求是否成功
-
+    # if (response.status_code != 200):
+    #     current_app.logger.error(f"Failed to get ICE servers config from Cloudflare: {response.status_code} - {response.text}")
+    #     return CommonUtils.json_response({"iceServers": [
+    #         { "urls": "stun:stun.l.google.com:19302" }
+    #     ]}, status=200)
     # 解析响应结果（返回ICE服务器配置）
     ice_servers = response.json()
     return CommonUtils.json_response(ice_servers,status=response.status_code)

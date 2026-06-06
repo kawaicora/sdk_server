@@ -338,42 +338,9 @@ async function ChatInit(){
     socket.on('connect', (data) => {
         chat_logger.log('连接成功:', data);
 
-        socket.emit('user-register');
+        
     })
-
-    socket.on('ping', (data) => {
-        chat_logger.log('PING:', data);
-    })
-
-    socket.on('packet', (data) => {
-        chat_logger.log('收到数据包:', data);
-    });
-
-    socket.on('connect_error', (data) => {
-        chat_logger.log('连接错误:', data);
-    })
-    socket.on('disconnect', (data) => {
-        chat_logger.log('连接断开:', data);
-    });
-    socket.on('close', (data) => {
-        chat_logger.log('连接关闭:', data);
-    });
-    socket.on('reconnect_attempt', (data) => {
-        chat_logger.log('重新连接尝试:', data);
-    });
-    socket.on('reconnect_failed', (data) => {
-        chat_logger.log('重新连接失败:', data);
-    });
-    socket.on('reconnect_error', (data) => {
-        chat_logger.log('重新连接错误:', data);
-    });
-    
-    socket.on('error' , (data) => {
-        chat_logger.error('连接错误,错误信息:', data);
-
-    })
-
-    
+    socket.emit('user-register');
     
 
 
