@@ -66,7 +66,10 @@
             line-height: var(--line-height-base);
             font-weight: var(--font-weight-normal);
         }
-
+        video:fullscreen {
+            object-fit: contain !important;
+            background: black !important;
+        }
         /* Font Awesome图标专属样式 */
         [class*="fa-"], .fa, .fas, .far, .fab {
             font-family: "Font Awesome 6 Free" !important;
@@ -491,7 +494,7 @@
             {% block header %}{% endblock %}
             {% block content %}{% endblock %}
 
-            <iframe src="https://afdian.com/a/ice_cora?slug=x" width="640" scrolling="no" height="400" frameborder="0"></iframe>
+            <iframe src="https://afdian.com/a/ice_cora?slug=x" width="640" scrolling="no" height="800" frameborder="0"></iframe>
         </div>
     </div>
 
