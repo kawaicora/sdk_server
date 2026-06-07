@@ -59,7 +59,7 @@ function addRemoteVideo(targetSid, streams) {
         // 替换layui-card为Tailwind卡片样式，保留原有ID和margin-bottom
         root_div.className = `bg-card border border-border rounded-lg shadow-md mb-2.5`;
         root_div.id = `remote_video_${targetSid}`;
-
+        root_div.style.width = "500px";
         const header_div = document.createElement('div');
         // 替换layui-card-header为Tailwind样式，保留自定义类名用于标识
         header_div.className = `remote-video-lable px-4 py-3 border-t border-border text-text font-medium remote-video-lable-${targetSid}`;
@@ -641,14 +641,9 @@ function on_show_select_device_click(){
 
 
 function connect(){
-    // socket = io(`${window.location.origin}`, 
-    //     {
-    //         transports: ['websocket', 'polling']
-    //     }
-    // );
-    socket = io(`app.kawaimoe.dpdns.org:5200`, 
+    socket = io(`${window.location.origin}`, 
         {
-            transports: ['websocket', 'polling']
+            transports: ['polling','websocket']
         }
     );
 }
@@ -750,7 +745,7 @@ async function WebrtcInit() {
         $('.room-select-container').addClass('hidden');
         $('.video-chat-container').removeClass('hidden');
         $('#remoteVideos').html(`
-            <div class="bg-card border border-border rounded-lg shadow-md mb-2.5 w-full">
+            <div class="bg-card border border-border rounded-lg shadow-md mb-2.5 w-full" style="width:500px";>
                 <div class="select-device-2 relative">
                     <video id="localVideo" muted autoplay playsinline
                         class="w-full h-full bg-black m-0 object-cover rounded-t-lg">

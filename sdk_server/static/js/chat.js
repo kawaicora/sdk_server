@@ -269,17 +269,11 @@ function register_record_mic() {
 
 function connect(){
 
-    // socket = io(`${window.location.origin}`, 
-    //     {
-    //         transports: ['websocket', 'polling']
-    //     }
-    // );
-    socket = io(`app.kawaimoe.dpdns.org:5200`, 
+    socket = io(`${window.location.origin}`, 
         {
-            transports: ['websocket', 'polling']
+            transports: ['polling','websocket']
         }
     );
-
 }
 
 async function ChatInit(){

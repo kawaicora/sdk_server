@@ -113,7 +113,7 @@ def product_list():
     products_dict = []
     for p in products:
         product = {
-            'id': p.id,
+            'id': p.ID,
             'name': p.name,
             'subtitle': p.subtitle,
             'price': p.price,
@@ -154,7 +154,7 @@ def product_detail(product_id):
 
     # 3. 转换模型对象为字典（处理复杂字段）
     product_dict = {
-        'id': product.id,
+        'id': product.ID,
         'name': product.name,
         'subtitle': product.subtitle,
         'price': product.price,

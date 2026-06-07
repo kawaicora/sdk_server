@@ -12,7 +12,16 @@ from engineio.payload import Payload
 
 Payload.max_decode_packets = 1024
 db:SQLAlchemy = SQLAlchemy()
-socketio:SocketIO = SocketIO(logger=DefaultConfig.SOCKETIO_LOGGER,engineio_logger=DefaultConfig.ENGINEIO_LOGGER,cors_allowed_origins='*',async_mode='gevent')
+socketio:SocketIO = SocketIO(
+    logger=DefaultConfig.SOCKETIO_LOGGER,
+    engineio_logger=DefaultConfig.ENGINEIO_LOGGER,
+    transports=['websocket', 'polling', 'xhr-polling', 'jsonp-polling'],
+    # 如果通过代理，需要设置这些
+    ping_timeout=60,
+    ping_interval=25,
+    cors_allowed_origins='*',
+    async_mode='gevent'
+)
 
 
 
