@@ -680,7 +680,6 @@ async function WebrtcInit() {
         const room_id = "room_s_" + Date.now();
         socket.emit('create-room',{room_id:room_id,title:title,room_type:"webrtc"})
     });
-
     // Socket事件监听
     socket.on('offer', handleOffer);
     socket.on('answer', handleAnswer);
@@ -920,12 +919,7 @@ function handleVisibilityChange() {
     }
 }
 
-// // 页面加载完成后初始化
-// $(document).ready(() => {  // 统一用jQuery ready
-//     WebrtcInit();
-//     requestWakeLock();
-//     $(document).on('click', () => {
-//         webrtc_logger.info("document click");
-//     });
-//     document.addEventListener('visibilitychange', handleVisibilityChange);
-// });
+// 页面加载完成后初始化
+$(document).ready(() => {  // 统一用jQuery ready
+     $('#guestRegister').on('click', WebrtcInit);
+});
