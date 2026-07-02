@@ -221,7 +221,14 @@
   }
 </style>
 
-<script src="/static/js/chat.js"></script>
+  <script type="module">
+
+    import Chat from "/static/js/Chat.js";
+    Chat.RegisterUser();
+    Chat.CreateRoom("default_chat","默认聊天室");
+    Chat.JoinRoom("default_chat");
+     
+  </script>
 
 
 <script language="javascript">

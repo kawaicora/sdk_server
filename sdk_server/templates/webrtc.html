@@ -56,6 +56,9 @@ tailwind.config = {
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-accent;
   }
+  .grid {
+    grid-auto-flow: column !important;
+  }
 }
 </style>
 {% endblock %}
@@ -277,13 +280,11 @@ tailwind.config = {
     </div>
   </div>
 </div>
-
-  <!-- <script src="/static/js/chat.js"></script> -->
-  <!-- <script src="/static/js/webrtc.js"></script> -->
     
   <script type="module">
 
     import WebRTC from "/static/js/WebRTC.js";
+     
   </script>
 </div>
 {% endblock %}

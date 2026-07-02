@@ -1,5 +1,6 @@
 import VideoStream from "/static/js/VideoStream.js";
 import SocketIOMaster from "/static/js/SocketIOMaster.js";
+import Chat from "/static/js/Chat.js";
 class WebRTC {
     constructor() {
         this.peerConnections = {};
@@ -38,7 +39,9 @@ class WebRTC {
         $('#videoSelect').on('change',this.HandleVideoSelect.bind(this));
         $('#audioSelect').on('change',this.HandleAudioSelect.bind(this));
         $('#capture_screen_button').on('click', () => {
-            this.ShowSelectDevice();
+            VideoStream.GetScreenStream();
+            this.ReplaceTrack();
+
         });
         $('#switchBtn').on('click', () => {
             this.ShowSelectDevice();
