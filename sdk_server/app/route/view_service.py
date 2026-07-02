@@ -109,3 +109,11 @@ def view_vrtest():
     response.headers['X-Organization'] = 'Nintendo'
     return response
 
+@bp.route("/view/test")
+def view_test():
+    if len(request.args) >0:
+        return Response(get_response_string(0),status=200,content_type="application/json")
+    response = make_response(render_template("test.html"),200)
+    response.headers['X-Organization'] = 'Nintendo'
+    return response
+

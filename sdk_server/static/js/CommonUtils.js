@@ -85,7 +85,6 @@ class CommonUtils {
         },showTime+aniTime*2+100)
     }
     
-
 }
 
 

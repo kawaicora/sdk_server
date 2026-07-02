@@ -2,6 +2,7 @@ class Base{
     constructor(){
         this.BaseLogger = new LoggerManager("Base",LoggerManager.LEVELS.DEBUG)
         this.isLogined = false;
+        this.webrtcInited = false;
     }
     static inst (){
 
@@ -46,15 +47,19 @@ class Base{
                 $(".nav-user-info a img")[0].src = response.data.avatar;
                 Base.inst().isLogined = true;
                 try{
-                    ChatInit();
-                }catch(e){
-
-                }
-                try{
                     WebrtcInit();
+                    Base.inst().webrtcInited = true;
                 }catch(e){
-                    
                 }
+                
+                if(!Base.inst().webrtcInited){
+                    try{
+                        ChatInit();
+                    }catch(e){
+                    }
+                }
+                
+                
             },
             error: function(xhr, status, error) {
                 Base.inst().BaseLogger.error(`请求失败 ${JSON.stringify( error, null, 2)}`);
@@ -149,6 +154,7 @@ class Base{
     }
     Register(account,password,username,avatar_url,phone_number,verify_code,xTicket){
         const encrypt = new JSEncrypt();
+        
         $.ajax({
             url: "/api/get_password_public_key",
             type: "GET",

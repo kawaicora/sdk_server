@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+<meta charset="UTF-8">
+<title>VideoStream Test</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin: 20px;
+}
+
+video{
+    width: 960px;
+    height: 540px;
+    background: black;
+    border: 1px solid #666;
+}
+
+select{
+    width: 400px;
+    margin: 5px;
+}
+
+button{
+    margin: 5px;
+    padding: 8px 16px;
+}
+
+#log{
+    margin-top: 20px;
+    border: 1px solid #999;
+    height: 300px;
+    overflow: auto;
+    white-space: pre-wrap;
+    padding: 10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>VideoStream 测试</h2>
+
+<video
+    id="video"
+    autoplay
+    muted
+    playsinline>
+</video>
+
+<hr>
+
+<h3>视频设备</h3>
+
+<select id="videoDevices"></select>
+
+<button id="btnCamera">
+使用摄像头
+</button>
+
+<button id="btnEmptyVideo">
+Empty Video
+</button>
+
+<br>
+
+<label>
+    <input
+        type="checkbox"
+        id="captureSystemAudio">
+    捕获系统音频
+</label>
+
+<button id="btnScreen">
+屏幕共享
+</button>
+
+<hr>
+
+<h3>音频设备</h3>
+
+<select id="audioDevices"></select>
+
+<button id="btnMic">
+使用麦克风
+</button>
+
+<button id="btnEmptyAudio">
+Empty Audio
+</button>
+
+<hr>
+
+<button id="btnInfo">
+刷新轨道信息
+</button>
+
+<div id="log"></div>
+
+
+<script type="module">
+
+import VideoStream from "/static/js/VideoStream.js";
+const video =
+    document.getElementById("video");
+
+const logDiv =
+    document.getElementById("log");
+
+
+
+let videoDevices = [];
+let audioDevices = [];
+
+function Log(...args)
+{
+    const text =
+        args.map(v =>
+            typeof v === "object"
+                ? JSON.stringify(v, null, 2)
+                : String(v)
+        ).join(" ");
+
+    console.log(text);
+
+    logDiv.textContent +=
+        text + "\n";
+
+    logDiv.scrollTop =
+        logDiv.scrollHeight;
+}
+
+async function RefreshTrackInfo()
+{
+    Log("");
+    Log("==============");
+
+    Log(
+        "VideoTracks:",
+        VideoStream.stream.getVideoTracks().length
+    );
+
+    VideoStream.stream
+        .getVideoTracks()
+        .forEach(track => {
+
+            Log(
+                "VIDEO",
+                track.label,
+                track.readyState
+            );
+        });
+
+    Log(
+        "AudioTracks:",
+        VideoStream.stream.getAudioTracks().length
+    );
+
+    VideoStream.stream
+        .getAudioTracks()
+        .forEach(track => {
+
+            Log(
+                "AUDIO",
+                track.label,
+                track.readyState
+            );
+        });
+
+    Log("==============");
+}
+
+async function LoadDevices()
+{
+    videoDevices =
+        await VideoStream.GetVideoDevices();
+
+    audioDevices =
+        await VideoStream.GetAudioDevices();
+
+    const videoSelect =
+        document.getElementById(
+            "videoDevices"
+        );
+
+    const audioSelect =
+        document.getElementById(
+            "audioDevices"
+        );
+
+    videoSelect.innerHTML = "";
+    audioSelect.innerHTML = "";
+
+    videoDevices.forEach((device,index)=>{
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            device.deviceId;
+
+        option.text =
+            device.label ||
+            `Camera ${index}`;
+
+        videoSelect.appendChild(
+            option
+        );
+    });
+
+    audioDevices.forEach((device,index)=>{
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            device.deviceId;
+
+        option.text =
+            device.label ||
+            `Mic ${index}`;
+
+        audioSelect.appendChild(
+            option
+        );
+    });
+}
+
+async function Init()
+{
+    VideoStream.SetVideoElement(
+        video
+    );
+    VideoStream.GetEmptyVideoAndAudioStream();
+
+
+    try
+    {
+        // 默认麦克风
+        await VideoStream.GetMicrophoneStream();
+    }
+    catch(e)
+    {
+        Log(
+            "默认麦克风打开失败",
+            e
+        );
+    }
+
+    await LoadDevices();
+
+    RefreshTrackInfo();
+}
+
+document
+.getElementById("btnCamera")
+.onclick = async ()=>{
+
+    const deviceId =
+        document
+        .getElementById(
+            "videoDevices"
+        ).value;
+
+    try
+    {
+        await VideoStream.GetCameraStream(
+            deviceId
+        );
+
+        RefreshTrackInfo();
+    }
+    catch(e)
+    {
+        Log(e);
+    }
+};
+
+document
+.getElementById("btnMic")
+.onclick = async ()=>{
+
+    const deviceId =
+        document
+        .getElementById(
+            "audioDevices"
+        ).value;
+
+    try
+    {
+        await VideoStream.GetMicrophoneStream(
+            deviceId
+        );
+
+        RefreshTrackInfo();
+    }
+    catch(e)
+    {
+        Log(e);
+    }
+};
+
+document
+.getElementById("btnEmptyVideo")
+.onclick = async ()=>{
+
+    await VideoStream.GetEmptyVideoStream();
+
+    RefreshTrackInfo();
+};
+
+document
+.getElementById("btnEmptyAudio")
+.onclick = async ()=>{
+
+    await VideoStream.GetEmptyAudioStream();
+
+    RefreshTrackInfo();
+};
+
+document
+.getElementById("btnScreen")
+.onclick = async ()=>{
+
+    const captureAudio =
+        document
+        .getElementById(
+            "captureSystemAudio"
+        ).checked;
+
+    try
+    {
+        await VideoStream.GetScreenStream(
+            captureAudio
+        );
+
+        RefreshTrackInfo();
+    }
+    catch(e)
+    {
+        Log(
+            "用户取消屏幕共享",
+            e
+        );
+    }
+};
+
+document
+.getElementById("btnInfo")
+.onclick =
+RefreshTrackInfo;
+
+Init();
+
+</script>
+
+</body>
+</html>
