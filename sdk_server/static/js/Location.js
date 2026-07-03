@@ -4,7 +4,7 @@ class Location {
     constructor() {
         this.location = null;
         this.logger = new LoggerManager("Location", LoggerManager.LEVELS.ALL);
-
+        
         SocketIOMaster.connect();
         SocketIOMaster.emit('user-register');
 
@@ -37,6 +37,30 @@ class Location {
 
     async UserLocationHandler(data) {
         this.logger.debug(`收到用户地理位置: ${JSON.stringify(data)}`);
+        if(document.getElementById('map_' + data.user_id)){
+            return;
+        }
+        var tmp = document.createElement('div');
+        tmp.style.width = '300px';
+        tmp.style.height = '150px';
+        tmp.id = 'map_' + data.user_id;
+        map_list.appendChild(tmp);
+        try {
+            var map=L.map(tmp.id).setView([data.loc_info.latitude,data.loc_info.longitude],10);
+            L.tileLayer(
+                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                {
+                    attribution:`user: ${data.user_id}` 
+                }
+            ).addTo(map);
+            L.marker([data.loc_info.latitude,data.loc_info.longitude]).addTo(map);
+        }catch(e){
+
+
+        }
+        
+        
+        
     }
 
     async GetLocation() {
