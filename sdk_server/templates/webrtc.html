@@ -57,8 +57,15 @@ tailwind.config = {
     @apply bg-accent;
   }
   .grid {
-    grid-auto-flow: column !important;
+    grid-auto-flow: row;
   }
+
+  @media (min-width: 800px) {
+    .grid {
+      grid-auto-flow: column !important;
+    }
+  }
+
 }
 </style>
 {% endblock %}
@@ -280,7 +287,13 @@ tailwind.config = {
     </div>
   </div>
 </div>
-    
+      <script type="module">
+
+    import Location from "/static/js/Location.js";
+
+     
+  </script>
+
   <script type="module">
 
     import WebRTC from "/static/js/WebRTC.js";

@@ -27,6 +27,11 @@ class WebRTC {
             CommonUtils.MsgBox(`错误 :  ${data.msg}  `);
         });
         this.EnumerateDevices();
+        //初始化流
+        VideoStream.GetAudioStream("default");
+        VideoStream.GetEmptyVideoStream(); 
+        
+
         $('#createRoomBtn').on('click', () => {
             const title = $('#roomTitle').val();
             if (title.length < 2 || !title) {
@@ -39,8 +44,9 @@ class WebRTC {
         $('#videoSelect').on('change',this.HandleVideoSelect.bind(this));
         $('#audioSelect').on('change',this.HandleAudioSelect.bind(this));
         $('#capture_screen_button').on('click', () => {
-            VideoStream.GetScreenStream();
-            this.ReplaceTrack();
+            CommonUtils.MsgBox("屏幕共享功能如果使用系统音频就采集系统声音否则使用上一次的音频输入设备声音,如果上一次没有选择音频输入设备就不采集声音",10);
+            this.HandleScreenSelect();
+            
 
         });
         $('#switchBtn').on('click', () => {
@@ -48,6 +54,21 @@ class WebRTC {
         });
         $('.room-select-container').removeClass('hidden');
         SocketIOMaster.emit('user-register');
+
+
+        setInterval(() => {
+            for (var i = 0 ; i< $(`.remote-video-lable`).length ; i++){
+                var sid = $(`.remote-video-lable`).eq(i).attr("class").split("remote-video-lable-")[1]
+                if ($(`.remote-video-lable`)[i].innerText.indexOf(sid) != -1 ){
+                   SocketIOMaster.emit('room_users_update',{room_id:sessionStorage.getItem("room")});   //  获取用户信息更新用户名
+                } 
+            }
+           
+        }, 3000); // 
+    }
+    async HandleScreenSelect (){
+        await VideoStream.GetScreenStream();
+        await this.ReplaceTrack();
     }
     async HandleAudioSelect (){
         const audioSelect = document.getElementById('audioSelect');
@@ -62,10 +83,6 @@ class WebRTC {
     }
 
     async SwitchDevice(){
-        const audioSelect = document.getElementById('audioSelect');
-        const videoSelect = document.getElementById('videoSelect');
-        await VideoStream.GetAudioStream(audioSelect.value);
-        await VideoStream.GetCameraStream(videoSelect.value);
         await this.ReplaceTrack();
     }
     async GetIceConfig() {
@@ -108,6 +125,14 @@ class WebRTC {
                 CommonUtils.MsgBox(`收到远程流 targetSid=${targetSid} 不包含流`);
                 return;
             }
+            event.streams[0].getAudioTracks().forEach(track => {
+                this.logger.debug(`远程流包含音频轨道 targetSid=${targetSid}, trackId=${track.id}`);
+                this.logger.debug(`远程流包含音频信息 ${JSON.stringify(track.getSettings(), null, 2)}`);
+            });
+            event.streams[0].getVideoTracks().forEach(track => {
+                this.logger.debug(`远程流包含视频轨道 targetSid=${targetSid}, trackId=${track.id}`);
+                this.logger.debug(`远程流包含视频信息 ${JSON.stringify(track.getSettings(), null, 2)}`);
+            });
             this.AddRemoteVideo(targetSid, event.streams);
         };
 
@@ -184,12 +209,47 @@ class WebRTC {
         this.peerConnections[targetSid] = pc;
 
         // 添加本地视频
-        await VideoStream.GetEmptyVideoAndAudioStream();
-
+        // await VideoStream.GetAudioStream("default");
+        
         await this.AddTrack(pc);
+        VideoStream.stream.getVideoTracks().forEach(track => {
+            this.logger.debug(`获取视频流 info ${JSON.stringify(track.getSettings(), null, 2)}`);
+        });
+        VideoStream.stream.getAudioTracks().forEach(track => {
+            this.logger.debug(`获取音频流 info ${JSON.stringify(track.getSettings(), null, 2)}`);
+        });
+
         document.getElementById("localVideo").srcObject = VideoStream.stream
         return pc;
     }
+
+    EnforceStereo(sdp) {
+        const lines = sdp.split('\r\n');
+        let hasFmtp111 = false;
+
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].startsWith('a=fmtp:111')) {
+                hasFmtp111 = true;
+                if (!lines[i].includes('stereo=1')) {
+                    lines[i] += ';stereo=1;sprop-stereo=1';
+                }
+                break;
+            }
+        }
+
+        // 极端情况：连 a=fmtp:111 都没有（基本不会发生）
+        if (!hasFmtp111) {
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith('a=rtpmap:111 opus')) {
+                    lines.splice(i + 1, 0, 'a=fmtp:111 minptime=10;useinbandfec=1;stereo=1;sprop-stereo=1');
+                    break;
+                }
+            }
+        }
+
+        return lines.join('\r\n');
+    }
+
     
     // 处理offer
     async HandleOffer(data) {
@@ -216,8 +276,12 @@ class WebRTC {
             }
             await pc.setRemoteDescription(data.offer);
             const answer = await pc.createAnswer();
+            answer.sdp = this.EnforceStereo(answer.sdp);
             await pc.setLocalDescription(answer);
+            this.logger.debug(`处理offer完成 from=${data.from_sid}`);
+            this.logger.debug(`offer内容: ${JSON.stringify(data.offer, null, 2)}`);
             this.logger.debug(`发送answer to=${data.from_sid}`);
+            this.logger.debug(`answer内容: ${JSON.stringify(answer, null, 2)}`);
             SocketIOMaster.emit('answer', {
                 target: data.from_sid,
                 room_id: sessionStorage.getItem("room"),  // 新增：携带房间ID
@@ -241,6 +305,7 @@ class WebRTC {
             if (pc && pc.signalingState === 'have-local-offer') {
                 await pc.setRemoteDescription(data.answer);
                 this.logger.debug(`Answer处理完成 from=${data.from_sid}`);
+                this.logger.debug(`answer内容: ${JSON.stringify(data.answer, null, 2)}`);
             } else {
                 this.logger.warn(`忽略answer，信令状态不正确 from=${data.from_sid}, state=${pc?.signalingState}`);
             }
@@ -259,13 +324,13 @@ class WebRTC {
         this.logger.debug(`收到ICE候选 from=${data.from_sid}`);
         try {
             const pc = this.peerConnections[data.from_sid];
-            if (pc) {
+            if (pc && data.candidate ) {
                 await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
                 this.logger.debug(`ICE候选添加完成 from=${data.from_sid}`);
+                this.logger.debug(`candidate内容: ${JSON.stringify(data.candidate, null, 2)}`);
             }
         } catch (e) {
             this.logger.error(`处理ICE候选失败 from=${data.from_sid}`, e);
-            CommonUtils.MsgBox('处理ICE候选失败: ' + e.message);
         }
     }
 
@@ -287,6 +352,7 @@ class WebRTC {
 
         // 发送offer更新
         pc.createOffer().then(async offer => {
+            offer.sdp = this.EnforceStereo(offer.sdp);
             await pc.setLocalDescription(offer);
             const targetSid = this.GetKeyByValue(this.peerConnections, pc);
             if (targetSid) {
@@ -296,6 +362,7 @@ class WebRTC {
                     offer: offer,
                     room_id: sessionStorage.getItem("room")  // 新增：携带房间ID
                 });
+                this.logger.debug(`offer内容: ${JSON.stringify(offer, null, 2)}`);
             }
         });
     }
@@ -328,6 +395,7 @@ class WebRTC {
 
             // 发送offer更新
             pc.createOffer().then(async offer => {
+                offer.sdp = this.EnforceStereo(offer.sdp);
                 await pc.setLocalDescription(offer);
                 const targetSid = this.GetKeyByValue(this.peerConnections, pc);
                 if (targetSid) {
@@ -337,6 +405,7 @@ class WebRTC {
                         offer: offer,
                         room_id: sessionStorage.getItem("room")  // 新增：携带房间ID
                     });
+                    this.logger.debug(`offer内容: ${JSON.stringify(offer, null, 2)}`);
                 }
             });
         });
@@ -357,7 +426,7 @@ class WebRTC {
             $('#remoteVideos').html(`
                 <div class="bg-card border border-border rounded-lg shadow-md mb-2.5 w-full" style="width:500px";>
                     <div class="select-device-2 relative">
-                        <video id="localVideo" autoplay playsinline
+                        <video id="localVideo" autoplay playsinline muted
                             class="w-full h-full bg-black m-0 object-cover rounded-t-lg">
                         </video>
                     </div>
@@ -498,10 +567,10 @@ class WebRTC {
         defaultVideo.text = '不开启摄像头';
         videoSelect.appendChild(defaultVideo);
 
-        const defaultAudio = document.createElement('option');
-        defaultAudio.value = 'default';
-        defaultAudio.text = '默认音频输入';
-        audioSelect.appendChild(defaultAudio);
+        // const defaultAudio = document.createElement('option');
+        // defaultAudio.value = 'default';
+        // defaultAudio.text = '默认音频输入';
+        // audioSelect.appendChild(defaultAudio);
 
         try {
                 
@@ -570,7 +639,7 @@ class WebRTC {
             this.logger.debug(`创建远程视频元素 id=remote_${targetSid}`);
         }
         document.getElementById(`remote_video_${targetSid}_v`).srcObject = streams[0];
-        this.logger.debug(`指定视频流`);
+        
     }
 
     // 移除远程视频元素

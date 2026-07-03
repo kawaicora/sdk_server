@@ -93,11 +93,15 @@
             background-color: var(--dark-bg);
             color: var(--dark-text);
         }
-
+        @media (min-width: 800px) {
+            .layout-container {
+                max-width: unset !important;
+            }
+        }
         /* 核心：布局容器（PC居中+移动端并列） */
         .layout-container {
             display: flex;
-            /* max-width: 1200px; */
+            max-width: 1200px;
             min-height: calc(100vh - 80px); /* 减去顶部导航80px，避免滚动条 */
             margin: 0 auto;
             padding-top: 80px; /* 匹配顶部导航高度 */
@@ -494,7 +498,7 @@
             {% block header %}{% endblock %}
             {% block content %}{% endblock %}
 
-            <iframe src="https://afdian.com/a/ice_cora?slug=x" width="640" scrolling="no" height="800" frameborder="0"></iframe>
+            <!-- <iframe src="https://afdian.com/a/ice_cora?slug=x" width="640" scrolling="no" height="800" frameborder="0"></iframe> -->
         </div>
     </div>
 

@@ -63,9 +63,10 @@ class VideoStream {
         if (this.videoElement) {
             this.videoElement.srcObject = this.stream;
         }
+       
     }
 
-    async GetScreenStream(captureSystemAudio = false) {
+    async GetScreenStream() {
 
         if (!navigator.mediaDevices?.getDisplayMedia) {
             throw new Error("当前浏览器不支持屏幕共享");
@@ -74,15 +75,18 @@ class VideoStream {
         const stream =
             await navigator.mediaDevices.getDisplayMedia({
                 video: true,
-                audio: captureSystemAudio
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false
+                }
             });
 
         this.UpdateVideoStream(stream);
-
-        if (captureSystemAudio) {
+        if (stream.getAudioTracks().length > 0) {
             this.UpdateAudioStream(stream);
         }
-
+       
         return stream;
     }
 
@@ -91,7 +95,10 @@ class VideoStream {
         if (!navigator.mediaDevices?.getUserMedia) {
             throw new Error("当前浏览器不支持摄像头访问");
         }
+        if (deviceId == "default") {
+            return await this.GetEmptyVideoStream();
 
+        }
         const stream =
             await navigator.mediaDevices.getUserMedia({
 
@@ -197,7 +204,6 @@ class VideoStream {
             canvas.captureStream(15);
 
         this.UpdateVideoStream(stream);
-
         return stream;
     }
 
@@ -263,7 +269,6 @@ class VideoStream {
         if (!navigator.mediaDevices?.enumerateDevices) {
             throw new Error("当前浏览器不支持获取媒体设备");
         }
-
         const devices =
             await navigator.mediaDevices.enumerateDevices();
 

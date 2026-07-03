@@ -128,7 +128,9 @@ def handle_on_connection_state_change(data):
     target_sid = data.get('target')
     target_user = get_user_by_sid(target_sid) 
     target_room = get_room_by_sid(target_sid)
-    
+    if(user is None or target_user is None):
+        current_app.logger.warning("user or target_user is None")
+        return
     current_app.logger.info(f"------- 用户:{user.get('display_name')} SID:{sid} 报告 ,目标用户:{target_user.get('display_name')} SID:{target_sid} 连接状态: {data.get('state')} -------")
     if (data.get('state') == 'disconnected' or data.get('state') == 'failed'  or data.get('state') == 'closed') and target_room:
         current_app.logger.info(f"------- 用户:{user.get('display_name')} SID:{sid} 报告 ,目标用户:{target_user.get('display_name')} SID:{target_sid} 连接异常 -------")
