@@ -195,7 +195,7 @@ class Chat {
                         xhr.upload.addEventListener('progress', function (event) {
                             if (event.lengthComputable) {
                                 const percentComplete = (event.loaded / event.total) * 100;
-                                this.logger.log(`上传进度: ${percentComplete}%`);
+                                this.logger.info(`上传进度: ${percentComplete}%`);
                                 // 你可以在这里更新页面上的进度条显示
                             }
                         });
