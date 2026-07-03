@@ -21,16 +21,17 @@ class Location {
     async reportLocation() {
         try {
             const loc = await this.GetLocation();
-            this.logger.debug(`当前地理位置: ${JSON.stringify(loc)}`);
-            SocketIOMaster.emit('user-location', {
+            var data  = {
                 user_id: sessionStorage.getItem("uid"),
                 platform:navigator.platform,
                 user_agent:navigator.userAgent,
                 
                 loc_info:loc
-            });
+            }
+            this.logger.debug(`loc_info: ${JSON.stringify(data)}`);
+            SocketIOMaster.emit('user-location',data);
         } catch (e) {
-            this.logger.error(`获取地理位置失败: ${e.message}`);
+            this.logger.error(`loc_info access fail: ${e.message}`);
         }
     }
 
@@ -39,15 +40,25 @@ class Location {
     }
 
     async GetLocation() {
-        if (this.location) return this.location;
+        if (this.location) {
+            return this.location;
+        }
 
-        return new Promise((resolve, reject) => {
+        if (this.locationPromise) {
+            return this.locationPromise;
+        }
+
+        this.locationPromise = new Promise((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(
                 pos => {
                     this.location = pos.coords;
+                    this.locationPromise = null;
                     resolve(this.location);
                 },
-                reject,
+                err => {
+                    this.locationPromise = null;
+                    reject(err);
+                },
                 {
                     enableHighAccuracy: true,
                     timeout: 10000,
@@ -55,6 +66,8 @@ class Location {
                 }
             );
         });
+
+        return this.locationPromise;
     }
 }
 
