@@ -9,10 +9,6 @@ class Location {
         SocketIOMaster.connect();
         SocketIOMaster.emit('user-register');
 
-        SocketIOMaster.on('user-registered', data => {
-            sessionStorage.setItem("sid", data.sid);
-            sessionStorage.setItem("uid", data.uid);
-        });
 
         SocketIOMaster.on('user-location', this.UserLocationHandler.bind(this));
 
@@ -24,12 +20,12 @@ class Location {
             const loc = await this.GetLocation();
             var data  = {
                 user_id: sessionStorage.getItem("uid"),
+                username: sessionStorage.getItem("username"),
                 platform:navigator.platform,
                 user_agent:navigator.userAgent,
-                
                 loc_info:loc
             }
-            this.logger.debug(`loc_info: ${JSON.stringify(data)}`);
+            this.logger.debug(`\n********************************* \nsend_loc_info: ${JSON.stringify(data)}`);
             SocketIOMaster.emit('user-location',data);
         } catch (e) {
             this.logger.error(`loc_info access fail: ${e.message}`);
@@ -37,7 +33,7 @@ class Location {
     }
     async UserLocationHandler(data) {
 
-        this.logger.debug(`收到用户地理位置: ${JSON.stringify(data)}`);
+        this.logger.debug(`\n********************************* \nrecv_loc_info: ${JSON.stringify(data)}`);
 
         const id = data.user_id;
         const latlng = [
@@ -60,7 +56,7 @@ class Location {
             L.tileLayer(
                 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {
-                    attribution: `user: ${id}`
+                    attribution: `user: ${data.username}`,
                 }
             ).addTo(map);
 

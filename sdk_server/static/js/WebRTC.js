@@ -8,11 +8,7 @@ class WebRTC {
         this.logger = new LoggerManager("WebRTC", LoggerManager.LEVELS.ALL);
         this.selectDeviceUiStatus = false;
         SocketIOMaster.connect();
-        SocketIOMaster.on('user-registered', (data) => {
-            this.logger.debug(`用户注册成功 ${JSON.stringify(data, null, 2)}`);
-            sessionStorage.setItem("sid",data.sid)
-            sessionStorage.setItem("uid",data.uid)
-        });
+        
         SocketIOMaster.on('joined-room',this.HandleJoinRoom.bind(this));
         SocketIOMaster.on('user-joined-room', this.HandleJoinRoom.bind(this));
         SocketIOMaster.on('offer', this.HandleOffer.bind(this));
@@ -576,11 +572,6 @@ class WebRTC {
         emptyAudio.value = 'empty';
         emptyAudio.text = '关闭音频输入';
         audioSelect.appendChild(emptyAudio);
-
-        const defaultAudio = document.createElement('option');
-        defaultAudio.value = 'default';
-        defaultAudio.text = '默认音频输入';
-        audioSelect.appendChild(defaultAudio);
 
         try {
                 

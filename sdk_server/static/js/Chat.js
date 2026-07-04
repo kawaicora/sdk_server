@@ -7,8 +7,7 @@ class Chat {
         SocketIOMaster.connect();
         SocketIOMaster.on('user-registered', (data) => {
             this.logger.debug(`用户注册成功 ${JSON.stringify(data, null, 2)}`);
-            sessionStorage.setItem("sid",data.sid)
-            sessionStorage.setItem("uid",data.uid)
+     
         });
 
          // 错误提示
