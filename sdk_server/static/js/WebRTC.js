@@ -579,7 +579,7 @@ class WebRTC {
 
         const defaultAudio = document.createElement('option');
         defaultAudio.value = 'default';
-        defaultAudio.text = '关闭音频输入';
+        defaultAudio.text = '默认音频输入';
         audioSelect.appendChild(defaultAudio);
 
         try {
