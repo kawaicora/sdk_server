@@ -3,6 +3,13 @@
 {% block head %}
 <title>视频聊天</title>
 
+<link rel="manifest" href="/static/manifest.webmanifest">
+
+ <script>
+
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/static/js/ServiceWorker.js'); }
+  </script>
+
 
 <!-- 自定义Tailwind配置（保持主题一致性） -->
 <script>
@@ -18,7 +25,7 @@ tailwind.config = {
         bg: '#f9fafb',
       },
       fontFamily: {
-        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'sans-serif'],
+        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Rstatic/oboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'sans-serif'],
       },
     },
   }
@@ -65,13 +72,22 @@ tailwind.config = {
       grid-auto-flow: column !important;
     }
   }
+  
 
+  .help-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url(/static/img/install_help_image.png) no-repeat center center;
+    z-index: 999;
+  }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4">
+<div class="help-layer hidden"></div>
+<div class="container mx-auto">
   
   <div class="grid grid-cols-1 gap-4 mb-6">
     <!-- 房间选择区域 -->
@@ -79,7 +95,7 @@ tailwind.config = {
       <div class="px-6 py-4 border-b border-border">
         <i class="fa-solid fa-users text-text mr-2"></i> 房间选择
       </div>
-      <div class="px-6 py-4">
+      <div class="">
         <!-- 房间创建输入框 -->
         <div class="mb-4">
           <label class="block text-text text-sm font-medium mb-2">房间标题</label>
@@ -134,7 +150,7 @@ tailwind.config = {
   </div>
 
   <!-- 视频区域 -->
-  <div class="video-chat-container grid grid-cols-1 gap-4 hidden px-6 py-4">
+  <div class="video-chat-container grid grid-cols-1 gap-4 hidden ">
     <div class="bg-card border border-border rounded-lg shadow-md overflow-hidden">
       <div class="px-6 py-4 border-b border-border flex justify-between items-center">
         <div>
@@ -145,8 +161,8 @@ tailwind.config = {
         </button>
         
       </div>
-      <div class="px-6 py-4">
-        <div id="remoteVideos" class="bg-card px-6 py-4">
+      <div class="">
+        <div id="remoteVideos" class="bg-card px-2 py-2">
           <!-- 远程视频会通过JS动态生成 -->
         </div>
       </div>
@@ -187,7 +203,7 @@ tailwind.config = {
       </div>
     </div>
   </div>
-  <div class="w-full px-2 sm:px-4 lg:px-6 xl:px-8">
+  <div class="w-full">
     <div class="max-w-6xl mx-auto w-full pb-10 h-full">
       <!-- 聊天区域：优化响应式布局，增加阴影层级 -->
       <div class="w-full rounded-xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -291,6 +307,7 @@ tailwind.config = {
 </div>
 
   <div id="map_list" class="grid grid-cols-1 gap-4 mb-6"></div>
+ 
   <script type="module">
 
     import Location from "/static/js/Location.js";

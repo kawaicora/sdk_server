@@ -78,7 +78,8 @@ class VideoStream {
                 audio: {
                     echoCancellation: false,
                     noiseSuppression: false,
-                    autoGainControl: false
+                    autoGainControl: false,
+                    channelCount: 2
                 }
             });
 
@@ -123,7 +124,9 @@ class VideoStream {
         if (!navigator.mediaDevices?.getUserMedia) {
             throw new Error("当前浏览器不支持麦克风访问");
         }
-
+        if (deviceId == "empty") {
+            return await this.GetEmptyAudioStream();
+        }
         const stream =
             await navigator.mediaDevices.getUserMedia({
 
@@ -136,12 +139,14 @@ class VideoStream {
                         },
                         echoCancellation: false,
                         noiseSuppression: false,
-                        autoGainControl: false
+                        autoGainControl: false,
+                        channelCount: 2
                     }
                     : {
                         echoCancellation: false,
                         noiseSuppression: false,
-                        autoGainControl: false
+                        autoGainControl: false,
+                        channelCount: 2
                     }
             });
 

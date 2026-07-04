@@ -276,7 +276,7 @@ class WebRTC {
             }
             await pc.setRemoteDescription(data.offer);
             const answer = await pc.createAnswer();
-            answer.sdp = this.EnforceStereo(answer.sdp);
+            // answer.sdp = this.EnforceStereo(answer.sdp);
             await pc.setLocalDescription(answer);
             this.logger.debug(`处理offer完成 from=${data.from_sid}`);
             this.logger.debug(`offer内容: ${JSON.stringify(data.offer, null, 2)}`);
@@ -352,7 +352,7 @@ class WebRTC {
 
         // 发送offer更新
         pc.createOffer().then(async offer => {
-            offer.sdp = this.EnforceStereo(offer.sdp);
+            // offer.sdp = this.EnforceStereo(offer.sdp);
             await pc.setLocalDescription(offer);
             const targetSid = this.GetKeyByValue(this.peerConnections, pc);
             if (targetSid) {
@@ -395,7 +395,7 @@ class WebRTC {
 
             // 发送offer更新
             pc.createOffer().then(async offer => {
-                offer.sdp = this.EnforceStereo(offer.sdp);
+                // offer.sdp = this.EnforceStereo(offer.sdp);
                 await pc.setLocalDescription(offer);
                 const targetSid = this.GetKeyByValue(this.peerConnections, pc);
                 if (targetSid) {
@@ -430,7 +430,7 @@ class WebRTC {
                             class="w-full h-full bg-black m-0 object-cover rounded-t-lg">
                         </video>
                     </div>
-                    <div class="local-video-lable px-4 py-3 border-t border-border text-text font-medium">
+                    <div class="local-video-lable px-2 py-2 border-t border-border text-text font-medium">
                         <i class="fa-solid fa-user mr-1.5"></i>本地视频 ${sessionStorage.getItem("sid")}
                     </div>
                 </div>
@@ -482,29 +482,34 @@ class WebRTC {
                 appendHtml += `
 
 
-                <div class="bg-card border border-border rounded-lg shadow-md overflow-hidden room-card" data-room-id="${e.room_id}">
+                <div class="bg-card border border-border rounded-lg shadow-md overflow-hidden room-card" 
+                                    data-room-id="${e.room_id}"
+                                    data-room-title="${e.title}" 
+                                    style = "width: 150px; height: 150px;" data-room-id="${e.room_id}">
+
+
                     <div class="video-container h-36 relative">
-                        <img src="${e.cover || 'https://picsum.photos/300/200?random=1'}" alt="房间封面" class="w-full h-full object-cover">
+                        <img src="${e.cover || 'https://picsum.photos/130/150?random=1'}" alt="房间封面" class="w-full h-full object-cover">
                         <div id="${e.room_id}_room_hum_count" class="absolute bottom-1.5 right-1.5 bg-black/50 px-2 py-0.5 rounded-full text-xs text-white">
                             <i class="fa-solid fa-user mr-1"></i> ${e.user_count}
                         </div>
-                    </div>
-                    <div class="p-2.5 text-center">
                         <h4 class="whitespace-nowrap overflow-hidden text-ellipsis font-medium text-text">${e.title}</h4>
-                        <button class="join-room-btn bg-gray-600 hover:bg-gray-700 text-white px-4 py-1 rounded-md text-sm w-4/5 mt-2.5 transition-colors" 
-                                data-room-id="${e.room_id}"
-                                data-room-title="${e.title}">
-                            进入房间
-                        </button>
                     </div>
+                    
                 </div>
                 `;
             }
             
         });
         $('#roomGrid').html(appendHtml);
-
-        document.querySelectorAll(".join-room-btn")
+       $(".room-card")
+        .on("mouseenter", function () {
+            $(".room_info_layer").removeClass("hidden");
+        })
+        .on("mouseleave", function () {
+            $(".room_info_layer").addClass("hidden");
+        });
+        document.querySelectorAll(".room-card")
         .forEach(btn => {
 
             btn.addEventListener("click", () => {
@@ -567,10 +572,15 @@ class WebRTC {
         defaultVideo.text = '不开启摄像头';
         videoSelect.appendChild(defaultVideo);
 
-        // const defaultAudio = document.createElement('option');
-        // defaultAudio.value = 'default';
-        // defaultAudio.text = '默认音频输入';
-        // audioSelect.appendChild(defaultAudio);
+        const emptyAudio = document.createElement('option');
+        emptyAudio.value = 'empty';
+        emptyAudio.text = '关闭音频输入';
+        audioSelect.appendChild(emptyAudio);
+
+        const defaultAudio = document.createElement('option');
+        defaultAudio.value = 'default';
+        defaultAudio.text = '关闭音频输入';
+        audioSelect.appendChild(defaultAudio);
 
         try {
                 
@@ -608,7 +618,7 @@ class WebRTC {
             // root_div.style.width = "500px";
             const header_div = document.createElement('div');
             // 替换layui-card-header为Tailwind样式，保留自定义类名用于标识
-            header_div.className = `remote-video-lable px-4 py-3 border-t border-border text-text font-medium remote-video-lable-${targetSid}`;
+            header_div.className = `remote-video-lable px-2 py-2 border-t border-border text-text font-medium remote-video-lable-${targetSid}`;
             try {
                 // 替换layui图标为Font Awesome，调整间距
                 header_div.innerHTML = `<i class="fa-solid fa-user mr-1.5"></i>远程用户: ${remoteUsers[targetSid]['username']}`;

@@ -88,6 +88,8 @@
             /* 移除body的max-width，交给layout-container控制 */
         }
 
+
+
         /* 深色模式全局样式 */
         .dark body {
             background-color: var(--dark-bg);
@@ -102,30 +104,28 @@
         .layout-container {
             display: flex;
             max-width: 1200px;
-            min-height: calc(100vh - 80px); /* 减去顶部导航80px，避免滚动条 */
+            min-height: calc(100vh - 50px); /* 减去顶部导航50px，避免滚动条 */
             margin: 0 auto;
-            padding-top: 80px; /* 匹配顶部导航高度 */
+            padding-top: 50px; /* 匹配顶部导航高度 */
+            padding-bottom: 50px;
             width: 100%;
         }
 
-        /* 侧边菜单核心样式（统一PC/移动端） */
-        .sidebar-menu {
-            background-color: var(--light-card) !important;
-            width: 64px; /* PC端固定宽度 */
-            flex-shrink: 0; /* 禁止收缩 */
-            overflow: hidden; /* 隐藏溢出，配合宽度动画 */
-            transition: width 0.3s ease-in-out; /* 宽度动画 */
-            border-right: 1px solid var(--light-border);
+
+        .main-nav {
+            background-color: var(--light-bg);
         }
-        .dark .sidebar-menu {
-            background-color: var(--dark-card) !important;
-            border-right-color: var(--dark-border);
+
+        .bottom-nav {
+            background-color: var(--light-bg);
         }
+
+
 
         /* 主内容区域（占满剩余宽度） */
         .main-content {
             flex: 1; /* 移动端/PC端都占剩余宽度 */
-            padding: 0 16px;
+            
         }
 
         /* 移动端适配（<768px） */
@@ -272,17 +272,6 @@
             margin-right: 8px !important;
         }
 
-        /* 侧边菜单触发按钮 */
-        .nav-menu-btn {
-            color: var(--light-text) !important;
-        }
-        .dark .nav-menu-btn {
-            color: var(--dark-text) !important;
-        }
-        .nav-menu-btn:hover {
-            color: var(--accent-color) !important;
-        }
-
         .hidden {
             display:none !important;
         }
@@ -345,8 +334,7 @@
 </head>
 
 <body>
-    <!-- 顶部导航栏（固定高度80px） -->
-    <nav class="main-nav fixed top-0 left-0 right-0 z-50 bg-light-card dark:bg-dark-card border-b border-light-border dark:border-dark-border h-[80px]">
+    <nav class="main-nav fixed top-0 left-0 right-0 z-50 bg-light-card dark:bg-dark-card border-b border-light-border dark:border-dark-border h-[50px]">
         <div class="container h-full flex items-center justify-between px-4 mx-auto">
             <!-- 左侧Logo -->
             <div class="flex items-center h-full">
@@ -371,7 +359,7 @@
                 <div class="nav-user-info hidden dropdown relative">
                     <a href="javascript:;" class="flex items-center space-x-2 px-2 py-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" tabindex="0">
                         <img src="/static/img/default_avatar.gif" class="h-8 w-8 rounded-full" alt="头像">
-                        <span class="nav-username text-sm font-medium">用户名</span>
+                        <!-- <span class="nav-username text-sm font-medium">用户名</span> -->
                         <i class="fa-solid fa-chevron-down text-xs"></i>
                     </a>
                     <div class="dropdown-content absolute right-0 top-full mt-2 w-48 border border-light-border dark:border-dark-border rounded-md shadow-lg z-50">
@@ -389,107 +377,12 @@
                         </ul>
                     </div>
                 </div>
-
-                <!-- 侧边菜单触发按钮（仅移动端显示） -->
-                <button class="nav-menu-btn p-2" aria-label="打开侧边菜单">
-                    <i class="fa-solid fa-bars text-xl"></i>
-                </button>
             </div>
         </div>
     </nav>
 
-    <!-- 核心：布局容器（侧边栏+主内容） -->
+    
     <div class="layout-container">
-        <!-- 侧边菜单 -->
-        <div class="sidebar-menu" tabindex="-1">
-            <div class="p-4 h-full flex flex-col">
-                <!-- 菜单标题 + 移动端关闭按钮 -->
-                <div class="flex items-center justify-between mb-6 mt-4">
-                    <h2 class="text-lg font-semibold">主导航</h2>
-                    <button class="sidebar-close-btn text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" aria-label="关闭侧边菜单">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                </div>
-
-                <!-- 更多下拉 -->
-                <div class="more-dropdown focus:outline-none" tabindex="0">
-                    <a href="javascript:;" class="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 w-full text-sm">
-                        <span class="flex items-center">
-                            <i class="fa-solid fa-chevron-down mr-2 text-xs"></i> 更多
-                        </span>
-                        <i class="fa-solid fa-angle-down text-xs transition-transform duration-200"></i>
-                    </a>
-                    <div class="more-dropdown-content pl-6 space-y-1">
-                        <a href="/view/webrtc" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                            <i class="fa-solid fa-video mr-2"></i> 视频连线
-                        </a>
-                        <a href="/view/chat" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                            <i class="fa-solid fa-comments mr-2"></i> 聊天
-                        </a>
-                        <a href="/view/products" class="block px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                            <i class="fa-solid fa-shopping-cart mr-2"></i> 商品列表
-                        </a>
-                    </div>
-                </div>
-
-                <!-- 话题分类 -->
-                <div class="mt-4">
-                    <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">话题类别</p>
-                    <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                        <i class="fa-solid fa-list-ul mr-2"></i> 所有类别
-                    </a>
-                </div>
-
-                <!-- 热门标签 -->
-                <div class="mt-4">
-                    <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">热门标签</p>
-                    <ul class="space-y-1 pl-2">
-                        <li>
-                            <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                                <i class="fa-solid fa-droplet text-amber-500 mr-2"></i> 纯水
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                                <i class="fa-solid fa-clock text-green-500 mr-2"></i> 快问快答
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                                <i class="fa-solid fa-palette text-purple-500 mr-2"></i> dailyart
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">
-                                <i class="fa-solid fa-star text-yellow-500 mr-2"></i> 二次元
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="flex items-center px-3 py-2 rounded-md hover:bg-gray-700 text-sm">
-                                <i class="fa-solid fa-folder-open text-green-600 mr-2"></i> 作品集
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- 主题切换区域 -->
-                <div class="mt-auto pt-4 border-t border-light-border dark:border-dark-border">
-                    <p class="text-xs uppercase tracking-wider mb-2 px-3 text-gray-500 dark:text-gray-400">主题切换</p>
-                    <div class="flex space-x-2 px-3">
-                        <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="light">
-                            <i class="fa-solid fa-sun mr-1"></i> 白天
-                        </button>
-                        <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="dark">
-                            <i class="fa-solid fa-moon mr-1"></i> 夜晚
-                        </button>
-                        <button class="theme-switch-btn flex-1 py-1.5 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-700" data-theme="auto">
-                            <i class="fa-solid fa-circle-half-stroke mr-1"></i> 自动
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- 主内容区域（新增容器，占满剩余宽度） -->
         <div class="main-content">
             <!-- 移动端遮罩层（仅遮罩主内容） -->
@@ -500,10 +393,25 @@
 
             <!-- <iframe src="https://afdian.com/a/ice_cora?slug=x" width="640" scrolling="no" height="800" frameborder="0"></iframe> -->
         </div>
+
     </div>
-
+    
     {% block footer %}{% endblock %}
-
+    <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-light-card dark:bg-dark-card border-b border-light-border dark:border-dark-border h-[50px]">
+        <a href="#" class="px-4 py-2 rounded-md transition-colors text-sm font-medium">
+            房间
+        </a>
+         <a href="#" class="hidden px-4 py-2 rounded-md transition-colors text-sm font-medium">
+            聊天
+        </a>
+         <a href="#" class="px-4 py-2 rounded-md transition-colors text-sm font-medium">
+            视频
+        </a>
+         <a href="#" class="px-4 py-2 rounded-md transition-colors text-sm font-medium">
+           我的
+        </a>
+    </nav>
+    
     <script type="text/javascript">
         // 主题切换核心逻辑
         $(document).ready(function() {
@@ -537,49 +445,7 @@
 
             // 初始化主题
             initTheme();
-            
-            // 移动端侧边菜单逻辑（宽度动画）
-            const $sidebar = $('.sidebar-menu');
-            const $overlay = $('.sidebar-overlay');
-            const $menuBtn = $('.nav-menu-btn');
-            const $closeBtn = $('.sidebar-close-btn');
-            const SIDEBAR_WIDTH = '500px'; // 侧边栏展开宽度
-
-            // 打开侧边菜单（宽度展开）
-            $menuBtn.on('click', function() {
-                $sidebar.css('width', SIDEBAR_WIDTH);
-                // $overlay.removeClass('hidden');
-                $('body').addClass('overflow-hidden');
-            });
-
-            // 关闭侧边菜单（宽度收缩为0）
-            function closeSidebar() {
-                $sidebar.css('width', '0');
-                $overlay.addClass('hidden');
-                $('body').removeClass('overflow-hidden');
-            }
-
-            // 绑定关闭事件
-            $closeBtn.on('click', closeSidebar);
-            $overlay.on('click', closeSidebar);
-
-            // 初始化移动端侧边栏为关闭状态
-            if ($(window).width() < 768) {
-                closeSidebar();
-            }else {
-                $sidebar.css('width', SIDEBAR_WIDTH);
-            }
-
-            // 窗口大小变化时适配
-            $(window).resize(function() {
-                if ($(window).width() >= 768) {
-                    $sidebar.css('width', SIDEBAR_WIDTH); // PC端强制展开
-                    $overlay.addClass('hidden');
-                    $('body').removeClass('overflow-hidden');
-                } else {
-                    closeSidebar(); // 移动端默认关闭
-                }
-            });
+          
         });
 
         // Base对象容错
@@ -625,6 +491,6 @@
             }
         });
     </script>
-
+    
 </body>
 </html>
