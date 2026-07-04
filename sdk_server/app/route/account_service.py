@@ -19,7 +19,7 @@ import hmac
 import hashlib
 from datetime import datetime
 from flask import Response, request, current_app,Request
-from app.sql_class.Tables import Users, Usermeta, Options,GameAccount
+from app.sql_class.Tables import Users, Usermeta, Options,AccountToken
 from app.utils.ErrorCode import *  # 假设已定义错误码
 import re
 import base64
@@ -54,17 +54,6 @@ def ticker_cache_data_auto_clear():
         except Exception as e:
             pass
         time.sleep(1)
-
-# threading.Thread(target=ticker_cache_data_auto_clear).start()
-
-
-
-
-
-
-
-
-
 
 
 
@@ -117,16 +106,6 @@ def wp_salt(scheme='logged_in'):
 
 
 
-def get_userinfo_by_sdk_token(sdk_token:str):
-    return userinfo.get(sdk_token )
-
-
-
-def get_userinfo_by_uid(user_id:str):
-    for key in userinfo:
-        if userinfo[key]["user_id"] == user_id:
-            return userinfo[key]
-    return None
 # 第三方验证登录
 
 def third_login(data):
@@ -361,7 +340,7 @@ def site_login(cookies,verify_siteurl=True):
         )
 
 
-
+#验证登录
 def verify_login(request:Request,verify_siteurl=True):
     #按照步骤验证
     cookies = request.cookies
@@ -425,81 +404,89 @@ def api_send_verify_code():
     response.headers["X-Ticket"] = ticket
     return response
 
-# @bp.route("/api/register",methods=["POST"])
+#  ##################################登录和加密 ################################################
 
-# def api_register():
-#     account = request.json.get("account")
-#     password = request.json.get("password")
-#     avatar_url = request.json.get("avatar_url")
-#     username = request.json.get("username")
-#     phone_number = request.json.get("phone_number")
-#     verify_code = request.json.get("verify_code")
-#     ticket = request.headers.get("X-Ticket")
-#     ticket_data = ticket_cache_data.get(ticket)
-#     if not ticket_data:
-#         return Response(get_response_string(-3026),status=200,content_type="application/json")
-#     if not account or not password or not verify_code:
-#         return Response(get_response_string(-3002),status=200,content_type="application/json")
+@bp.route("/api/get_password_public_key")
+def api_get_public_key():
+    ticket = CommonUtils.gen_ticket("login")
+    private_pem,public_pem = CommonUtils.get_exist_rsa_key()
 
-#     isencrypted = request.json.get("is_encrypt")
-#     if isencrypted == True:
-#         private_pem,public_pem = CommonUtils.get_exist_rsa_key()
-#         private_key = CommonUtils.load_private_key(private_pem)
-#         if not private_key:
-#             return Response(get_response_string(-3005),status=400,content_type="application/json")
-#         # password = private_key.decrypt(base64.b64decode(password),padding.PKCS1v15()).decode()
-#         try:
-#             password = CommonUtils.rsa_decrypt_chunks(base64.b64decode(password),private_key).decode()
-#         except Exception as e:
-#             return Response(get_response_string(-3001),status=400,content_type="application/json")
-#     else:
-#         password = password
+    current_app.logger.info(f"get_public_key ticket:{ticket}")
+    headers = {
+        'X-Organization': 'Nintendo',
+        "X-Ticket":ticket
+    }
+    return Response(public_pem.decode(), status=200, content_type="text/plan",headers=headers)  
 
-#     user = Account.query.filter_by(account=account).first()
-#     if user: 
-#         # 用户已存在
-#         return Response(get_response_string(-3011),status=200,content_type="application/json")
-#     user = Account.query.filter_by(username=username).first()
-    
-#     if user:
-#         return Response(get_response_string(-3011,"用户名重复!"),status=200,content_type="application/json")
-    
-#     if verify_code != ticket_data["verify_code"]: 
-#         # 验证码错误
-#         return Response(get_response_string(-3024),status=200,content_type="application/json")
-    
 
-#     token = CommonUtils.random_string()
+def get_userinfo_by_uid(user_id:int):
+    user = Users.query.filter_by(ID=user_id).first()
+    if not user:
+        current_app.logger.warning(f"用户不存在")
+        return None
+  
+    user_meta_list = Usermeta.query.filter_by(user_id=user_id).all()
+    user_meta = {}
+    for meta in user_meta_list:
+        
+        user_meta[meta.meta_key] = meta.meta_value
+    client_ip = request.remote_addr
+    client_ua = request.user_agent.string
+    # --------------------------
+    # 9. 构造最终响应数据
+    # --------------------------
+    user_data = {
+        "user_id": user.ID,
+        "user_login": user.user_login,
+        "user_email": user.user_email,
+        "display_name": user.display_name,
+        "user_url": user.user_url,
+        "user_registered": user.user_registered.strftime("%Y-%m-%d %H:%M:%S"),
+        "nickname": user_meta.get('nickname', user.display_name),
+        "avatar": user_meta.get('user_avatar', ""),
+        "last_login_time": user_meta.get('last_login_time', "未知"),
+        "last_login_ip": user_meta.get('last_login_ip', "未知"),
+        "current_ip": client_ip,
+        "user_agent": client_ua
+    }
 
-#     # 生成用户
-#     try:
-#         user = Account(
-#             account=account,
-#             password_hash=CommonUtils.create_sha_passwd(password),
-#             username=username,
-#             avatar=avatar_url,
-#             phone_number=phone_number,
-#             email=ticket_data["email"],
-#             login_token=token,
-#             created_at=datetime.now(),
-#             updated_at=datetime.now()
-#         )
-#         db.session.add(user)
-#         db.session.commit()
-#     except Exception as e:
-#         current_app.logger.error(f"register error:{e}")
-#         return Response(get_response_string(-3003),status=200,content_type="application/json")
-#     # 注册成功
-#     user = Account.query.filter_by(account=account).first()
-#     cookies = {
-#         # "uid":user.id,
-#         # "token": user.login_token
-#     }
-#     headers = {
-#         'X-Organization': 'Nintendo'
-#     }
-#     ticket_cache_data.pop(ticket)
-#     return set_cookies(Response(get_response_string(0), status=200, content_type="application/json",headers=headers),cookies )
+    return user_data
+
+
+def get_userinfo_by_token(token ):
+    t_account_token = AccountToken.query.filter_by(token=token).first()
+    user = Users.query.filter_by(ID=t_account_token.user_id).first()
+    if not user:
+        current_app.logger.warning(f"用户不存在")
+        return None
+  
+    user_meta_list = Usermeta.query.filter_by(user_id=t_account_token.user_id).all()
+    user_meta = {}
+    for meta in user_meta_list:
+        
+        user_meta[meta.meta_key] = meta.meta_value
+    client_ip = request.remote_addr
+    client_ua = request.user_agent.string
+    # --------------------------
+    # 9. 构造最终响应数据
+    # --------------------------
+    user_data = {
+        "user_id": user.ID,
+        "user_login": user.user_login,
+        "user_email": user.user_email,
+        "display_name": user.display_name,
+        "user_url": user.user_url,
+        "user_registered": user.user_registered.strftime("%Y-%m-%d %H:%M:%S"),
+        "nickname": user_meta.get('nickname', user.display_name),
+        "avatar": user_meta.get('user_avatar', ""),
+        "last_login_time": user_meta.get('last_login_time', "未知"),
+        "last_login_ip": user_meta.get('last_login_ip', "未知"),
+        "current_ip": client_ip,
+        "user_agent": client_ua
+    }
+
+    return user_data
+
 
 @bp.route("/api/login",methods=["POST"])
 def api_login():
@@ -527,19 +514,19 @@ def api_login():
     if not CommonUtils.wp_verify_password(password,user.user_pass):
         return Response(get_response_string(-3012),status=200,content_type="application/json")
     token = CommonUtils.random_string()
-    t_game_account = GameAccount.query.filter_by(ID=user.ID).first()
-    if not t_game_account:
-        t_game_account = GameAccount(
-            ID = user.ID,
+    t_account_token = AccountToken.query.filter_by(user_id=user.ID).first()
+    if not t_account_token:
+        t_account_token = AccountToken(
+            user_id = user.ID,
             token = token
         )
-        db.session.add(t_game_account)
+        db.session.add(t_account_token)
     else:
-        t_game_account.token = token
+        t_account_token.token = token
     db.session.commit()
 
     cookies = {
-        "token": t_game_account.token,
+        "token": t_account_token.token,
     }
     headers = {
         'X-Organization': 'Nintendo'
@@ -584,83 +571,6 @@ def api_login():
         )
 
     return response
-        
-third_cookies = {}
-
-@bp.route("/api/get_user_info", methods=["GET"])
-def api_get_user_info():
-    
-    ticket = request.cookies.get("ticket")
-    if not ticket or ticket not in ticket_cache_data:
-        return Response(json.dumps({"retcode": -3001, "msg": ErrorCode[-3001]}), 
-                      status=200, content_type="application/json")
-    
-    cache_data = ticket_cache_data[ticket]
-    return Response(json.dumps({
-        "retcode": 0,
-        "data": {
-            "uid": cache_data["uid"],
-            "email": cache_data["email"]
-        }
-    }), status=200, content_type="application/json")
-
-# @bp.route("/api/forget_password",methods=["POST"])
-# def api_forget_password():
-#     ticket = request.headers.get("X-Ticket")
-#     private_pem,public_pem = CommonUtils.get_exist_rsa_key()
-
-#     private_key = CommonUtils.load_private_key(private_pem)
-
-#     if not private_key:
-#         return Response(get_response_string(-3005),status=400,content_type="application/json")
-
-#     account = request.json.get("account")
-#     password = request.json.get("password")
-#     isencrypted = request.json.get("is_encrypt")
-
-#     verify_code = request.json.get("verify_code")
-#     ticket_data = ticket_cache_data.get(ticket)
-#     if not verify_code or not ticket_data:
-#         return Response(get_response_string(-3002),status=400,content_type="application/json")
-#     if verify_code != ticket_data["verify_code"]: 
-#         # 验证码错误
-#         return Response(get_response_string(-3024),status=200,content_type="application/json")
-
-#     if isencrypted == True:
-#         password = CommonUtils.rsa_decrypt_chunks(base64.b64decode(password),private_key).decode()
-        
-#     else:
-#         password = password
-
-#     if not account or not password:
-#         return Response(get_response_string(-3002),status=200,content_type="application/json")
-
-#     headers = {
-#         'X-Organization': 'Nintendo',
-#         "X-Ticket":ticket
-#     }
-#     user = Account.query.filter_by(account=account).first()
-#     user.password_hash = CommonUtils.verify_sha_passwd(password)
-#     user.updated_at = datetime.now()
-#     db.session.commit()
-
-#     return Response(get_response_string(0),status=200,content_type="application/json",headers=headers)
-
-
-
-@bp.route("/api/get_password_public_key")
-def api_get_public_key():
-    ticket = CommonUtils.gen_ticket("login")
-    private_pem,public_pem = CommonUtils.get_exist_rsa_key()
-
-    current_app.logger.info(f"get_public_key ticket:{ticket}")
-    headers = {
-        'X-Organization': 'Nintendo',
-        "X-Ticket":ticket
-    }
-    return Response(public_pem.decode(), status=200, content_type="text/plan",headers=headers)  
-
-
 
 
 @bp.route("/api/v3/get_user_info",methods=['GET','POST'])
@@ -675,8 +585,21 @@ def api_v3_get_userinfo():
    
     response =  Response(json.dumps(result), status=200, content_type="application/json",headers=headers)  
     
-    if result.get("retcode") == 0:
-        sdk_token = CommonUtils.gen_ticket("userinfo")
-        userinfo[sdk_token] = result.get("data")
-        set_cookies(response=response,cookies={"sdk_token":sdk_token})
+    if result.get("retcode") == 0: 
+        token = CommonUtils.random_string()
+        t_account_token = AccountToken.query.filter_by(token=token).filter_by(user_id=result["data"]["user_id"]).first()
+        if not t_account_token:  #没有数据
+            t_account_token = AccountToken(
+                user_id = result["data"]["user_id"],
+                token = token
+            )
+            db.session.add(t_account_token)
+        else:
+            t_account_token = AccountToken(
+                user_id = result["data"]["user_id"],
+                token = token
+            )
+            db.session.add(t_account_token)
+        db.session.commit()
+        set_cookies(response=response,cookies={"token":token})
     return response

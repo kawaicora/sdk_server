@@ -50,7 +50,7 @@ class WebRTC {
             this.ShowSelectDevice();
         });
         PageManager.SwitchPage("room_list");
-        SocketIOMaster.emit('user-register');
+   
 
 
         setInterval(() => {

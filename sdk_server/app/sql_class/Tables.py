@@ -12,11 +12,13 @@ suffix = DefaultConfig.SUFFIX
 
 
 # #######################################游戏账号SDK模型#####################################
-class GameAccount(db.Model):
-    __tablename__ = suffix + 'game_account'
+class AccountToken(db.Model):
+    __tablename__ = suffix + 'account_token'
 
 
-    ID = db.Column(BIGINT, primary_key=True)
+    ID = db.Column(BIGINT, primary_key=True, autoincrement=True)
+    user_id = db.Column(BIGINT)
+    
     token = db.Column(VARCHAR(255),nullable=False, default="")
     
 

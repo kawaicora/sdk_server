@@ -27,10 +27,10 @@ function initSocket() {
     // 连接状态监听
     socket.on('connect', () => {
         chatLogger.log('Socket连接成功，SID:', socket.id);
-        socket.emit('user-register'); // 重新注册用户
+        
         
     });
-    socket.on('user-registered', (data) => {
+    socket.on('connected', (data) => {
         chatLogger.log('Register user:', data);
         socket.emit('create-room',{room_id:room,title: title,room_type:room_type})
         

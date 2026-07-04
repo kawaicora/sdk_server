@@ -3,8 +3,8 @@ import threading
 from app.route import bp
 from flask import Request, jsonify, request, current_app
 from app.extensions import socketio, db
-from app.route.account_service import get_userinfo_by_sdk_token,get_userinfo_by_uid
-from app.sql_class.Tables import GameAccount, Usermeta,Users,Room,RoomUser,RoomBanUser
+from app.route.account_service import get_userinfo_by_token, get_userinfo_by_token
+from app.sql_class.Tables import AccountToken, Usermeta,Users,Room,RoomUser,RoomBanUser
 from flask_socketio import emit, join_room, leave_room 
 from app.utils.CommonUtils import *
 import requests
@@ -55,17 +55,6 @@ rooms = []
 # ]
 
 
-def write_user_sessions():
-    global user_sessions
-    with open("data/user_sessions.json","w",encoding='utf-8') as fp:
-        json.dump(user_sessions,fp,ensure_ascii=False,indent=4)
-def read_user_sessions():
-    global user_sessions
-    with open("data/user_sessions.json","r",encoding='utf-8') as fp:
-        try:
-            user_sessions = json.load(fp)
-        except Exception as e:
-            user_sessions = []
 
 
 guest_counter = 900000000
@@ -73,16 +62,17 @@ guest_counter = 900000000
 # ---------------------- 工具函数（用户相关） ----------------------
 def get_user_info(request:Request):
     """从 Cookie 中获取已登录用户信息（uid 和 username）"""
-    
-    result = get_userinfo_by_sdk_token(request.cookies.get('sdk_token'))
+    if not request.cookies.get('token'):
+        return gen_guest_user(request)
+    result = get_userinfo_by_token(request.cookies.get('token'))
 
-    
+   
     if result != None:
         result['sid'] = request.sid
         return result
     else:
+        
         return gen_guest_user(request)
-
 
     
 def gen_guest_user(request:Request,uid = None):
@@ -123,8 +113,11 @@ def sid_exists(sid):
 def get_user_by_sid(sid):
     """根据 sid 获取完整的用户会话信息"""
     for session in user_sessions:
-        if session["sid"] == sid:
-            return session
+        try:
+            if session["sid"] == sid:
+                return session
+        except :
+            return None
     return None
 
 
@@ -287,70 +280,23 @@ def handle_get_sid():
     """获取SID"""
     emit("current-sid",{'sid':request.sid})
 
-@socketio.on('user-register')
+@socketio.on('connect')
 def handle_register_user(*args):
     """用户注册（建立连接时初始化会话信息）"""
     global guest_counter
     global write_config_thread
     sid = request.sid
-    user_data = {}
+    user_data = None
     # 若已注册则跳过（避免重复添加）
     if sid_exists(sid):
         return
    
     
-    
-    if args:  # 简化判断：args 非空即表示有传入参数
-        data = args[0]
-        # 安全获取 username：仅当 data 是字典且 username 有效时赋值
-        if isinstance(data, dict):
-            # 正确逻辑：username 不为 None 且 不为空字符串（去空格后）
-            uid = data.get('uid', '')  # 默认为空字符串
-            token = data.get('token','')
-            if uid == "" or uid == None or token == "" or token == None:
-                current_app.logger.info("参数错误")
-                emit('error', {"event": "user-register", "msg": "参数错误"}, sid=sid)
-                return
-            t_game_account = GameAccount.query.filter_by(ID=uid).first()
-            if not t_game_account:
-                current_app.logger.info("用户不存在")
-                emit('error', {"event": "user-register", "msg": "用户不存在"}, sid=sid)
-                return
-            if t_game_account.token  != token:
-                current_app.logger.info("TOKEN 错误")
-                emit('error', {"event": "user-register", "msg": "TOKEN 错误"}, sid=sid)
-                return
-            
-            user:Users = Users.query.filter_by(ID=uid).first()
-            user_meta_list:Usermeta = Usermeta.query.filter_by(user_id=user.ID).all()
-            user_meta = {}
-            for meta in user_meta_list:
-                
-                user_meta[meta.meta_key] = meta.meta_value
 
-            username = user.display_name
-            client_ip = request.remote_addr
-            client_ua = request.user_agent.string
-            user_data = {
-                "sid":sid,
-                "user_id": user.ID,
-                "user_login": user.user_login,
-                "user_email": user.user_email,
-                "display_name": user.display_name,
-                "user_url": user.user_url,
-                "user_registered": user.user_registered.strftime("%Y-%m-%d %H:%M:%S"),
-                "nickname": user_meta.get('nickname', user.display_name),
-                "avatar": user_meta.get('user_avatar', ""),
-                "last_login_time": user_meta.get('last_login_time', "未知"),
-                "last_login_ip": user_meta.get('last_login_ip', "未知"),
-                "current_ip": client_ip,
-                "user_agent": client_ua
-            }
-    else :
-
-        # 获取用户信息（已登录用户用真实 uid，游客生成临时 uid）
-        user_data = get_user_info(request)
-
+    # 获取用户信息（已登录用户用真实 uid，游客生成临时 uid）
+    user_data = get_user_info(request)
+    if not user_data :
+        return
     # 检查用户是否已经存在
     c_user =  get_user_by_uid(user_data.get("user_id"))
     if c_user:
@@ -372,7 +318,7 @@ def handle_register_user(*args):
         db.session.commit()
 
     # 通知客户端注册成功
-    emit('user-registered', {
+    emit('connected', {
         "sid": sid,
         "uid": c_user.get("user_id"),
         "username": c_user.get("display_name"),

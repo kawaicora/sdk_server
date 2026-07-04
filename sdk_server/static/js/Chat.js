@@ -5,7 +5,7 @@ class Chat {
         this.MsgTemplateCache = null;
         this.logger = new LoggerManager("Chat",LoggerManager.LEVELS.ALL)
         SocketIOMaster.connect();
-        SocketIOMaster.on('user-registered', (data) => {
+        SocketIOMaster.on('connected', (data) => {
             this.logger.debug(`用户注册成功 ${JSON.stringify(data, null, 2)}`);
      
         });
@@ -48,9 +48,7 @@ class Chat {
     
             
     }
-    RegisterUser(){
-        SocketIOMaster.emit('user-register');
-    }
+   
     CreateRoom(room_id,room_title) {
         SocketIOMaster.emit('create-room',{room_id:room_id,title:room_title,room_type:"chat"})
     }

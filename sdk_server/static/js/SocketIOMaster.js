@@ -18,7 +18,7 @@ class SocketIOMaster {
             transports: ["polling"]
         });
 
-        this.on('user-registered', (data) => {
+        this.on('connected', (data) => {
             this.logger.debug(`用户注册成功 ${JSON.stringify(data, null, 2)}`);
             sessionStorage.setItem("sid",data.sid)
             sessionStorage.setItem("uid",data.uid)

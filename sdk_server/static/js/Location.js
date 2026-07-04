@@ -7,7 +7,7 @@ class Location {
         this.maps = {};
         this.markers = {};
         SocketIOMaster.connect();
-        SocketIOMaster.emit('user-register');
+        
 
 
         SocketIOMaster.on('user-location', this.UserLocationHandler.bind(this));
