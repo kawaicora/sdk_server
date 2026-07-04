@@ -27,6 +27,7 @@ class Location {
             }
             this.logger.debug(`\n********************************* \nsend_loc_info: ${JSON.stringify(data,null,2)}`);
             SocketIOMaster.emit('user-location',data);
+            this.UserLocationHandler(data)
         } catch (e) {
             this.logger.error(`loc_info access fail: ${e.message}`);
         }
