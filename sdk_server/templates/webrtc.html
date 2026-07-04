@@ -87,57 +87,48 @@ tailwind.config = {
 
 {% block content %}
 <div class="help-layer hidden"></div>
-<div class="container mx-auto">
-  
-  <div class="grid grid-cols-1 gap-4 mb-6">
-    <!-- 房间选择区域 -->
-    <div class="room-select-container bg-card border border-border rounded-lg shadow-md overflow-hidden">
-      <div class="px-6 py-4 border-b border-border">
-        <i class="fa-solid fa-users text-text mr-2"></i> 房间选择
-      </div>
-      <div class="">
-        <!-- 房间创建输入框 -->
-        <div class="mb-4">
-          <label class="block text-text text-sm font-medium mb-2">房间标题</label>
-          <input type="text" id="roomTitle" placeholder="请输入房间标题" autocomplete="off" 
-                 class="w-full px-3 py-2 border border-border rounded-md bg-white text-text focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent">
-        </div>
-        <div class="mb-6">
-          <button id="createRoomBtn" class="bg-accent hover:bg-hover text-white px-4 py-2 rounded-md transition-colors">
-            <i class="fa-solid fa-circle-plus mr-2"></i> 创建房间
-          </button>
-           <button id="guestRegister" class="bg-accent hover:bg-hover text-white px-4 py-2 rounded-md transition-colors">
-          <i class="fa-solid fa-arrows-rotate mr-2"></i> 游客初始化
-        </button>
-        </div>
+<div class="container mx-auto w-full h-full">
 
+  <!-- 房间创建 -->
+  <div class="create-room-container bg-card w-full h-full hidden">
+    
+    <div class="mb-4">
+      
+      <input type="text" id="roomTitle" placeholder="请输入房间标题" autocomplete="off" 
+              class="w-full px-3 py-2 border border-border rounded-md bg-white text-text focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent">
+    </div>
+    <div class="mb-6">
+      <button id="createRoomBtn" class="bg-accent hover:bg-hover text-white px-4 py-2 rounded-md transition-colors">
+        <i class="fa-solid fa-circle-plus mr-2"></i> 创建房间
+      </button>
+        <button id="guestRegister" class="bg-accent hover:bg-hover text-white px-4 py-2 rounded-md transition-colors">
+        <i class="fa-solid fa-arrows-rotate mr-2"></i> 游客初始化
+      </button>
+    </div>
+
+  
+  </div>
+
+
+
+  <!-- 房间列表 -->
+  <div class="room-list-container bg-card border border-border rounded-lg w-full h-full  overflow-hidden  hidden">
+    
+    <div>
+      <div>
         <!-- 九宫格房间列表 -->
         <div class="mt-6">
-          <h3 class="text-text font-medium mb-4">
+          <!-- <h3 class="text-text font-medium mb-4">
             <i class="fa-solid fa-house mr-2"></i> 现有房间
           </h3>
-          
+           -->
           <!-- 九宫格容器 -->
           <div id="roomGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- 房间卡片示例（实际会通过JS动态生成） -->
-             <div class="w-full sm:w-1/3 md:w-1/4 p-2.5">
-              <!-- <div class="bg-card border border-border rounded-lg shadow-md overflow-hidden room-card" data-room-id="room_s_1769946982256">
-                  <div class="video-container h-36 relative">
-                      <img src="https://picsum.photos/300/200?random=1" alt="房间封面" class="w-full h-full object-cover">
-                      <div id="room_s_1769946982256_room_hum_count" class="absolute bottom-1.5 right-1.5 bg-black/50 px-2 py-0.5 rounded-full text-xs text-white">
-                          <i class="fa-solid fa-user mr-1"></i> 0
-                      </div>
-                  </div>
-                  <div class="p-2.5 text-center">
-                      <h4 class="whitespace-nowrap overflow-hidden text-ellipsis font-medium text-text">测试</h4>
-                      <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-1 rounded-md text-sm w-4/5 mt-2.5 transition-colors" 
-                              onclick="join_room_ex('room_s_1769946982256','测试')">
-                          进入房间
-                      </button>
-                  </div>
-              </div>
-          </div> -->
             
+            <div class="w-full px-3 py-2 sm:w-1/3 md:w-1/4 p-2.5">
+              <!--房间列表-->
+            </div>
+                                                        
             <!-- 空状态提示 -->
             <div id="emptyRoomTip" class="col-span-full text-center py-10 hidden">
               <i class="fa-solid fa-inbox text-5xl text-border mb-4"></i>
@@ -147,12 +138,125 @@ tailwind.config = {
         </div>
       </div>
     </div>
+
+    <div class="create-room-btn" style="display: flex; align-items: center; justify-content: center; position: fixed; width: 40px; height: 40px; border-radius: 40px; background-color: beige;  right: 20px; bottom: 70px;">
+      <i class="fa-solid fa-house-medical"></i>
+    </div>
+ 
   </div>
 
+  <!--聊天区域-->
+  <div class="text-chat-container w-full h-full  hidden">
+    <div class="max-w-6xl mx-auto w-full h-full">
+      <!-- 聊天区域：优化响应式布局，增加阴影层级 -->
+      <div class="w-full h-full rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <!-- 聊天室标题栏：优化布局和图标 -->
+        <!-- <div class="px-5 py-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-gray-800 dark:text-gray-200 font-medium text-lg">
+            <i class="fa-solid fa-comments text-primary dark:text-primary-light"></i>
+            <span>聊天室</span>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+            <i class="fa-solid fa-users"></i>
+            <span id="online-count">0 人在线</span>
+          </div>
+        </div> -->
+        
+        <!-- 聊天内容区域：优化高度计算和响应式 -->
+        <div class="flex flex-col h-full">
+          <!-- 消息展示区：优化滚动、内边距和背景 -->
+          <div id="chat_message" class="flex-1 overflow-y-auto scrollbar-custom p-4 sm:p-6 chat-bg bg-gray-50 dark:bg-gray-900">
+            <div class="message_list space-y-4">
+              <!-- 消息模板：优化间距、圆角和样式 -->
+              <div class="message mb-4 px-0 sm:px-1 hidden" id="msg_id">
+
+                <!-- 他人消息 -->
+                <div class="other-msg flex items-start gap-3 max-w-[80%] sm:max-w-[70%] md:max-w-[60%] mr-auto">
+                  <!-- 头像：优化样式和动效 -->
+                  <img class="msg-avatar avatar-hover w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0" 
+                      src="/static/img/default_avatar.gif" alt="" data-avatar="">
+                  <!-- 消息内容容器 -->
+                  <div class="msg-div flex-1">
+                    <!-- 发送者名称：优化样式 -->
+                    <div class="sender username font-medium text-green-600 dark:text-green-400 text-sm mb-1"></div>
+                    <!-- 消息气泡：优化圆角和内边距 -->
+                    <div class="msg-bubble bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg rounded-tl-none p-3 shadow-sm">
+                      <div class="content"></div>
+                      <!-- 时间戳：优化位置和样式 -->
+                      <div class="time text-xs text-gray-500 dark:text-gray-400 mt-1 text-right"></div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 他人消息 -->
+                <!-- 自己消息 -->
+                <div class="self-msg flex items-start gap-3 max-w-[80%] sm:max-w-[70%] md:max-w-[60%] ml-auto">
+                  <div class="msg-div flex-1 text-right">
+                    <div class="sender username font-medium text-sky-200 dark:text-sky-300 text-sm mb-1"></div>
+                    <div class="msg-bubble bg-primary text-green border border-primary/20 dark:border-primary/30 rounded-lg rounded-tr-none p-3 shadow-sm">
+                      <div class="content"></div>
+                      <div class="time text-xs text-gray-200 dark:text-gray-300 mt-1 text-right"></div>
+                    </div>
+                  </div>
+                  <img class="msg-avatar avatar-hover w-9 h-9 rounded-full object-cover border border-primary/20 dark:border-primary/30 flex-shrink-0" 
+                      src="/static/img/default_avatar.gif" alt="" data-avatar="">
+                </div>
+                
+
+              </div>
+            </div>
+          </div>
+          
+          <!-- 输入区域：深度优化响应式布局 -->
+          <div class="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex flex-col sm:flex-row gap-3 w-full">
+              <!-- 输入框：优化样式和响应式 -->
+              <input 
+                type="text" 
+                id="chat_input" 
+                placeholder="输入聊天内容...按Enter发送" 
+                autocomplete="off"
+                class="flex-1 px-4 py-3 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all shadow-sm"
+              >
+              <!-- 按钮组：优化布局，使用FA图标，适配移动端 -->
+              <div class="flex flex-row sm:flex-row gap-2 justify-center sm:justify-start">
+                <!-- 发送消息按钮：FA纸飞机图标 -->
+                <button id="send_msg_button" class="w-12 h-12 flex items-center justify-center bg-primary hover:bg-primary-light text-white rounded-lg transition-colors shadow-sm" style="background-color:blanchedalmond">
+                  <i class="fa-solid fa-paper-plane text-lg"></i>
+                </button>
+                <!-- 发送媒体按钮：FA图片图标 -->
+                <button id="send_pic_button" class="w-12 h-12 flex items-center  justify-center bg-primary hover:bg-primary-light text-white rounded-lg transition-colors shadow-sm" style="background-color:blanchedalmond">
+                  <i class="fa-solid fa-image text-lg"></i>
+                </button>
+                <!-- 发送语音按钮：FA麦克风图标 -->
+                <button id="recordButton" class="w-12 h-12 flex items-center justify-center bg-primary hover:bg-primary-light text-white rounded-lg transition-colors shadow-sm" style="background-color:blanchedalmond">
+                  <i class="fa-solid fa-microphone text-lg"></i>
+                  <span id="recordButtonText" class="hidden">发送语音</span>
+                </button>
+              </div>
+            </div>
+            
+            <!-- 辅助提示：新增操作提示，提升用户体验 -->
+            <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+              <i class="fa-solid fa-circle-info"></i>
+              <span>支持发送文字、图片和语音消息</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="exit-room-btn" style="display: flex; align-items: center; justify-content: center; position: fixed; width: 40px; height: 40px; border-radius: 40px; background-color: beige;  right: 20px; bottom: 70px;">
+      <i class="fa-solid fa-right-to-bracket"></i>
+    </div>
+ 
+  </div>
+
+
   <!-- 视频区域 -->
-  <div class="video-chat-container grid grid-cols-1 gap-4 hidden ">
+  <div class="video-chat-container  gap-4  hidden ">
     <div class="bg-card border border-border rounded-lg shadow-md overflow-hidden">
-      <div class="px-6 py-4 border-b border-border flex justify-between items-center">
+      <!-- <div class="px-6 py-4 border-b border-border flex justify-between items-center">
         <div>
           <i class="fa-solid fa-users text-text mr-2"></i> 连线视频
         </div>
@@ -160,13 +264,19 @@ tailwind.config = {
           <i class="fa-solid fa-arrows-rotate mr-2"></i> 离开房间
         </button>
         
-      </div>
+      </div> -->
       <div class="">
-        <div id="remoteVideos" class="bg-card px-2 py-2">
+        <div id="remoteVideos" class="bg-card px-2 py-2 grid">
           <!-- 远程视频会通过JS动态生成 -->
         </div>
       </div>
     </div>
+
+
+    <div class="exit-room-btn" style="display: flex; align-items: center; justify-content: center;  position: fixed; width: 40px; height: 40px; border-radius: 40px; background-color: beige;  right: 20px; bottom: 70px;">
+      <i class="fa-solid fa-right-to-bracket"></i>
+    </div>
+ 
   </div>
 
   <!-- 设备控制面板 -->
@@ -203,111 +313,13 @@ tailwind.config = {
       </div>
     </div>
   </div>
-  <div class="w-full">
-    <div class="max-w-6xl mx-auto w-full pb-10 h-full">
-      <!-- 聊天区域：优化响应式布局，增加阴影层级 -->
-      <div class="w-full rounded-xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <!-- 聊天室标题栏：优化布局和图标 -->
-        <div class="px-5 py-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <div class="flex items-center gap-2 text-gray-800 dark:text-gray-200 font-medium text-lg">
-            <i class="fa-solid fa-comments text-primary dark:text-primary-light"></i>
-            <span>聊天室</span>
-          </div>
-          <!-- 可选：新增在线人数提示（可根据需求开启） -->
-          <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-            <i class="fa-solid fa-users"></i>
-            <span id="online-count">0 人在线</span>
-          </div>
-        </div>
-        
-        <!-- 聊天内容区域：优化高度计算和响应式 -->
-        <div class="flex flex-col h-[calc(100vh-240px)] sm:h-[calc(100vh-260px)] md:h-[calc(100vh-280px)]">
-          <!-- 消息展示区：优化滚动、内边距和背景 -->
-          <div id="chat_message" class="flex-1 overflow-y-auto scrollbar-custom p-4 sm:p-6 chat-bg bg-gray-50 dark:bg-gray-900">
-            <div class="message_list space-y-4">
-              <!-- 消息模板：优化间距、圆角和样式 -->
-              <div class="message mb-4 px-0 sm:px-1 hidden" id="msg_id">
 
-                <!-- 他人消息 -->
-                <div class="other-msg flex items-start gap-3 max-w-[80%] sm:max-w-[70%] md:max-w-[60%] mr-auto">
-                  <!-- 头像：优化样式和动效 -->
-                  <img class="msg-avatar avatar-hover w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0" 
-                      src="/static/img/default_avatar.gif" alt="" data-avatar="">
-                  <!-- 消息内容容器 -->
-                  <div class="msg-div flex-1">
-                    <!-- 发送者名称：优化样式 -->
-                    <div class="sender username font-medium text-green-600 dark:text-green-400 text-sm mb-1"></div>
-                    <!-- 消息气泡：优化圆角和内边距 -->
-                    <div class="msg-bubble bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-lg rounded-tl-none p-3 shadow-sm">
-                      <div class="content"></div>
-                      <!-- 时间戳：优化位置和样式 -->
-                      <div class="time text-xs text-gray-500 dark:text-gray-400 mt-1 text-right"></div>
-                    </div>
-                  </div>
-                </div>
-                <!-- 他人消息 -->
-                <!-- 自己消息 -->
-                <div class="self-msg flex items-start gap-3 max-w-[80%] sm:max-w-[70%] md:max-w-[60%] ml-auto">
-                  <div class="msg-div flex-1 text-right">
-                    <div class="sender username font-medium text-sky-200 dark:text-sky-300 text-sm mb-1"></div>
-                    <div class="msg-bubble bg-primary text-white border border-primary/20 dark:border-primary/30 rounded-lg rounded-tr-none p-3 shadow-sm">
-                      <div class="content"></div>
-                      <div class="time text-xs text-gray-200 dark:text-gray-300 mt-1 text-right"></div>
-                    </div>
-                  </div>
-                  <img class="msg-avatar avatar-hover w-9 h-9 rounded-full object-cover border border-primary/20 dark:border-primary/30 flex-shrink-0" 
-                      src="/static/img/default_avatar.gif" alt="" data-avatar="">
-                </div>
-                
 
-              </div>
-            </div>
-          </div>
-          
-          <!-- 输入区域：深度优化响应式布局 -->
-          <div class="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-            <div class="flex flex-col sm:flex-row gap-3 w-full">
-              <!-- 输入框：优化样式和响应式 -->
-              <input 
-                type="text" 
-                id="chat_input" 
-                placeholder="输入聊天内容...按Enter发送" 
-                autocomplete="off"
-                class="flex-1 px-4 py-3 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all shadow-sm"
-              >
-              <!-- 按钮组：优化布局，使用FA图标，适配移动端 -->
-              <div class="flex flex-row sm:flex-row gap-2 justify-center sm:justify-start">
-                <!-- 发送消息按钮：FA纸飞机图标 -->
-                <button id="send_msg_button" class="w-12 h-12 flex items-center justify-center bg-primary hover:bg-primary-light text-white rounded-lg transition-colors shadow-sm">
-                  <i class="fa-solid fa-paper-plane text-lg"></i>
-                </button>
-                <!-- 发送媒体按钮：FA图片图标 -->
-                <button id="send_pic_button" class="w-12 h-12 flex items-center justify-center bg-primary hover:bg-primary-light text-white rounded-lg transition-colors shadow-sm">
-                  <i class="fa-solid fa-image text-lg"></i>
-                </button>
-                <!-- 发送语音按钮：FA麦克风图标 -->
-                <button id="recordButton" class="w-12 h-12 flex items-center justify-center bg-primary hover:bg-primary-light text-white rounded-lg transition-colors shadow-sm">
-                  <i class="fa-solid fa-microphone text-lg"></i>
-                  <span id="recordButtonText" class="hidden">发送语音</span>
-                </button>
-              </div>
-            </div>
-            
-            <!-- 辅助提示：新增操作提示，提升用户体验 -->
-            <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-              <i class="fa-solid fa-circle-info"></i>
-              <span>支持发送文字、图片和语音消息</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  
+  <div id="map_list" class="map-list-container grid gap-4 mb-6 hidden" ></div>
 </div>
 
-  <div id="map_list" class="grid grid-cols-1 gap-4 mb-6"></div>
- 
+
   <script type="module">
 
     import Location from "/static/js/Location.js";

@@ -16,7 +16,7 @@ from app.route import bp
 from app.route.socketio_common_services import get_user_by_sid, get_user_by_uid, user_sessions,rooms,get_room_by_sid, get_room_by_uid
 from app.route.account_service import get_userinfo_by_sdk_token,get_userinfo_by_uid
 from app.sql_class.Tables import GameAccount, Usermeta,Users
-@bp.route('/api/chat/upload', methods=['POST'])
+@bp.route('/api/v2/upload', methods=['POST'])
 def api_chat_upload():
     # 检查请求中是否包含文件
     if 'file' not in request.files:

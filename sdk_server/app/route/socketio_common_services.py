@@ -381,6 +381,15 @@ def handle_register_user(*args):
     emit('room-list-updated', get_room_list(), broadcast=True)
     current_app.logger.info(f"用户注册 - SID: {sid}, UID: {c_user.get("user_id")}, 用户名: {user_data.get("display_name")}")
 
+@socketio.on('is-in-room')
+
+def handle_is_user_in_room(data):
+    sid = request.sid
+    c_room = get_room_by_sid(sid)
+    if not c_room:
+        emit('is_user_in_room',{'is_in_room':False},sid = sid)
+    else:
+        emit('is_user_in_room',{'is_in_room':True},sid = sid)
 
 
     

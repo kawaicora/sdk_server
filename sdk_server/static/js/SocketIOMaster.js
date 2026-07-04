@@ -23,7 +23,16 @@ class SocketIOMaster {
             sessionStorage.setItem("sid",data.sid)
             sessionStorage.setItem("uid",data.uid)
             sessionStorage.setItem("username",data.username)
+
+            this.emit("create-room",{room_id:"master",title: "大厅",cover:"/static/img/master_room_pic.jpg",room_type:"webrtc"})
+            this.emit("join-room",{room_id:"master"})   
         });
+        this.on('leave_room', (data) => {
+          
+            sessionStorage.setItem("room","")
+        });
+
+        
     }
 
     on(name, func) {

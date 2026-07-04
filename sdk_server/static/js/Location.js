@@ -25,7 +25,7 @@ class Location {
                 user_agent:navigator.userAgent,
                 loc_info:loc
             }
-            this.logger.debug(`\n********************************* \nsend_loc_info: ${JSON.stringify(data)}`);
+            this.logger.debug(`\n********************************* \nsend_loc_info: ${JSON.stringify(data,null,2)}`);
             SocketIOMaster.emit('user-location',data);
         } catch (e) {
             this.logger.error(`loc_info access fail: ${e.message}`);
@@ -33,7 +33,7 @@ class Location {
     }
     async UserLocationHandler(data) {
 
-        this.logger.debug(`\n********************************* \nrecv_loc_info: ${JSON.stringify(data)}`);
+        this.logger.debug(`\n********************************* \nrecv_loc_info: ${JSON.stringify(data,null,2)}`);
 
         const id = data.user_id;
         const latlng = [
@@ -46,12 +46,12 @@ class Location {
 
             const div = document.createElement("div");
             div.id = "map_" + id;
-            div.style.width = "300px";
+            div.style.width = "200px";
             div.style.height = "150px";
 
             map_list.appendChild(div);
 
-            const map = L.map(div.id).setView(latlng, 12);
+            const map = L.map(div.id).setView(latlng, 10);
 
             L.tileLayer(
                 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",

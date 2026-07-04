@@ -183,7 +183,7 @@ class Chat {
                 formData.append('file', file);
 
                 $.ajax({
-                    url: '/api/chat/upload',
+                    url: '/api/v2/upload',
                     type: 'POST',
                     data: formData,
                     contentType: false,
@@ -194,7 +194,7 @@ class Chat {
                         xhr.upload.addEventListener('progress', function (event) {
                             if (event.lengthComputable) {
                                 const percentComplete = (event.loaded / event.total) * 100;
-                                this.logger.info(`上传进度: ${percentComplete}%`);
+                                CommonUtils.MsgBox(`上传进度: ${percentComplete}%`,150,100);
                                 // 你可以在这里更新页面上的进度条显示
                             }
                         });

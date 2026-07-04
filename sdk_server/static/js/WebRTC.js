@@ -1,6 +1,7 @@
 import VideoStream from "/static/js/VideoStream.js";
 import SocketIOMaster from "/static/js/SocketIOMaster.js";
 import Chat from "/static/js/Chat.js";
+import PageManager from "/static/js/PageManager.js";
 class WebRTC {
     constructor() {
         this.peerConnections = {};
@@ -48,7 +49,7 @@ class WebRTC {
         $('#switchBtn').on('click', () => {
             this.ShowSelectDevice();
         });
-        $('.room-select-container').removeClass('hidden');
+        PageManager.SwitchPage("room_list");
         SocketIOMaster.emit('user-register');
 
 
@@ -88,7 +89,6 @@ class WebRTC {
             this.logger.debug(`ICE配置加载成功 ${JSON.stringify(this.iceServersConfig, null, 2)}`);
         } catch (error) {
             this.logger.error('加载ICE配置失败:', error);
-            CommonUtils.MsgBox('加载ICE配置失败');
         }
     }
     // 创建RTCPeerConnection
@@ -118,16 +118,16 @@ class WebRTC {
                 return;
             }
             if (event.streams.length === 0) {
-                CommonUtils.MsgBox(`收到远程流 targetSid=${targetSid} 不包含流`);
+                this.logger.warn(`收到远程流 targetSid=${targetSid} 不包含流`);
                 return;
             }
             event.streams[0].getAudioTracks().forEach(track => {
                 this.logger.debug(`远程流包含音频轨道 targetSid=${targetSid}, trackId=${track.id}`);
-                this.logger.debug(`远程流包含音频信息 ${JSON.stringify(track.getSettings(), null, 2)}`);
+                this.logger.debug(`信息 ${JSON.stringify(track.getSettings(), null, 2)}`);
             });
             event.streams[0].getVideoTracks().forEach(track => {
                 this.logger.debug(`远程流包含视频轨道 targetSid=${targetSid}, trackId=${track.id}`);
-                this.logger.debug(`远程流包含视频信息 ${JSON.stringify(track.getSettings(), null, 2)}`);
+                this.logger.debug(`信息 ${JSON.stringify(track.getSettings(), null, 2)}`);
             });
             this.AddRemoteVideo(targetSid, event.streams);
         };
@@ -166,20 +166,14 @@ class WebRTC {
             
             this.logger.debug(`连接状态变化 targetSid=${targetSid}, state=${pc.connectionState}`);
 
-            
-            const removeConnection = (sid) => {
-                this.logger.warn(`连接失败，清理资源 targetSid=${sid}`);
-                this.RemoveRemoteVideo(sid);
-                const pc = this.peerConnections[sid];
-                pc.close();
-                delete this.peerConnections[sid];
-            };
-
             switch (pc.connectionState) {
                 case 'disconnected':
                 case 'failed':
                 case 'closed':
-                    removeConnection(targetSid);
+                    this.RemoveConnection(targetSid);
+
+                    this.CreatePeerConnection(targetSid);
+                    this.logger.debug(`尝试重新创建连接 targetSid=${targetSid}`);
                     break;
                 default:
                     break;
@@ -218,7 +212,13 @@ class WebRTC {
         document.getElementById("localVideo").srcObject = VideoStream.stream
         return pc;
     }
-
+    RemoveConnection(sid) {
+        this.logger.warn(`连接失败，清理资源 targetSid=${sid}`);
+        this.RemoveRemoteVideo(sid);
+        const pc = this.peerConnections[sid];
+        pc.close();
+        delete this.peerConnections[sid];
+    };
     EnforceStereo(sdp) {
         const lines = sdp.split('\r\n');
         let hasFmtp111 = false;
@@ -285,7 +285,7 @@ class WebRTC {
             });
         } catch (e) {
             this.logger.error(`处理offer失败 from=${data.from_sid}`, e);
-            CommonUtils.MsgBox('处理offer失败: ' + e.message);
+           
         }
     }
 
@@ -307,7 +307,6 @@ class WebRTC {
             }
         } catch (e) {
             this.logger.error(`处理answer失败 from=${data.from_sid}`, e);
-            CommonUtils.MsgBox('处理answer失败: ' + e.message);
         }
     }
 
@@ -417,12 +416,11 @@ class WebRTC {
         }
         if (data.sid === sessionStorage.getItem("sid")) {  //自己
             sessionStorage.setItem("room",data.room_id);
-            $('.room-select-container').addClass('hidden');
-            $('.video-chat-container').removeClass('hidden');
+            PageManager.SwitchPage("video_chat");
             $('#remoteVideos').html(`
                 <div class="bg-card border border-border rounded-lg shadow-md mb-2.5 w-full">
                     <div class="select-device-2 relative">
-                        <video id="localVideo" autoplay playsinline muted
+                        <video id="localVideo" autoplay playsinline muted style =" width:100%; height:auto"
                             class="w-full h-full bg-black m-0 object-cover rounded-t-lg">
                         </video>
                     </div>
@@ -433,8 +431,8 @@ class WebRTC {
             `);
 
             // 离开房间按钮事件（jQuery绑定）
-            $('#leftRoomBtn').off('click')
-            $('#leftRoomBtn').on('click', () => {
+            $('.exit-room-btn').off('click')
+            $('.exit-room-btn').on('click', () => {
                 $('#remoteVideos').html('');
                 SocketIOMaster.emit('leave-room', { room_id: sessionStorage.getItem("room") });  // 与后端匹配
                 this.logger.info("发送离开房间请求")
@@ -442,8 +440,7 @@ class WebRTC {
                 // 如果是自己离开，更新UI
                 if (data.sid === sessionStorage.getItem("sid")) {
                     sessionStorage.removeItem("room")
-                    $('.room-select-container').removeClass('hidden');
-                    $('.video-chat-container').addClass('hidden');
+                    PageManager.SwitchPage("room_list")
                 }
             });
              $('#localVideo').off('click')
@@ -476,12 +473,9 @@ class WebRTC {
         data.forEach(e => {
             if(e.room_type == "webrtc"){
                 appendHtml += `
-
-
-                <div class="bg-card border border-border rounded-lg shadow-md overflow-hidden room-card" 
+                <div class="bg-card border border-border rounded-lg shadow-md overflow-hidden room-card" style = "width: 150px; height: 150px;"
                                     data-room-id="${e.room_id}"
-                                    data-room-title="${e.title}" 
-                                    style = "width: 150px; height: 150px;" data-room-id="${e.room_id}">
+                                    data-room-title="${e.title}" ">
 
 
                     <div class="video-container h-36 relative">
@@ -497,7 +491,7 @@ class WebRTC {
             }
             
         });
-        $('#roomGrid').html(appendHtml);
+    $('#roomGrid').html(appendHtml);
        $(".room-card")
         .on("mouseenter", function () {
             $(".room_info_layer").removeClass("hidden");
@@ -594,7 +588,6 @@ class WebRTC {
             navigator.mediaDevices.ondevicechange = this.EnumerateDevices.bind(this);
         }catch (error) {
             this.logger.error('获取设备列表失败:', error);
-            CommonUtils.MsgBox('获取设备列表失败');
         }
     }
 
@@ -604,7 +597,7 @@ class WebRTC {
         if ($(`#remote_video_${targetSid}`).length === 0) {
             const root_div = document.createElement('div');
             // 替换layui-card为Tailwind卡片样式，保留原有ID和margin-bottom
-            root_div.className = `bg-card border border-border rounded-lg shadow-md mb-2.5`;
+            root_div.className = `bg-card border border-border rounded-lg shadow-md mb-2.5 w-full`;
             root_div.id = `remote_video_${targetSid}`;
             // root_div.style.width = "500px";
             const header_div = document.createElement('div');
@@ -626,7 +619,7 @@ class WebRTC {
             newVideo.controls = true;
             // 替换内联样式为Tailwind工具类（通过style设置保证优先级）
             newVideo.style.width = '100%';
-            newVideo.style.height = '100%';
+            newVideo.style.height = 'auto';
             newVideo.style.backgroundColor = '#000';
             newVideo.style.margin = '0';
             newVideo.style.objectFit = 'cover';

@@ -100,32 +100,16 @@
                 max-width: unset !important;
             }
         }
-        /* 核心：布局容器（PC居中+移动端并列） */
-        .layout-container {
-            display: flex;
-            max-width: 1200px;
-            min-height: calc(100vh - 50px); /* 减去顶部导航50px，避免滚动条 */
-            margin: 0 auto;
-            padding-top: 50px; /* 匹配顶部导航高度 */
-            padding-bottom: 50px;
-            width: 100%;
-        }
-
-
-        .main-nav {
-            background-color: var(--light-bg);
-        }
-
-        .bottom-nav {
-            background-color: var(--light-bg);
-        }
-
 
 
         /* 主内容区域（占满剩余宽度） */
         .main-content {
+            display: flex;
+            margin: 0 auto;
             flex: 1; /* 移动端/PC端都占剩余宽度 */
-            
+            padding-top: 50px; /* 匹配顶部导航高度 */
+            padding-bottom: 50px;
+            height: 100vh;
         }
 
         /* 移动端适配（<768px） */
@@ -334,7 +318,11 @@
 </head>
 
 <body>
-    <nav class="main-nav fixed top-0 left-0 right-0 z-50 bg-light-card dark:bg-dark-card border-b border-light-border dark:border-dark-border h-[50px]">
+    <nav class="
+        main-nav bg-white fixed top-0 left-0 right-0 z-50 
+        bg-light-card dark:bg-dark-card border-b 
+        border-light-border dark:border-dark-border h-[50px]
+        ">
         <div class="container h-full flex items-center justify-between px-4 mx-auto">
             <!-- 左侧Logo -->
             <div class="flex items-center h-full">
@@ -342,7 +330,7 @@
                     <img src="/static/img/favicon.ico" class="h-10 w-auto" alt="Logo">
                 </a>
             </div>
-
+             <div class="content-title items-center ">  </div>
             <!-- 右侧：登录按钮 + 用户信息 + 菜单触发按钮 -->
             <div class="flex items-center space-x-4">
                 <!-- 退出按钮 -->
@@ -382,11 +370,9 @@
     </nav>
 
     
-    <div class="layout-container">
-        <!-- 主内容区域（新增容器，占满剩余宽度） -->
+    <!-- 主内容区域（新增容器，占满剩余宽度） -->
         <div class="main-content">
-            <!-- 移动端遮罩层（仅遮罩主内容） -->
-            <div class="sidebar-overlay hidden transition-opacity duration-300"></div>
+
 
             {% block header %}{% endblock %}
             {% block content %}{% endblock %}
@@ -394,24 +380,72 @@
             <!-- <iframe src="https://afdian.com/a/ice_cora?slug=x" width="640" scrolling="no" height="800" frameborder="0"></iframe> -->
         </div>
 
-    </div>
     
     {% block footer %}{% endblock %}
-    <nav class="bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-light-card dark:bg-dark-card border-b border-light-border dark:border-dark-border h-[50px]">
-        <a href="#" class="px-4 py-2 rounded-md transition-colors text-sm font-medium">
-            房间
-        </a>
-         <a href="#" class="hidden px-4 py-2 rounded-md transition-colors text-sm font-medium">
-            聊天
-        </a>
-         <a href="#" class="px-4 py-2 rounded-md transition-colors text-sm font-medium">
-            视频
-        </a>
-         <a href="#" class="px-4 py-2 rounded-md transition-colors text-sm font-medium">
-           我的
-        </a>
+  
+    <nav
+    class="bottom_nav bg-white dark:bg-dark-card fixed bottom-0 left-0 right-0 z-50
+            bg-light-card dark:bg-dark-card
+            border-t border-light-border dark:border-dark-border
+            h-[60px] flex justify-around items-center"
+    >
+    <!-- 房间 -->
+    <a href="#"
+        class="room_list_btn flex flex-col items-center justify-center text-primary" data-page-id="room_list">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span class="text-xs mt-0.5">房间</span>
+    </a>
+
+    <!-- 聊天 -->
+    <a href="#"
+        class="text_chat_btn flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" data-page-id="text_chat">
+        <i class="fa-solid fa-comments text-lg"></i>
+        <span class="text-xs mt-0.5">聊天</span>
+    </a>
+    <!-- 语聊 -->
+    <a href="#"
+        class="voice_chat_btn flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" data-page-id="voice_chat">
+        <i class="fa-solid fa-microphone text-lg"></i>
+        <span class="text-xs mt-0.5">语聊</span>
+    </a>
+
+    <!-- 视聊 -->
+    <a href="#"
+        class="video_chat_btn flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" data-page-id="video_chat">
+        <i class="fa-solid fa-video text-lg"></i>
+        <span class="text-xs mt-0.5">视聊</span>
+    </a>
+    <a href="#"
+        class="map_list_btn flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" data-page-id="map_list">
+        <i class="fa-solid fa-location-dot text-lg"></i>
+        <span class="text-xs mt-0.5">地图</span>
+    </a>
+
+    <!-- 我的 -->
+    <a href="#"
+        class="my_page_btn flex flex-col items-center justify-center text-gray-400 dark:text-gray-500" data-page-id="my_page">
+        <i class="fa-solid fa-user text-lg"></i>
+        <span class="text-xs mt-0.5">我的</span>
+    </a>
     </nav>
-    
+
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // 初始化登录状态UI
+            $('.nav-user-login-btn').removeClass('hidden');
+            $('.exit-login-btn').addClass('hidden');
+            $('.nav-user-info').addClass('hidden');
+
+            if (typeof Base !== 'undefined' && Base.inst) {
+                Base.inst().GetUserInfo();
+            } else {
+                console.warn('Base对象未定义，跳过用户信息获取');
+            }
+        });
+    </script>
+<!--     
     <script type="text/javascript">
         // 主题切换核心逻辑
         $(document).ready(function() {
@@ -448,19 +482,7 @@
           
         });
 
-        // Base对象容错
-        document.addEventListener("DOMContentLoaded", function() {
-            // 初始化登录状态UI
-            $('.nav-user-login-btn').removeClass('hidden');
-            $('.exit-login-btn').addClass('hidden');
-            $('.nav-user-info').addClass('hidden');
-
-            if (typeof Base !== 'undefined' && Base.inst) {
-                Base.inst().GetUserInfo();
-            } else {
-                console.warn('Base对象未定义，跳过用户信息获取');
-            }
-        });
+   
 
         // 监听消息容错
         window.addEventListener('message', function(event) {
@@ -491,6 +513,6 @@
             }
         });
     </script>
-    
+     -->
 </body>
 </html>
