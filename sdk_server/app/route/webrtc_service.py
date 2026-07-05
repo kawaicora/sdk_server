@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from app.route import bp
 from flask import jsonify, request, current_app
 from app.extensions import socketio

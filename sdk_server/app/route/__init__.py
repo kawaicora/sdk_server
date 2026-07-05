@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 from flask import Response,Blueprint, current_app,request
 import requests

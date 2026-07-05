@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 import threading
 from app.route import bp
 from flask import Request, jsonify, request, current_app
@@ -281,7 +281,7 @@ def handle_get_sid():
     emit("current-sid",{'sid':request.sid})
 
 @socketio.on('connect')
-def handle_register_user(*args):
+def handle_user_connect(*args):
     """用户注册（建立连接时初始化会话信息）"""
     global guest_counter
     global write_config_thread
@@ -338,26 +338,7 @@ def handle_is_user_in_room(data):
         emit('is_user_in_room',{'is_in_room':True},sid = sid)
 
 
-    
-@socketio.on('user-unregister')
-def handle_unregister_user():
-    """用户断开连接（清理会话信息）"""
-    sid = request.sid
-    user = get_user_by_sid(sid)
-    if not user:
-        return
-    
-    uid = user.get("user_id")
-    username = user.get("display_name")
-    current_app.logger.info(f"用户断开连接 - SID: {sid}, UID: {uid}, 用户名: {username}")
-    db.session.query(RoomUser).filter_by(uid=uid).delete()
-    
-    # 从 user_sessions 中移除该用户
-    global user_sessions
-    user_sessions = [s for s in user_sessions if s["sid"]!= sid]
-    
-    # 刷新房间列表（若房间为空则删除）
-    emit('room-list-updated', get_room_list())
+
 
 @socketio.on('room_users_update')
 def handle_room_users_update(data):
@@ -376,8 +357,8 @@ def handle_delete_room(data):
     sid = request.sid
     user = get_user_by_sid(sid)
     if not user:
-        emit('error', {"event": "create-room", "msg": "用户未注册"}, sid=sid)
-        return
+        emit('error', {"event": "delete-room", "msg": "用户未注册"}, sid=sid)
+        handle_user_connect()
     
     uid = user["user_id"]
     username = user["display_name"]
@@ -422,8 +403,8 @@ def handle_create_room(data):
     sid = request.sid
     user = get_user_by_sid(sid)
     if not user:
-        emit('error', {"event": "create-room", "msg": "用户未注册"}, sid=sid)
-        return
+        emit('error', {"event": "delete-room", "msg": "用户未注册"}, sid=sid)
+        handle_user_connect()
     
     uid = user["user_id"]
     room_id = data.get("room_id")
@@ -497,7 +478,7 @@ def handle_join_room(data):
     user = get_user_by_sid(sid)
     if not user:
         emit('error', {"event": "join-room", "msg": "用户未注册"}, sid=sid)
-        return
+        handle_user_connect()
     
     uid = user["user_id"]
     room_id = data.get("room_id")
@@ -560,7 +541,8 @@ def handle_leave_room(data):
     sid = request.sid
     user = get_user_by_sid(sid)
     if not user:
-        return
+        emit('error', {"event": "leave-room", "msg": "用户未注册"}, sid=sid)
+        handle_user_connect()
     
     uid = user["user_id"]
     room_id = data.get("room_id")
@@ -621,6 +603,7 @@ def handle_disconnect():
     # 查找该 sid 对应的 uid（如果存在）
     user = get_user_by_sid(sid)
     if not user:
+        emit('error', {"event": "disconnect", "msg": "用户未注册"}, sid=sid)
         return  # 未找到关联会话，可能是无效连接
     
     uid = user.get("user_id")

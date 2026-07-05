@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import urllib
 from datetime import datetime
 import time

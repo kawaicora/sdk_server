@@ -51,3 +51,6 @@ class DefaultConfig(object):
     CLOUDFLARE_TURN_TOKEN = os.getenv("CLOUDFLARE_TURN_TOKEN")
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
     TELEGRAM_BOT_CHAT_ID = int(os.getenv("TELEGRAM_BOT_CHAT_ID"))  # 转换为整数
+
+
+    BAIDU_MAP_AK = os.getenv("BAIDU_MAP_AK","")

@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 from app.utils.Magic import *
 import random
 import os

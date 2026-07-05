@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 from flask import Response
 from flask_sqlalchemy import SQLAlchemy
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import inspect
 from app.utils.LoggerManager import logger
 import os
