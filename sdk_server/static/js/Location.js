@@ -4,8 +4,8 @@ class Location {
     constructor() {
         this.location = null;
         this.logger = new LoggerManager("Location", LoggerManager.LEVELS.ALL);
-         this.map = null;
         this.markers = {};
+        this.points = {};
         this.group = null;
         SocketIOMaster.on('connected', (data) => {
             this.logger.debug(`用户注册成功 ${JSON.stringify(data, null, 2)}`);
@@ -38,13 +38,20 @@ class Location {
         this.map = L.map("map").setView([30, 120], 5);
 
         L.tileLayer(
-            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            // "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            // {
+            //     attribution: "OpenStreetMap"
+            // }
+             "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
             {
-                attribution: "OpenStreetMap"
+                attribution: "&copy; CARTO & OpenStreetMap"
             }
         ).addTo(this.map);
 
         this.group = L.featureGroup().addTo(this.map);
+
+       
+        
     }
 
     async UserLocationHandler(data) {
@@ -54,7 +61,7 @@ class Location {
             data.loc_info.latitude,
             data.loc_info.longitude
         ];
-
+        
         // 第一次出现
         if (!this.markers[id]) {
 
@@ -72,21 +79,23 @@ class Location {
             marker.addTo(this.group);
 
             this.markers[id] = marker;
+            
+      
 
         } else {
 
             this.markers[id].setLatLng(latlng);
-        }
 
-        // 自动缩放到所有人
-        const bounds = this.group.getBounds();
-
-        if (bounds.isValid()) {
-            this.map.fitBounds(bounds, {
-                padding: [40, 40],
-                maxZoom: 16
-            });
         }
+        // // 自动缩放到所有人
+        // const bounds = this.group.getBounds();
+
+        // if (bounds.isValid()) {
+        //     this.map.fitBounds(bounds, {
+        //         padding: [40, 40],
+        //         maxZoom: 16
+        //     });
+        // }
 
         this.logger.debug(`\n********************************* \nrecv_loc_info: ${JSON.stringify(data,null,2)}`);
     }

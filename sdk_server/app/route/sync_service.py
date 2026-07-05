@@ -23,14 +23,6 @@ model = {
 
 @socketio.on('user-location')
 def handle_user_location(data):
-    if DefaultConfig.BAIDU_MAP_AK != "" :
-        rsp = requests.get(f"https://api.map.baidu.com/geoconv/v2/?coords={data['loc_info']['latitude']},{data['loc_info']['longitude']}&model={model.get("gps_to_bd09ll")}&ak={DefaultConfig.BAIDU_MAP_AK}")
-        if rsp.status_code == 200:
-            if rsp.json()['status'] == 0:
-                data['loc_info']['bd09ll'] = {
-                    "x":rsp.json()['result'][0]["x"],
-                    "y":rsp.json()['result'][0]["y"]
-                }
-        
+
     emit('user-location', data, broadcast=True, include_self=True)
 

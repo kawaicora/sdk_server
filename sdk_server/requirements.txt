@@ -31,3 +31,4 @@ certbot
 Pillow
 qrcode
 
+coord-convert

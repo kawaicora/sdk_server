@@ -1,7 +1,7 @@
 {
   "name": "视频聊天",
   "short_name": "视频聊天",
-  "start_url": "/view/webrtc",
+  "start_url": "/view/main",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
