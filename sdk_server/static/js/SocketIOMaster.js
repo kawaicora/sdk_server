@@ -1,3 +1,4 @@
+import LoggerManager from "/static/js/LoggerManager.js";
 class SocketIOMaster {
 
     constructor() {
@@ -6,18 +7,18 @@ class SocketIOMaster {
         this.logger = new LoggerManager("SocketIOMaster",LoggerManager.LEVELS.ALL)
         // eventName -> Set<Function>
         this.handlers = new Map();
-    }
-
-    connect(url = window.location.origin) {
-
-        if (this.socket) {
-            return;
-        }
-
-        this.socket = io(url, {
-            transports: ["polling"]
+        this.socket = io(window.location.origin, {
+            transports: ["polling"],
+            autoConnect: false // ✅ 关键
+            
         });
-
+    }
+  
+    connect() {
+        if (!this.socket){
+            error("socket 不存在")
+        }
+        this.socket.connect();
         this.on('connected', (data) => {
             this.logger.debug(`用户注册成功 ${JSON.stringify(data, null, 2)}`);
             sessionStorage.setItem("sid",data.sid)
@@ -39,13 +40,13 @@ class SocketIOMaster {
 
         if (!this.socket) {
             throw new Error(
-                "请先 connect()"
+                "无效的this.socket"
             );
         }
 
         let handlers =
             this.handlers.get(name);
-
+        //注册一次事件
         if (!handlers) {
 
             handlers = new Set();
@@ -78,11 +79,15 @@ class SocketIOMaster {
                 }
             );
         }
-
         handlers.add(func);
     }
 
     off(name, func) {
+        if (!this.socket) {
+            throw new Error(
+                "无效的this.socket"
+            );
+        }
 
         const handlers =
             this.handlers.get(name);

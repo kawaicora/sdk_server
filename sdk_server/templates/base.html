@@ -11,8 +11,6 @@
     <script language="javascript" src="/static/js/jsencrypt.min.js"></script>
     <script src="/static/js/socket.io.js"></script>
     <script language="javascript" src="/static/js/CommonUtils.js"></script>
-    <script language="javascript" src="/static/js/LoggerManager.js"></script>
-    <script language="javascript" src="/static/js/Base.js"></script>
     <link rel="stylesheet" href="/static/font-awesome/6.4.0/css/all.min.css">
     
     <style type="text/css">
@@ -434,59 +432,21 @@
     </nav>
 
 
-    <script>
-
+    
+  <script type="module">
+        import Base from "/static/js/Base.js";
         document.addEventListener("DOMContentLoaded", function() {
             // 初始化登录状态UI
             $('.nav-user-login-btn').removeClass('hidden');
             $('.exit-login-btn').addClass('hidden');
             $('.nav-user-info').addClass('hidden');
-
-            if (typeof Base !== 'undefined' && Base.inst) {
-                Base.inst().GetUserInfo();
-            } else {
-                console.warn('Base对象未定义，跳过用户信息获取');
-            }
+            
+            Base.GetUserInfo();
         });
     </script>
 <!--     
     <script type="text/javascript">
-        // 主题切换核心逻辑
-        $(document).ready(function() {
-            // 1. 初始化主题
-            const initTheme = () => {
-                const savedTheme = localStorage.getItem('site-theme') || 'auto';
-                $('.theme-switch-btn').removeClass('active');
-                $(`.theme-switch-btn[data-theme="${savedTheme}"]`).addClass('active');
-                
-                if (savedTheme === 'auto') {
-                    const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    $('html').toggleClass('dark', isSystemDark);
-                } else {
-                    $('html').toggleClass('dark', savedTheme === 'dark');
-                }
-            };
-
-            // 2. 主题切换按钮点击事件
-            $('.theme-switch-btn').on('click', function() {
-                const theme = $(this).data('theme');
-                localStorage.setItem('site-theme', theme);
-                initTheme();
-            });
-
-            // 3. 监听系统主题变化
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-                if (localStorage.getItem('site-theme') === 'auto') {
-                    initTheme();
-                }
-            });
-
-            // 初始化主题
-            initTheme();
-          
-        });
-
-   
+  
 
         // 监听消息容错
         window.addEventListener('message', function(event) {
@@ -495,23 +455,23 @@
                 return;
             }
 
-            if (Base.inst().isLogined) {
+            if (Base.isLogined) {
                 console.log("已登录，忽略消息");
                 return;
             }
             switch (event.data.type) {
                 case "TOKEN_ERROR":
-                    if (Base.inst().BaseLogger) {
-                        Base.inst().BaseLogger.debug(event.data.message);
+                    if (Base.BaseLogger) {
+                        Base.BaseLogger.debug(event.data.message);
                     }
                     break;
                 case "SEND_LOGIN_TOKEN":
                     const app_id = event.data.app_id || null;
                     const encrypted_login_token = event.data.encrypted_login_token || null;
-                    if (Base.inst().BaseLogger) {
-                        Base.inst().BaseLogger.debug(`encrypted_login_token:${app_id},${encrypted_login_token}`);
+                    if (Base.BaseLogger) {
+                        Base.BaseLogger.debug(`encrypted_login_token:${app_id},${encrypted_login_token}`);
                     }
-                    Base.inst().GetUserInfo(app_id, encrypted_login_token);
+                    Base.GetUserInfo(app_id, encrypted_login_token);
                     $(".main-nav").addClass("hidden")
                     break;
             }

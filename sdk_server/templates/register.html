@@ -129,7 +129,8 @@
 </div>
     <!-- 引入 Layui 的 JavaScript 文件 -->
   
-    <script>
+    <script type="module">
+        import Base from "/static/js/Base.js";
         
         layui.use(['form'], function () {
             var xTicketM = null;
@@ -141,7 +142,7 @@
                     return false
                 }
                 console.log(data)
-                Base.inst().SendVerifyCode(data.field.email,(xTicket)=>{
+                Base.SendVerifyCode(data.field.email,(xTicket)=>{
                     console.log(xTicket)
                     xTicketM = xTicket
                     $("#register_btn").removeAttr("disabled")
@@ -165,7 +166,7 @@
                     return false;
                 }
 
-                Base.inst().Register(
+                Base.Register(
                     data.field.account,
                     data.field.password,
                     data.field.username,

@@ -103,13 +103,14 @@
 
 <!-- 引入 Layui 的 JavaScript 文件 -->
 
-<script>
+<script type="module">
+    import Base from "/static/js/Base.js";
     layui.use(['form'], function () {
         var form = layui.form;
 
         // 监听登录表单提交事件
         form.on('submit(login)', function (data) {
-            Base.inst().Login(data.field.account, data.field.password);
+            Base.Login(data.field.account, data.field.password);
 
             return false; // 阻止表单跳转
         });

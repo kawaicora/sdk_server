@@ -1,3 +1,4 @@
+import LoggerManager from "/static/js/LoggerManager.js";
 import VideoStream from "/static/js/VideoStream.js";
 import SocketIOMaster from "/static/js/SocketIOMaster.js";
 import Chat from "/static/js/Chat.js";
@@ -8,7 +9,8 @@ class WebRTC {
         this.iceServers =  null; 
         this.logger = new LoggerManager("WebRTC", LoggerManager.LEVELS.ALL);
         this.selectDeviceUiStatus = false;
-        SocketIOMaster.connect();
+        
+        PageManager.SwitchPage("room_list");
         
         SocketIOMaster.on('joined-room',this.HandleJoinRoom.bind(this));
         SocketIOMaster.on('user-joined-room', this.HandleJoinRoom.bind(this));
@@ -20,49 +22,57 @@ class WebRTC {
         SocketIOMaster.on('room-users-updated', this.HandleRoomUserUpdate.bind(this));
         // 错误提示
         SocketIOMaster.on('error', (data) => {
-        this.logger.log(`错误 :  ${data.msg} , event:${data.event} `);
+            this.logger.log(`错误 :  ${data.msg} , event:${data.event} `);
             CommonUtils.MsgBox(`错误 :  ${data.msg}  `);
         });
-        this.EnumerateDevices();
-        //初始化流
-        VideoStream.GetAudioStream("default");
-        VideoStream.GetEmptyVideoStream(); 
         
-
-        $('#createRoomBtn').on('click', () => {
-            const title = $('#roomTitle').val();
-            if (title.length < 2 || !title) {
-                CommonUtils.MsgBox("检查标题字数是否2个以上，或者标题是否未填写");
-                return;
-            }
-            const room_id = "room_s_" + Date.now();
-            SocketIOMaster.emit('create-room',{room_id:room_id,title:title,room_type:"webrtc"})
-        });
-        $('#videoSelect').on('change',this.HandleVideoSelect.bind(this));
-        $('#audioSelect').on('change',this.HandleAudioSelect.bind(this));
-        $('#capture_screen_button').on('click', () => {
-            CommonUtils.MsgBox("屏幕共享功能如果使用系统音频就采集系统声音否则使用上一次的音频输入设备声音,如果上一次没有选择音频输入设备就不采集声音",10);
-            this.HandleScreenSelect();
+        SocketIOMaster.on('connected', (data) => {
+            this.logger.debug(`用户注册成功 ${JSON.stringify(data, null, 2)}`);
+            
+            this.EnumerateDevices();
+            //初始化流
+            VideoStream.GetAudioStream("default");
+            VideoStream.GetEmptyVideoStream(); 
             
 
-        });
-        $('#switchBtn').on('click', () => {
-            this.ShowSelectDevice();
-        });
-        PageManager.SwitchPage("room_list");
+            $('#createRoomBtn').on('click', () => {
+                const title = $('#roomTitle').val();
+                if (title.length < 2 || !title) {
+                    CommonUtils.MsgBox("检查标题字数是否2个以上，或者标题是否未填写");
+                    return;
+                }
+                const room_id = "room_s_" + Date.now();
+                SocketIOMaster.emit('create-room',{room_id:room_id,title:title,room_type:"webrtc"})
+            });
+            $('#videoSelect').on('change',this.HandleVideoSelect.bind(this));
+            $('#audioSelect').on('change',this.HandleAudioSelect.bind(this));
+            $('#capture_screen_button').on('click', () => {
+                CommonUtils.MsgBox("屏幕共享功能如果使用系统音频就采集系统声音否则使用上一次的音频输入设备声音,如果上一次没有选择音频输入设备就不采集声音",10);
+                this.HandleScreenSelect();
+                
+
+            });
+            $('#switchBtn').on('click', () => {
+                this.ShowSelectDevice();
+            });
+            
    
+            
+            
+            setInterval(() => {
+                for (var i = 0 ; i< $(`.remote-video-lable`).length ; i++){
+                    var sid = $(`.remote-video-lable`).eq(i).attr("class").split("remote-video-lable-")[1]
+                    if ($(`.remote-video-lable`)[i].innerText.indexOf(sid) != -1 ){
+                    SocketIOMaster.emit('room_users_update',{room_id:sessionStorage.getItem("room")});   //  获取用户信息更新用户名
+                    } 
+                }
+            
+            }, 3000); // 
+        });
 
-
-        setInterval(() => {
-            for (var i = 0 ; i< $(`.remote-video-lable`).length ; i++){
-                var sid = $(`.remote-video-lable`).eq(i).attr("class").split("remote-video-lable-")[1]
-                if ($(`.remote-video-lable`)[i].innerText.indexOf(sid) != -1 ){
-                   SocketIOMaster.emit('room_users_update',{room_id:sessionStorage.getItem("room")});   //  获取用户信息更新用户名
-                } 
-            }
-           
-        }, 3000); // 
+       
     }
+
     async HandleScreenSelect (){
         await VideoStream.GetScreenStream();
         await this.ReplaceTrack();

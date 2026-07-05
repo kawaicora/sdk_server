@@ -12,7 +12,10 @@ class LoggerManager {
         this.LEVEL = LEVEL;
     }
     // 日志工具函数 - 仅输出到控制台
-
+    static GetLogger(TAG, LEVEL = LoggerManager.LEVELS.ALL){
+        this.TAG = TAG;
+        this.LEVEL = LEVEL;
+    }
     log_ex(type,method, file, line, args) {
         const now = new Date();
         const timeStr = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}]`;
@@ -179,3 +182,6 @@ class LoggerManager {
         console.clear();
     }
 }
+
+
+export default LoggerManager;

@@ -1,10 +1,10 @@
 
 import SocketIOMaster from "/static/js/SocketIOMaster.js";
+import LoggerManager from "/static/js/LoggerManager.js";
 class Chat {
     constructor() {
         this.MsgTemplateCache = null;
         this.logger = new LoggerManager("Chat",LoggerManager.LEVELS.ALL)
-        SocketIOMaster.connect();
         SocketIOMaster.on('connected', (data) => {
             this.logger.debug(`用户注册成功 ${JSON.stringify(data, null, 2)}`);
      
@@ -45,13 +45,10 @@ class Chat {
 
 
         SocketIOMaster.on('chat-message', this.AppendMessage.bind(this));
-    
-            
+
     }
    
-    CreateRoom(room_id,room_title) {
-        SocketIOMaster.emit('create-room',{room_id:room_id,title:room_title,room_type:"chat"})
-    }
+
     JoinRoom(room_id) {
         try {
             SocketIOMaster.emit('join-room', { room_id: room_id });
