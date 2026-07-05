@@ -11,6 +11,11 @@ class Location {
             this.logger.debug(`用户注册成功 ${JSON.stringify(data, null, 2)}`);
             this.Init()
             setInterval(() => this.reportLocation(), 10000);
+            setInterval(() => {
+                if (!$("#map").hasClass('hidden')){
+                    this.map.invalidateSize();
+                }
+            }, 1000);
         });
 
         SocketIOMaster.on('user-location', this.UserLocationHandler.bind(this));
@@ -34,7 +39,7 @@ class Location {
         }
     }
     Init() {
-
+        
         this.map = L.map("map").setView([30, 120], 5);
 
         L.tileLayer(
@@ -46,9 +51,6 @@ class Location {
         ).addTo(this.map);
 
         this.group = L.featureGroup().addTo(this.map);
-
-       
-        
     }
 
     async UserLocationHandler(data) {
@@ -84,15 +86,15 @@ class Location {
             this.markers[id].setLatLng(latlng);
 
         }
-        // // 自动缩放到所有人
-        // const bounds = this.group.getBounds();
+        // 自动缩放到所有人
+        const bounds = this.group.getBounds();
 
-        // if (bounds.isValid()) {
-        //     this.map.fitBounds(bounds, {
-        //         padding: [40, 40],
-        //         maxZoom: 16
-        //     });
-        // }
+        if (bounds.isValid()) {
+            this.map.fitBounds(bounds, {
+                padding: [40, 40],
+                maxZoom: 16
+            });
+        }
 
         this.logger.debug(`\n********************************* \nrecv_loc_info: ${JSON.stringify(data,null,2)}`);
     }
