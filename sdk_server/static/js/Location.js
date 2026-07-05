@@ -48,7 +48,7 @@ class Location {
     }
 
     async UserLocationHandler(data) {
-
+        
         const id = data.user_id;
         const latlng = [
             data.loc_info.latitude,
@@ -87,6 +87,8 @@ class Location {
                 maxZoom: 16
             });
         }
+
+        this.logger.debug(`\n********************************* \nrecv_loc_info: ${JSON.stringify(data,null,2)}`);
     }
 
     async GetLocation() {
