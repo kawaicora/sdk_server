@@ -38,14 +38,11 @@ class Location {
         this.map = L.map("map").setView([30, 120], 5);
 
         L.tileLayer(
-            // "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            // {
-            //     attribution: "OpenStreetMap"
-            // }
-             "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
             {
-                attribution: "&copy; CARTO & OpenStreetMap"
+                attribution: "OpenStreetMap"
             }
+            
         ).addTo(this.map);
 
         this.group = L.featureGroup().addTo(this.map);
