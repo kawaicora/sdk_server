@@ -131,6 +131,7 @@ class WebRTC {
                 this.logger.warn(`收到远程流 targetSid=${targetSid} 不包含流`);
                 return;
             }
+            this.logger.debug("*******************************************************")
             event.streams[0].getAudioTracks().forEach(track => {
                 this.logger.debug(`远程流包含音频轨道 targetSid=${targetSid}, trackId=${track.id}`);
                 this.logger.debug(`信息 ${JSON.stringify(track.getSettings(), null, 2)}`);
@@ -181,9 +182,11 @@ class WebRTC {
                 case 'failed':
                 case 'closed':
                     this.RemoveConnection(targetSid);
-
-                    this.CreatePeerConnection(targetSid);
-                    this.logger.debug(`尝试重新创建连接 targetSid=${targetSid}`);
+                    // if (in_room) {
+                    //     this.CreatePeerConnection(targetSid);
+                    //     this.logger.debug(`尝试重新创建连接 targetSid=${targetSid}`);
+                   
+                    // }
                     break;
                 default:
                     break;

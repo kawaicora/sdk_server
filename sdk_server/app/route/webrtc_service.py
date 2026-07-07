@@ -8,10 +8,8 @@ from app.sql_class.Tables import Users,Usermeta
 from app.utils.CommonUtils import *
 from app.route.socketio_common_services import add_user_to_room, get_room_users, get_user_by_sid, is_user_in_room,get_room_by_sid,get_room_by_uid, remove_user_from_room, user_sessions,rooms
 
-@bp.route("/api/ice_servers_config",methods=['GET','POST'])
-def handle_ice_servers_config():
-    
-    # return CommonUtils.json_response(DefaultConfig.ICE_SERVERS)
+
+def get_ice_servers():
     import requests
 
     # 请求URL
@@ -27,19 +25,17 @@ def handle_ice_servers_config():
     data = {
         "ttl": 86400  # 凭证有效期（秒），这里设置为24小时*7天
     }
-
-    # 发送POST请求
-    # response = requests.post(url, json=data, headers=headers,timeout=5)
     response = requests.post(url, json=data, headers=headers)
-    # 检查请求是否成功
-    # if (response.status_code != 200):
-    #     current_app.logger.error(f"Failed to get ICE servers config from Cloudflare: {response.status_code} - {response.text}")
-    #     return CommonUtils.json_response({"iceServers": [
-    #         { "urls": "stun:stun.l.google.com:19302" }
-    #     ]}, status=200)
-    # 解析响应结果（返回ICE服务器配置）
-    ice_servers = response.json()
-    return CommonUtils.json_response(ice_servers,status=response.status_code)
+    if (response.status_code != 200 and response.status_code != 201):
+        logger.error(f"Failed to get ICE servers config from Cloudflare: {response.status_code} - {response.text}")
+        return DefaultConfig.ICE_SERVERS
+    return response.json()
+
+
+@bp.route("/api/ice_servers_config",methods=['GET','POST'])
+def handle_ice_servers_config():
+    
+    return CommonUtils.json_response(get_ice_servers(),status=200)
         
     
 # ---------------------- WebRTC 信令处理（保持逻辑，适配分离后的数据结构） ----------------------

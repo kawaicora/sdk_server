@@ -460,7 +460,28 @@ class CommonUtils:
             raise RuntimeError(f"邮件发送失败: {e}")
         finally:
             server.quit()
-        
+
+    @staticmethod
+    def ice_servers_to_link_header(ice_servers: dict) -> list[str]:
+        links = []
+
+        for server in ice_servers.get("iceServers", []):
+            urls = server.get("urls", [])
+            username = server.get("username")
+            credential = server.get("credential")
+
+            for url in urls:
+                parts = [f'<{url}>', 'rel="ice-server"']
+                if username:
+                    parts.append(f'username="{username}"')
+                if credential:
+                    parts.append(f'credential="{credential}"')
+                # ✅ 不拆分，不重复 URL
+                links.append("; ".join(parts))
+
+        return links
+    
+
     ######################################################异步方法#############################################
     @staticmethod
 

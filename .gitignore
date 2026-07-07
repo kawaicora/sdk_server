@@ -2,6 +2,7 @@
 /sdk_server/.vscode
 __pycache__/
 /.history/
+/sdk_server/templates/test*
 /sdk_server/data/rooms.json
 /sdk_server/data/user_sessions.json
 /sdk_server/static/upload/*

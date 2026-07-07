@@ -1,7 +1,7 @@
 class VideoStream {
 
     constructor() {
-
+        window.isFlutter = false;
 
         this.stream = new MediaStream();
 
@@ -67,7 +67,6 @@ class VideoStream {
     }
 
     async GetScreenStream() {
-
         if (!navigator.mediaDevices?.getDisplayMedia) {
             throw new Error("当前浏览器不支持屏幕共享");
         }

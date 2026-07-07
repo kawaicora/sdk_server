@@ -50,6 +50,12 @@ button{
     muted
     playsinline>
 </video>
+<video
+    id="recvVideo"
+    autoplay
+    muted
+    playsinline>
+</video>
 
 <hr>
 
@@ -110,7 +116,16 @@ const video =
 const logDiv =
     document.getElementById("log");
 
+    const pcRecv =  new (window.RTCPeerConnection || 
+                        window.webkitRTCPeerConnection || 
+                        window.mozRTCPeerConnection || 
+                        window.msRTCPeerConnection)({iceServers: []});
+    const pcSend =  new (window.RTCPeerConnection || 
+                        window.webkitRTCPeerConnection || 
+                        window.mozRTCPeerConnection || 
+                        window.msRTCPeerConnection)({iceServers: []});
 
+    
 
 let videoDevices = [];
 let audioDevices = [];
@@ -169,8 +184,31 @@ async function RefreshTrackInfo()
                 track.readyState
             );
         });
+        // 替换视频轨道
+    const videoSender = pcSend.getSenders().find(s => s.track && s.track.kind === 'video');
+    if (videoSender && VideoStream.stream) {
+        const videoTrack = VideoStream.stream.getVideoTracks()[0];
+        // 遍历媒体流中的所有视频轨道
+        if (videoTrack) {
+            videoSender.replaceTrack(videoTrack);
+        }
+    }
 
+    // 替换音频轨道
+    const audioSender = pcSend.getSenders().find(s => s.track && s.track.kind === 'audio');
+    if (audioSender && VideoStream.stream) {
+        const audioTrack = VideoStream.stream.getAudioTracks()[0];
+        if (audioTrack) {
+            audioSender.replaceTrack(audioTrack);
+        }
+    }
+    var offer = await  pcSend.createOffer()
+    await pcSend.setLocalDescription(offer);
+    await pcRecv.setRemoteDescription(offer)
     Log("==============");
+
+
+
 }
 
 async function LoadDevices()
@@ -231,6 +269,9 @@ async function LoadDevices()
             option
         );
     });
+
+
+
 }
 
 async function Init()
@@ -244,7 +285,7 @@ async function Init()
     try
     {
         // 默认麦克风
-        await VideoStream.GetMicrophoneStream();
+        await VideoStream.GetAudioStream();
     }
     catch(e)
     {
@@ -255,8 +296,36 @@ async function Init()
     }
 
     await LoadDevices();
+    
+    pcRecv.ontrack = (event) => {
+        recvVideo.srcObject = event.streams[0];
+        
+    }
 
+
+    VideoStream.stream.getVideoTracks().forEach(track => {
+        pcSend.addTrack(track, VideoStream.stream);
+    });
+    VideoStream.stream.getAudioTracks().forEach(track => {
+        pcSend.addTrack(track, VideoStream.stream);
+    });
+
+    // 发送
+    var offer = await  pcSend.createOffer()
+    await pcSend.setLocalDescription(offer);
+    
+    // 接受
+    await pcRecv.setRemoteDescription(offer)
+    const answer = await pcRecv.createAnswer();
+    await pcRecv.setLocalDescription(answer);
+
+    // 发送
+    await pcSend.setRemoteDescription(answer);
+    
+    
     RefreshTrackInfo();
+
+    
 }
 
 document
@@ -295,7 +364,7 @@ document
 
     try
     {
-        await VideoStream.GetMicrophoneStream(
+        await VideoStream.GetAudioStream(
             deviceId
         );
 

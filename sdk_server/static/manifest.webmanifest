@@ -1,10 +1,13 @@
 {
-  "name": "视频聊天",
-  "short_name": "视频聊天",
+  "name": "Mochi",
+  "short_name": "Mochi",
   "start_url": "/view/main",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
+  "description": "一个聊天位置共享的APP",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
   "icons": [
      {
       "src": "/static/img/logo_192.png",
