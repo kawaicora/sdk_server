@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from flask_socketio import SocketIO
 from sqlalchemy import Engine, create_engine
-
+from app.utils.LoggerManager import logger
 from app.settings import DefaultConfig
 from engineio.payload import Payload
 
@@ -22,7 +22,6 @@ socketio:SocketIO = SocketIO(
     cors_allowed_origins='*',
     async_mode='gevent'
 )
-
 
 
 def set_cookies(response :Response,cookies,samesite:str='None',secure:bool = True,path:str="/",max_age:int|None = None):

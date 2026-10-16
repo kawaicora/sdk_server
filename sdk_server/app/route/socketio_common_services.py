@@ -359,7 +359,7 @@ def handle_delete_room(data):
     if not user:
         emit('error', {"event": "delete-room", "msg": "用户未注册"}, sid=sid)
         handle_user_connect()
-    
+        user = get_user_by_sid(sid)
     uid = user["user_id"]
     username = user["display_name"]
     room_id = data.get("room_id")
@@ -405,7 +405,7 @@ def handle_create_room(data):
     if not user:
         emit('error', {"event": "delete-room", "msg": "用户未注册"}, sid=sid)
         handle_user_connect()
-    
+        user = get_user_by_sid(sid)
     uid = user["user_id"]
     room_id = data.get("room_id")
     title = data.get("title", "未命名房间")
@@ -479,7 +479,7 @@ def handle_join_room(data):
     if not user:
         emit('error', {"event": "join-room", "msg": "用户未注册"}, sid=sid)
         handle_user_connect()
-    
+        user = get_user_by_sid(sid)
     uid = user["user_id"]
     room_id = data.get("room_id")
     
@@ -543,7 +543,7 @@ def handle_leave_room(data):
     if not user:
         emit('error', {"event": "leave-room", "msg": "用户未注册"}, sid=sid)
         handle_user_connect()
-    
+        user = get_user_by_sid(sid)
     uid = user["user_id"]
     room_id = data.get("room_id")
     room = get_room_by_id(room_id)

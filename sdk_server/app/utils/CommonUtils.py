@@ -57,6 +57,23 @@ class CommonUtils:
         e = base64.b16encode(d).decode().lower()
        
         return e
+    
+    @staticmethod
+    def is_expired(expire_time) -> bool:
+        """
+        判断是否过期
+        :param expire_time: datetime 或 秒级时间戳(int/float)
+        :return: True 已过期，False 未过期
+        """
+        if isinstance(expire_time, (int, float)):
+            # 秒级时间戳 → datetime
+            expire_time = datetime.fromtimestamp(expire_time)
+
+        if isinstance(expire_time, datetime):
+            return datetime.now() >= expire_time
+
+        raise TypeError("expire_time must be datetime or timestamp")
+    
     @staticmethod
     def gen_order_no():
         n = "JAF"

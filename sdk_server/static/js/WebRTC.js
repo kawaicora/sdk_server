@@ -7,7 +7,7 @@ class WebRTC {
     constructor() {
         this.peerConnections = {};
         this.iceServers =  null; 
-        this.logger = new LoggerManager("WebRTC", LoggerManager.LEVELS.ALL);
+        this.logger = new LoggerManager("WebRTC", LoggerManager.LEVELS.DEBUG);
         this.selectDeviceUiStatus = false;
         
         PageManager.SwitchPage("room_list");

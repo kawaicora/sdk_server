@@ -423,7 +423,6 @@ def api_get_public_key():
 def get_userinfo_by_uid(user_id:int):
     user = Users.query.filter_by(ID=user_id).first()
     if not user:
-        current_app.logger.warning(f"用户不存在")
         return None
   
     user_meta_list = Usermeta.query.filter_by(user_id=user_id).all()
@@ -458,7 +457,6 @@ def get_userinfo_by_token(token ):
     t_account_token = AccountToken.query.filter_by(token=token).first()
     user = Users.query.filter_by(ID=t_account_token.user_id).first()
     if not user:
-        current_app.logger.warning(f"用户不存在")
         return None
   
     user_meta_list = Usermeta.query.filter_by(user_id=t_account_token.user_id).all()

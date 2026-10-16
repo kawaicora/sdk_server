@@ -31,6 +31,7 @@ class Base{
                     $('.exit-login-btn').addClass('hidden');
                     $('.nav-user-info').addClass('hidden');
                     this.logger.debug(`登陆失败 ${JSON.stringify( response, null, 2)}`);
+                    SocketIOMaster.connect();
                     return;
                 }
                 this.logger.debug(`登陆成功 ${JSON.stringify( response, null, 2)}`);
@@ -49,8 +50,6 @@ class Base{
             },
             error: (xhr, status, error) => {
                 this.logger.error(`请求失败 ${JSON.stringify( error, null, 2)}`);
-                SocketIOMaster.connect();
-                
             }
         });
     }

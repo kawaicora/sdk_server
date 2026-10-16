@@ -70,13 +70,13 @@ def view_main():
     return response
 
 
-# @bp.route("/view/resume")
-# def view_resume():
-#     # 这里假设你的 YAML 文件名为 resume.yaml，你可以根据实际情况修改路径
-#     resume_data = parse_encrypted_resume()
-#     response = make_response(render_template("resume.html", **resume_data),200)
-#     response.headers['X-Organization'] = 'Nintendo'
-#     return response
+@bp.route("/view/resume")
+def view_resume():
+    # 这里假设你的 YAML 文件名为 resume.yaml，你可以根据实际情况修改路径
+    resume_data = parse_encrypted_resume()
+    response = make_response(render_template("resume.html", **resume_data),200)
+    response.headers['X-Organization'] = 'Nintendo'
+    return response
 
 def read_yaml():
     with open(os.path.join(DefaultConfig.BASE_DIR,"./data/resume.yaml"), 'r', encoding='utf-8') as file:

@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
+from http import HTTPStatus
+import threading
+from datetime import datetime, timedelta
 from app.route import bp
 from flask import jsonify, request, current_app
-from app.extensions import socketio
+from app.extensions import  socketio
 from flask_socketio import emit, join_room, leave_room 
 from app.settings import DefaultConfig
 from app.sql_class.Tables import Users,Usermeta
 from app.utils.CommonUtils import *
 from app.route.socketio_common_services import add_user_to_room, get_room_users, get_user_by_sid, is_user_in_room,get_room_by_sid,get_room_by_uid, remove_user_from_room, user_sessions,rooms
+ICE_SERVERS_GEN_DATE = datetime(1970,1,1,8,0,0)
+ICE_SERVERS_TOKEN_SECOND = 3600 * 24
 
 
 def get_ice_servers():
@@ -23,19 +28,38 @@ def get_ice_servers():
 
     # 请求体数据
     data = {
-        "ttl": 86400  # 凭证有效期（秒），这里设置为24小时*7天
+        "ttl": ICE_SERVERS_TOKEN_SECOND# 凭证有效期（秒），这里设置为24小时
     }
+
     response = requests.post(url, json=data, headers=headers)
     if (response.status_code != 200 and response.status_code != 201):
         logger.error(f"Failed to get ICE servers config from Cloudflare: {response.status_code} - {response.text}")
-        return DefaultConfig.ICE_SERVERS
+        return None
     return response.json()
+
+def get_ice_servers_loop():
+    while True:
+        if DefaultConfig.ICE_SERVERS == None  or CommonUtils.is_expired(ICE_SERVERS_GEN_DATE+timedelta(seconds=ICE_SERVERS_TOKEN_SECOND)):
+            while True:
+            
+                ice_servers_json = get_ice_servers()
+                if (ice_servers_json != None):
+                    DefaultConfig.ICE_SERVERS = ice_servers_json
+                    ICE_SERVERS_GEN_DATE = datetime.now()
+                    break
+        time.sleep(1)
+    
+
+threading.Thread(target=get_ice_servers_loop).start()
+
+
+def get_ice_servers_fast():
+    return DefaultConfig.ICE_SERVERS
 
 
 @bp.route("/api/ice_servers_config",methods=['GET','POST'])
 def handle_ice_servers_config():
-    
-    return CommonUtils.json_response(get_ice_servers(),status=200)
+    return CommonUtils.json_response(DefaultConfig.ICE_SERVERS,status=HTTPStatus.CREATED)
         
     
 # ---------------------- WebRTC 信令处理（保持逻辑，适配分离后的数据结构） ----------------------

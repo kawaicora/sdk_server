@@ -31,6 +31,8 @@ class DefaultConfig(object):
     SAKURAXY_OAUTH_API = os.getenv("SAKURAXY_OAUTH_API")
     SAKURAXY_OAUTH_TOKEN = os.getenv("SAKURAXY_OAUTH_TOKEN")
     
+    
+    ICE_SERVERS = None
     # 私钥：读取后还原 \n 为实际换行符
     SAKURAXY_LOGIN_PRIVATE_KEY = os.getenv("SAKURAXY_LOGIN_PRIVATE_KEY", "").replace("\\n", "\n")
 

@@ -1,0 +1,186 @@
+education:
+  # - degree: ""
+  #   major: 机电一体化
+  #   school_name: 江苏职业技术学院
+  #   time: 2011年09月 - 2013年06月
+  - degree: ""
+    major: 机电一体化
+    school_name: 江苏职业技术学院
+    time: 2013年09月 - 2016年06月
+  - degree: ""
+    major: 手绘建模
+    school_name: 上海育界
+    time: 2018年06月 - 2018年12月
+person_info:
+  birth: "1994-10-21"
+  school: "江苏职业技术学院"
+  education: "大专"
+  major: "机电一体化"
+  native_place: "中国·江苏·盐城"
+  current_place: "中国·江苏·盐城"
+  email: "mengyou81219@163.com"
+  phone: "+86173****0824"
+  address: "江苏省盐城市东台市许河镇"
+  content: ""
+  label: "Unity · C# · Python · 3 - 5年"
+  name: '崔世平'
+  photo_url: "/static/upload/2012554584685434.jpg"
+
+# project_count: 3
+project_works:
+  - content: |
+      1. 根据原画还原场景。
+      2. 熟练使用NeoX场景编辑相关功能
+    name: 网易明日之后（场景）
+    work_time: (广州) 2019年11月 - 2019年12月 ,(上海) 2020年3月 - 2020年5月
+
+
+  - content: |
+      1. 熟练使用unity 按照原画实现场景 。
+      2. 使用Substance Painter 实现物体贴图
+      3. 灯光布置和烘焙
+    name: 54互娱遇见楚留香（原名楚留香） 
+    work_time: 2020年2月 - 2020年3月
+
+  - content: |
+      1. 熟练使用unity 按照原画实现场景 。
+      2. 灯光布置和烘焙
+      3. 模型修改
+    name: IGG (代号)OMEGA
+    work_time: 2019年3月-2019年5月 
+
+
+  # - content: |
+  #     1. 熟练使用996引擎 编写TXT LUA 脚本。
+  #     2. 制作python 数值 批量修改器 实现快速工作流
+  #   name: 传奇2 996版 
+  #   work_time: 2024年5月 - 2024年10月
+
+  # - content: |
+  #     1. 熟练使用996引擎 编写TXT LUA 脚本。
+  #     2. 制数值修改
+  #     3. 功能定制
+  #   name: MDL传统传奇2 996版 
+  #   work_time: 2024年9月 - 2024年9月
+
+  # - content: |
+  #     1. 熟练使用996引擎 编写TXT LUA 脚本。
+  #     2. 制数值修改
+  #     3. 功能定制
+  #   name: MDL蛋壳传奇2 996版 
+  #   work_time: 2024年9月 - 2024年10月
+
+
+  # - content: |
+  #     1. 兼容996传奇3引擎。
+  #     2. 实现模拟部分后台功能
+  #     项目地址 https://github.com/kawaicora/cq_server
+  #   name: 996引擎后台模拟器 (个人项目)
+  #   work_time: 2024年11月 - 持续更新
+
+
+  - content: |
+      1. 实现视频聊天（WEBRTC）
+      2. 实现文字图片消息
+      3. 搭建wordpress 路由
+      4. 重构UI
+      项目地址 https://github.com/kawaicora/sdk_server
+    name: 个人网站 (个人项目)
+    work_time: 2025年3月 - 持续更新
+  
+  - content: |
+      项目地址 https://github.com/kawaicora/FGO
+      实现例如游戏前期逻辑
+      实现lua驱动的socketio聊天
+      实现lua驱动的游戏UI逻辑
+      实现资源更新
+    name: Unity游戏框架 (个人项目)
+    work_time: 2020年11月 - 持续更新
+
+skills_introduction:
+  content: |
+    Python 
+    c# 
+    unity 
+    flask
+    mysql
+    3DMax
+    
+  title: 技能概述
+
+tag_list:
+  - icon: layui-icon-code-circle
+    name: U3D
+  - icon: layui-icon-code-circle
+    name: C#
+  - icon: layui-icon-code-circle
+    name: Python
+  - icon: layui-icon-code-circle
+    name: 网页制作
+  - icon: layui-icon-code-circle
+    name: 前端开发
+  - icon: layui-icon-code-circle
+    name: 后端开发
+  - icon: layui-icon-code-circle
+    name: web前端
+work_experience:
+  # - company_name: 圣拓电伴热带
+  #   position: 网站编辑
+  #   work_content: |
+  #     1. 拍摄电伴热带高质量图片，确保产品细节清晰呈现。
+  #     2. 运用Photoshop精准抠图，提升图像专业度。
+  #     3. 设计制作适用于各电商平台的详情页和主图，优化视觉效果以吸引顾客。
+  #     4. 绘制详细的产品剖面图，直观展示产品结构。
+  #     5. 制作并翻译产品说明书，确保信息准确传达给全球用户。
+  #     6. 负责网站产品数据的上传与管理，保证信息完整性和时效性。
+  #     7. 使用PHP、HTML、JavaScript和CSS设计制作动态网页，突出产品特色。
+  #     8. 协助拍摄产品安装教程视频，并发布至主流平台，增强用户体验。
+  #   work_time: 2016年09月 - 2018年07月
+  - company_name: 上海大鳞文化传播发展有限公司
+    position: 游戏场景设计
+    work_content: |
+      1. 搭建白模，精确测试场景各部分尺寸以确保符合设计要求，并评估整体可行性。
+      2. 仔细检查模型组的贴图命名规范性，确认法线方向正确，必要时调整法线通道。
+      3. 根据模型材质特性，选用恰当的Shader创建逼真材质效果。
+      4. 添加细节贴图，增强材质质感与真实度。
+      5. 基于原图及白模比例还原场景，融入个人创意优化布局合理性。
+      6. 精心布置灯光，强化光效表现，提升场景氛围与视觉冲击力。
+      7. 在烘焙前设置Unity灯光模式为Baked，将静态物体标记为Static，确保烘焙质量。
+      8. 设置烘焙的质量，进行烘焙
+      9. 使用版本控制软件提交场景
+    work_time: 2018年08月 - 2020年09月
+
+
+  # - company_name: 个体工商户（未透露名称）
+  #   position: 其他后端开发
+  #   work_content: |
+  #     1. 熟练运用Photoshop设计精美的游戏界面图标，确保图标风格统一且符合游戏整体视觉效果，提升用户体验。
+  #     2. 深入理解游戏功能与需求，精准实现各项功能开发，确保游戏运行流畅，满足玩家预期。
+  #     3. 使用Lua语言编写高效的游戏逻辑代码和实用的工具方法，优化游戏性能，提高开发效率。
+  #   work_time: 2024年05月 - 2024年08月
+  # - company_name: 个体工商户（未透露名称）
+  #   position: 其他后端开发
+  #   work_content: |
+  #     *:短期项目 使用已有游戏版本，制作游戏版本
+  #     1. 编写lua工具方法为需要的功能实现工具方法例如base64算法，字符串工具方法日期工具方法等
+  #     2. 搭建测试环境测试遗留的问题解决之前遗留的问题
+  #     3. 实现各个活动的逻辑以及活动关联npc的代码编写以及ui制作
+  #     4. 实现各个npc的功能，菜单以及ui的制作
+  #     5. 调试以及测试游戏bug
+  #     6. 打包上传应用更新
+  #   work_time: 2024年09月 - 2024年11月
+
+  # - company_name: 个体工商户（兼职）
+  #   position: WordPress 网站运营
+  #   work_content: |
+  #     1. 根据业务需求进行WordPress网站开发、维护与功能优化，修改主题及插件功能以满足项目需求。
+  #     2. 独立开发和定制WordPress插件，实现网站功能扩展，例如后台管理、数据展示、用户交互等功能。
+  #     3. 根据需求调整网站页面结构，优化HTML、CSS、JavaScript代码，提升网站视觉效果和用户体验。
+  #     4. 使用PHP进行WordPress二次开发，修改接口逻辑，实现网站功能定制化。
+  #     5. 负责网站内容管理、产品数据维护、页面更新以及后台配置管理，保证网站正常运行。
+  #     6. 搭建和维护网站运行环境，处理服务器配置、网站部署、程序更新以及运行异常问题。
+  #     7. 对网站数据库进行维护，优化数据结构及查询效率，解决日常运营中的数据问题。
+  #     8. 根据客户需求分析网站功能需求，制定实现方案并完成开发测试与上线部署。
+  #     9. 负责网站安全维护，包括插件更新、漏洞修复、访问异常排查等工作。
+  #     10. 对接第三方接口，实现网站与外部服务的数据交互，提高网站功能扩展能力。
+  #   work_time: 2024年05月 - 至今

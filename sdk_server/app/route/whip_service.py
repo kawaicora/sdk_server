@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import threading
+import traceback
 from typing import Dict
 import socketio
 import json
@@ -12,18 +13,51 @@ from flask_socketio import emit, join_room
 from app.extensions import socketio
 from app.route import bp
 from app.settings import DefaultConfig
-from app.route.webrtc_service import user_sessions,get_ice_servers
+from app.route.webrtc_service import user_sessions,get_ice_servers,get_ice_servers_fast
 from aiortc.contrib.media import MediaRecorder
 from aiortc.contrib.media import MediaRelay
+
+
+
 # 存储WHIP会话信息：resource_id -> {peer_connection, sdp}
 whip_sessions = {}
 ice_servers_cache = None
 webrtc_loop = asyncio.new_event_loop()
-relay:MediaRelay = MediaRelay()
 threading.Thread(
     target=webrtc_loop.run_forever,
     daemon=True
 ).start()
+
+
+
+relay:MediaRelay = MediaRelay()
+
+from aiortc.codecs import h264
+old_decode = h264.H264Decoder.decode
+def decode(self, *args, **kwargs):
+    jf = args[0]
+
+    print("H264 decode called")
+
+    data = jf.data
+
+    i = 0
+    while i < len(data) - 4:
+        if data[i:i+4] == b'\x00\x00\x00\x01':
+            nal = data[i+4] & 0x1f
+            print("NAL", nal)
+            i += 4
+        else:
+            i += 1
+
+    result = old_decode(self, *args, **kwargs)
+
+    print("decoded count", len(result))
+
+    return result
+
+
+h264.H264Decoder.decode = decode
 
 
 def webrtc_exec(coro):
@@ -142,6 +176,19 @@ async def create_peer_connection(resource_id, room_id,iceservers):
             current_app.logger.info(f"Connection state changed to {pc.connectionState} for {resource_id}")
             if pc.connectionState == 'connected' :
                 # await recorder.start()
+                # async def dump_stats():
+                #     while True:
+                #         await asyncio.sleep(2)
+
+                #         for stat in (await pc.getStats()).values():
+                            
+                #             for stat in (await pc.getStats()).values():
+                #                 # if stat.type == "inbound-rtp" and stat.kind == "video":
+                #                 #         print(vars(stat))
+                #                 # if stat.type == "codec":
+                #                 print(vars(stat))
+
+                # asyncio.create_task(dump_stats())
                 pass
             if pc.connectionState == 'failed':
                 current_app.logger.error(f"Connection failed for {resource_id}")
@@ -173,6 +220,7 @@ async def create_peer_connection(resource_id, room_id,iceservers):
         async def on_track(track: MediaStreamTrack):  #收到远程视频
             try:
                 res = 0
+         
                 current_app.logger.info(f"Received {track.kind} track from {resource_id}")
                 relay_track:MediaStreamTrack = relay.subscribe(track)
                 if track.kind == 'video':
@@ -181,18 +229,24 @@ async def create_peer_connection(resource_id, room_id,iceservers):
                     whip_sessions[resource_id]['audio'] = relay_track
                 
                 async def _loop_track(relay_track:MediaStreamTrack):
+                    current_app.logger.info(f"start loop_track {relay_track.kind}")
                     while True:
-                        frame = await relay_track.recv()
-                        current_app.logger.info(
-                            f"{relay_track.kind} frame {frame}"
-                        )
+                        try :
+                            frame = await relay_track.recv()
+                            current_app.logger.info(
+                                f"{relay_track.kind} frame {frame}"
+                            )
+                        except Exception as e:
+                            current_app.logger.warning(
+                                f"loop_track {relay_track.kind} error!"
+                            )
+                            current_app.logger.warning("Current stack:\n%s  \n %s",str(e), "".join(traceback.format_stack()))
+                        break
+                    
                 asyncio.create_task(
                     _loop_track(relay_track)    
                 )
-                
                 # recorder.addTrack(track)
-
-                    
             except Exception as e:
                 current_app.logger.error(f"Error forwarding track: {str(e)}")
    
@@ -219,12 +273,13 @@ async def whip_v1_endpoint(room_id):
            
         }
         current_app.logger.info(f"New WHIP request for room {room_id}, resource {resource_id}")
-        iceservers = get_ice_servers()
+        # iceservers = get_ice_servers()
+        iceservers = get_ice_servers_fast()
         # 创建对等连接
         # pc = await create_peer_connection(resource_id, room_id,iceservers)
         pc = webrtc_exec(create_peer_connection(resource_id, room_id,iceservers))
         try:
-            # current_app.logger.info(f"offer sdp \n \n {offer_sdp}")
+            current_app.logger.info(f"offer sdp \n \n {offer_sdp}")
             #接收端逻辑
             offer = RTCSessionDescription(sdp=offer_sdp, type='offer')
             whip_sessions[resource_id]['offer'] = offer_sdp
@@ -258,7 +313,7 @@ async def whip_v1_endpoint(room_id):
                 "Accept-Patch": "application/trickle-ice-sdpfrag"
             }
             rsp:Response = Response(pc.localDescription.sdp, 201, headers=headers) 
-            current_app.logger.info(f"pc.localDescription sdp \n \n {pc.localDescription.sdp}")
+            # current_app.logger.info(f"pc.localDescription sdp \n \n {pc.localDescription.sdp}")
             current_app.logger.info(f"Returning SDP answer (ICE may still be gathering) for {resource_id}")
             return rsp
             
@@ -354,5 +409,5 @@ async def whip_delete_session(room_id, resource_id):
     del whip_sessions[resource_id]
 
     current_app.logger.info(f"WHIP session {resource_id} deleted successfully")
-    return Response(status=204)
+    return Response(status=200)
 
